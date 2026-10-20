@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="theme-color" content="#101113" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="EUPHONIA — Music Hub dan mini DAW dalam satu workspace." />
+  <title>EUPHONIA — Music Hub & Studio</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#home" aria-label="EUPHONIA Home">
+        <span class="brand-mark"><i></i><i></i><i></i><i></i><i></i></span>
+        <span>EUPHONIA<span class="brand-dot">.</span></span>
+      </a>
+      <div class="sidebar-label">WORKSPACE</div>
+      <nav class="main-nav" aria-label="Navigasi utama">
+        <button class="nav-item active" data-page="home"><span class="nav-icon">⌂</span><span>Home</span></button>
+        <button class="nav-item" data-page="discover"><span class="nav-icon">⌕</span><span>Music Hub</span></button>
+        <button class="nav-item" data-page="library"><span class="nav-icon">▤</span><span>Library</span><span class="nav-count" id="libraryCount">0</span></button>
+        <button class="nav-item" data-page="studio"><span class="nav-icon">▦</span><span>Studio / DAW</span><span class="nav-live"></span></button>
+      </nav>
+      <div class="sidebar-label sidebar-label-spaced">YOUR SPACE</div>
+      <div class="side-projects">
+        <button class="project-link" data-page="studio"><span class="project-color lime"></span> Untitled Session</button>
+        <button class="project-link" data-page="library"><span class="project-color violet"></span> Local Collection</button>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="storage-card">
+          <div class="storage-icon">◈</div>
+          <div><strong>Local-first workspace</strong><p>Audio tetap di perangkatmu.</p></div>
+        </div>
+        <button class="profile-button"><span class="profile-avatar">E</span><span class="profile-meta"><strong>Studio User</strong><small>Personal workspace</small></span><span class="more-dots">•••</span></button>
+      </div>
+    </aside>
+    <button id="mobileScrim" class="mobile-scrim" type="button" aria-label="Tutup navigasi" tabindex="-1" hidden></button>
+
+    <main class="main-area">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">☰</button>
+        <div class="breadcrumbs"><span>Workspace</span><span class="crumb-slash">/</span><strong id="pageBreadcrumb">Home</strong></div>
+        <div class="top-actions">
+          <button class="install-app-button" id="installAppBtn" type="button" aria-label="Install EUPHONIA" title="Install EUPHONIA">⇩ <span>Install</span></button>
+          <div class="global-search"><span>⌕</span><input id="globalSearch" placeholder="Cari track, artis, atau platform..." autocomplete="off" /><kbd>⌘ K</kbd></div>
+          <button class="icon-button" id="quickImport" title="Import audio" aria-label="Import audio">＋</button>
+          <button class="avatar-small" title="Personal workspace">E</button>
+        </div>
+      </header>
+
+      <section class="page active" id="page-home">
+        <div class="welcome-row">
+          <div><div class="eyebrow"><span class="status-dot"></span> YOUR SOUND, ONE WORKSPACE</div><h1>Good music. <span>Better workflow.</span></h1><p class="subheading">Temukan musik dari platform favorit, kelola koleksi lokal, lalu bawa ide ke studio.</p></div>
+          <button class="primary-button" data-page="studio"><span>＋</span> Open Studio</button>
+        </div>
+        <div class="hero-panel">
+          <div class="hero-content"><div class="hero-kicker">EUPHONIA MUSIC HUB <span>01 / 03</span></div><h2>Semua inspirasi.<br /><em>Satu tempat.</em></h2><p>Temukan rilisan dan jelajahi platform musik pilihanmu tanpa meninggalkan workspace EUPHONIA.</p><button class="light-button" data-page="discover">Explore music <span>↗</span></button></div>
+          <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="disc"><div class="disc-grooves"></div><div class="disc-center"><span>E</span></div></div><div class="hero-wave wave-a"></div><div class="hero-wave wave-b"></div><div class="hero-tag tag-top">AUDIO / 001</div><div class="hero-tag tag-bottom">LISTEN DIFFERENTLY</div></div>
+          <div class="hero-side-label">S O N A R A&nbsp; / &nbsp; S O U N D&nbsp; S Y S T E M</div>
+        </div>
+        <div class="section-heading"><div><div class="eyebrow">YOUR WORKSPACE</div><h2>Pick up where you left off</h2></div><span class="muted-label">QUICK ACCESS</span></div>
+        <div class="quick-grid">
+          <button class="quick-card quick-studio" data-page="studio"><div class="quick-icon">▦</div><div class="quick-card-label">CREATE</div><h3>Studio / DAW</h3><p>Susun audio, atur tempo, rekam ide, dan export mix.</p><span class="card-arrow">↗</span><div class="mini-timeline"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></button>
+          <button class="quick-card quick-discover" data-page="discover"><div class="quick-icon">⌕</div><div class="quick-card-label">DISCOVER</div><h3>Music Hub</h3><p>Temukan preview dan putar link musik dari berbagai layanan.</p><span class="card-arrow">↗</span><div class="platform-orbs"><b>YT</b><b>Sp</b><b>Sc</b><b>AM</b><b>De</b></div></button>
+          <button class="quick-card quick-library" data-page="library"><div class="quick-icon">♫</div><div class="quick-card-label">COLLECT</div><h3>Local Library</h3><p>Putar file audio lokal dan bawa file yang sama ke dalam DAW.</p><span class="card-arrow">↗</span><div class="library-art-stack"><span></span><span></span><span></span></div></button>
+        </div>
+        <div class="section-heading compact-heading"><div><div class="eyebrow">RECENT AUDIO</div><h2>Recently added</h2></div><button class="text-button" data-page="library">View library <span>→</span></button></div>
+        <div class="recent-list" id="homeRecent"><div class="empty-state small-empty"><span class="empty-note">♫</span><div><strong>Your music starts here</strong><p>Import file audio untuk mulai mengisi library.</p></div><button class="outline-button" id="emptyImport">Import audio</button></div></div>
+      </section>
+
+      <section class="page" id="page-discover">
+        <div class="page-title-row"><div><div class="eyebrow">MUSIC DISCOVERY</div><h1>Music <span>Hub</span></h1><p class="subheading">Pilih platform, tempel link playlist yang bisa dibagikan, lalu putar langsung di dalam EUPHONIA tanpa berpindah tab.</p></div><div class="hub-mark">◎</div></div>
+        <div class="search-panel"><span class="search-large-icon">⌕</span><input id="hubSearch" placeholder="Coba: Frank Ocean, chill beats, shoegaze..." autocomplete="off" /><button class="primary-button" id="searchAll">Search in EUPHONIA <span>⌕</span></button><div class="search-hint">Pencarian dan pemutar tetap di EUPHONIA. Layanan yang belum mendukung pencarian tertanam akan meminta link share playlist.</div></div>
+        <div class="hub-provider-tools">
+          <div class="hub-provider-row">
+            <div class="hub-provider-summary"><span class="hub-live-dot"></span><div><strong id="hubProviderTitle">Music catalog search</strong><small id="hubProviderSubtitle">Cari katalog lagu dan dengarkan preview langsung di EUPHONIA.</small></div></div>
+            <button class="outline-button hub-key-button" id="hubApiSettings" type="button">⚙ YouTube API</button>
+          </div>
+          <div class="hub-api-panel" id="youtubeApiPanel" hidden>
+            <div class="hub-api-copy"><strong>Aktifkan pencarian YouTube</strong><p>Gunakan YouTube Data API v3. Buat API key di Google Cloud, aktifkan API tersebut, lalu batasi key berdasarkan HTTP referrer dan API yang diizinkan. Key disimpan hanya di browser ini.</p></div>
+            <div class="hub-api-controls"><input id="youtubeApiKeyInput" type="password" autocomplete="off" placeholder="Masukkan YouTube Data API key" aria-label="YouTube Data API key"><button class="primary-button" id="saveYoutubeApiKey" type="button">Simpan key</button><button class="outline-button" id="clearYoutubeApiKey" type="button">Hapus</button></div>
+          </div>
+          <form class="hub-link-form" id="embedLinkForm">
+            <div class="hub-link-heading"><strong>Playlist kamu di EUPHONIA</strong><small>Tempel tautan Share dari playlist/album publik atau link embed resmi. Link akan disimpan di browser ini untuk tombol platform yang dipilih.</small></div>
+            <div class="hub-link-controls"><input id="embedLinkInput" type="url" inputmode="url" autocomplete="url" placeholder="Tempel link Share playlist / album…" aria-label="Link playlist atau media untuk diputar"><button class="primary-button" type="submit">Putar di EUPHONIA <span>▶</span></button></div><div class="hub-saved-link-row"><span id="savedPlaylistNote">Pilih platform lalu tempel link playlist.</span><button class="text-button" id="clearSavedPlaylist" type="button">Hapus link tersimpan</button></div>
+          </form>
+          <div class="hub-status" id="hubStatus" role="status" aria-live="polite"><span class="hub-status-icon">i</span><span>Cari lagu untuk mendapatkan preview, atau tempel link media untuk membuka pemutar resmi di panel ini. EUPHONIA tidak membuka tab baru otomatis.</span></div>
+        </div>
+        <section class="hub-results-section" id="hubResultsSection" hidden aria-live="polite">
+          <div class="hub-results-heading"><div><div class="eyebrow">SEARCH RESULTS</div><h2 id="hubResultsTitle">Results</h2></div><span class="count-label" id="hubResultsCount"></span></div>
+          <div class="hub-result-grid" id="musicResults"></div>
+        </section>
+        <section class="hub-preview-panel" id="hubPreviewPanel" hidden>
+          <div class="hub-preview-art">♫</div><div class="hub-preview-meta"><strong id="hubPreviewTitle">Track preview</strong><span id="hubPreviewSubtitle">Apple Music preview</span><audio id="hubPreviewAudio" controls preload="none"></audio></div>
+          <button class="viewer-tool" id="hubPreviewStop" type="button">■ Stop</button>
+        </section>
+        <div class="platform-header"><div><h2>Play a playlist here</h2><p class="muted-copy">Klik platform untuk memutar link yang tersimpan, atau memilih layanan lalu menempel link Share playlist. Tidak ada tab baru yang dibuka.</p></div><span class="count-label">06 SERVICES</span></div>
+        <div class="platform-grid">
+          <a class="platform-card yt" data-platform="youtube" href="#platformViewer" aria-label="Pilih YouTube Music"><span class="platform-logo">▶</span><span class="platform-text"><strong>YouTube Music</strong><small>Playlist & library</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+          <a class="platform-card spotify" data-platform="spotify" href="#platformViewer" aria-label="Pilih Spotify"><span class="platform-logo">≋</span><span class="platform-text"><strong>Spotify</strong><small>Your saved playlists</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+          <a class="platform-card apple" data-platform="apple" href="#platformViewer" aria-label="Pilih Apple Music"><span class="platform-logo">♫</span><span class="platform-text"><strong>Apple Music</strong><small>Your music library</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+          <a class="platform-card soundcloud" data-platform="soundcloud" href="#platformViewer" aria-label="Pilih SoundCloud"><span class="platform-logo">☁</span><span class="platform-text"><strong>SoundCloud</strong><small>Your playlists & sets</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+          <a class="platform-card deezer" data-platform="deezer" href="#platformViewer" aria-label="Pilih Deezer"><span class="platform-logo">▥</span><span class="platform-text"><strong>Deezer</strong><small>Your playlists</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+          <a class="platform-card bandcamp" data-platform="bandcamp" href="#platformViewer" aria-label="Pilih Bandcamp"><span class="platform-logo">b</span><span class="platform-text"><strong>Bandcamp</strong><small>Your collection & owned music</small></span><span class="external-arrow">▶</span><span class="platform-action">PLAY IN EUPHONIA</span></a>
+        </div>
+        <section class="platform-viewer" id="platformViewer" aria-label="Platform musik tertanam" hidden>
+          <div class="viewer-toolbar">
+            <div class="viewer-service-mark" id="viewerServiceMark">◎</div>
+            <div class="viewer-heading"><strong id="platformViewerTitle">Music platform</strong><span id="platformViewerSubtitle">Dibuka di dalam EUPHONIA</span></div>
+            <div class="viewer-toolbar-actions">
+              <button class="viewer-tool" id="platformViewerReload" type="button" title="Muat ulang platform">↻ <span>Reload</span></button>
+              <button class="viewer-tool" id="platformViewerFullscreen" type="button" title="Layar penuh">⛶ <span>Fullscreen</span></button>
+              <button class="viewer-tool viewer-close" id="platformViewerClose" type="button" title="Tutup panel">× <span>Tutup</span></button>
+            </div>
+          </div>
+          <div class="viewer-frame-wrap" id="viewerFrameWrap">
+            <iframe id="platformFrame" title="Pemutar media resmi di EUPHONIA" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen></iframe>
+          </div>
+          <div class="viewer-footnote"><span class="viewer-footnote-icon">i</span><p><strong>Pemutar resmi di dalam EUPHONIA.</strong> Hanya URL embed dan media yang didukung yang dimuat di sini. Sebagian konten dapat menolak embed, membutuhkan login, atau membatasi playback menurut akun/wilayah. EUPHONIA tidak membuka tab baru otomatis dan tidak melewati DRM/paywall.</p></div>
+        </section>
+        <div class="info-banner"><span class="info-icon">i</span><p><strong>Playlist tetap di workspace.</strong> EUPHONIA memutar konten melalui embed resmi. Gunakan link Share yang dapat diakses oleh pemutar tertanam; playlist privat yang memerlukan sesi login top-level atau konten yang melarang embed bisa tidak tersedia. EUPHONIA tidak membuka tab baru atau melewati DRM/paywall.</p></div>
+        <div class="section-heading compact-heading"><div><div class="eyebrow">LOCAL PLAYBACK</div><h2>Keep your own files close</h2></div><button class="text-button" data-page="library">Open library <span>→</span></button></div>
+        <div class="local-promo"><div class="promo-icon">♫</div><div><strong>Play audio from your device</strong><p>WAV, MP3, OGG, AAC, M4A, FLAC (tergantung dukungan browser).</p></div><button class="outline-button" id="hubImport">＋ Import files</button></div>
+      </section>
+
+      <section class="page" id="page-library">
+        <div class="page-title-row"><div><div class="eyebrow">YOUR COLLECTION</div><h1>Local <span>Library</span></h1><p class="subheading">Koleksi audio dari perangkatmu, siap didengarkan atau dipakai di studio.</p></div><button class="primary-button" id="libraryImport">＋ Import audio</button></div>
+        <div class="library-toolbar"><div class="library-tabs"><button class="library-tab active" data-library-filter="all">All audio</button><button class="library-tab" data-library-filter="recent">Recently added</button></div><div class="library-stats"><span id="trackCountLabel">0 tracks</span><span class="stat-separator">·</span><span>Local files only</span></div></div>
+        <div class="track-table-wrap"><table class="track-table"><thead><tr><th class="track-num">#</th><th>TITLE</th><th>FORMAT</th><th>SIZE</th><th>ADDED</th><th></th></tr></thead><tbody id="libraryRows"><tr><td colspan="6"><div class="empty-state"><span class="empty-note">♫</span><strong>No audio imported yet</strong><p>Tambah file audio dari perangkat untuk mulai mendengarkan.</p><button class="primary-button" id="libraryEmptyImport">Import audio</button></div></td></tr></tbody></table></div>
+      </section>
+
+      <section class="page page-studio" id="page-studio">
+        <div class="studio-topline"><div><div class="eyebrow"><span class="status-dot"></span> EUPHONIA CREATIVE SUITE</div><h1>Studio <span>/ DAW</span></h1><p class="subheading">A compact audio workspace for sketches, loops, and ideas.</p></div><div class="studio-top-actions"><span class="unsaved-indicator" id="autosaveStatus" data-state="saved"><i></i> <span id="autosaveStatusText">LOCAL WORKSPACE</span></span><button class="outline-button" id="loadProjectBtn">Open project</button><button class="outline-button" id="saveProjectBtn">Save project</button><button class="primary-button" id="exportMixBtn">⇩ Export WAV</button></div></div>
+        <div class="daw-shell">
+          <div class="daw-toolbar">
+            <div class="transport-group"><button class="transport-btn" id="dawStop" title="Stop">■</button><button class="transport-btn play-transport" id="dawPlay" title="Play / pause">▶</button><button class="transport-btn record-transport" id="dawRecord" title="Record microphone">●</button><span class="transport-divider"></span><span class="time-display" id="timeDisplay">00:00:00</span></div>
+            <div class="tempo-controls"><label><span>BPM</span><input type="number" id="bpmInput" min="40" max="240" value="118" /></label><label><span>KEY</span><select id="keySelect"><option>A min</option><option>C maj</option><option>D min</option><option>E min</option><option>G maj</option><option>F min</option></select></label><label><span>GRID</span><select id="gridSelect"><option value="1">1 bar</option><option value="0.5">1/2 bar</option><option value="0.25">1/4 note</option><option value="0.125">1/8 note</option><option value="0.0625" selected>1/16 note</option><option value="0.0833333333">1/8 triplet</option><option value="0.0416666667">1/16 triplet</option><option value="0">Off</option></select></label></div>
+            <div class="daw-tools"><button class="tool-button active" title="Select tool" data-tool="select" aria-pressed="true">↖ <span>Select</span></button><button class="tool-button" title="Draw tool: click timeline to place the current library audio" data-tool="draw" aria-pressed="false">╱ <span>Draw</span></button><button class="tool-button" id="dawUndo" title="Undo arrangement (Ctrl+Z)" disabled>↶ <span>Undo</span></button><button class="tool-button" id="dawRedo" title="Redo arrangement (Ctrl+Shift+Z)" disabled>↷ <span>Redo</span></button><button class="tool-button" id="splitClipBtn" title="Split selected clip at playhead">✂ <span>Split</span></button><button class="tool-button" id="duplicateClipBtn" title="Duplicate selected clip">⧉ <span>Duplicate</span></button><button class="tool-button" id="deleteClipBtn" title="Delete selected clip">× <span>Delete</span></button><button class="tool-button" id="addTrackBtn">＋ <span>Add track</span></button><button class="tool-button" id="dawImportBtn">⇧ <span>Import</span></button></div>
+          </div>
+          <div class="daw-statusbar"><div><span class="status-led"></span><span id="dawStatusText">Ready — import audio or record an idea</span></div><div class="status-right"><span>44.1 / 48 kHz • Web Audio</span><span class="status-divider">|</span><span id="projectDuration">00:00</span></div></div>
+          <div class="daw-module-tabs" role="tablist" aria-label="DAW workspaces">
+            <button class="daw-module-tab active" role="tab" aria-selected="true" data-daw-view="arrangement">▥ <span>Arrangement</span></button>
+            <button class="daw-module-tab" role="tab" aria-selected="false" data-daw-view="piano">▦ <span>Piano Roll</span></button>
+            <button class="daw-module-tab" role="tab" aria-selected="false" data-daw-view="drums">▤ <span>Drum Sequencer</span></button>
+            <button class="daw-module-tab" role="tab" aria-selected="false" data-daw-view="mixer">⌁ <span>Mixer / FX</span></button>
+          </div>
+          <div class="arrangement-wrap" id="arrangementView">
+            <div class="timeline-ruler-row"><div class="track-header-spacer"><span>TRACKS <small id="dawTrackCount">0</small></span><button id="rulerZoomOut" title="Zoom out">−</button><button id="rulerZoomIn" title="Zoom in">＋</button></div><div class="ruler-scroll" id="rulerScroll"><div class="timeline-ruler" id="timelineRuler"></div></div></div>
+            <div class="arrangement-body" id="arrangementBody"><div class="track-header-column" id="trackHeaders"><div class="no-tracks"><span>♫</span><strong>Start with a track</strong><small>Import an audio file or record a take.</small><button class="outline-button" id="firstTrackImport">Import audio</button></div></div><div class="timeline-scroll" id="timelineScroll"><div class="timeline-canvas" id="timelineCanvas"><div class="timeline-grid" id="timelineGrid"></div><div class="playhead" id="playhead"><span></span></div><div class="timeline-empty" id="timelineEmpty"><div class="empty-wave">〰</div><strong>Your arrangement starts here</strong><p>Import audio to create clips, then press play.</p><button class="primary-button" id="timelineImport">＋ Add audio clip</button></div></div></div></div>
+          </div>
+          <div class="advanced-daw-view" id="advancedDawView" hidden>
+            <section class="daw-module" data-module-panel="piano" hidden>
+              <div class="module-heading"><div><div class="eyebrow">NOTE EDITOR / MIDI</div><h2>Piano <span>Roll</span></h2><p>Gambar not, pilih instrumen, lalu render pattern menjadi clip audio yang bisa dicampur bersama track lain.</p></div><span class="module-chip">MIDI SEQUENCER</span></div>
+              <div class="module-control-row">
+                <label>INSTRUMENT<select id="pianoInstrument"><option value="keys">Soft Keys</option><option value="piano">Classic Piano</option><option value="pluck">Pluck</option><option value="pad">Warm Pad</option><option value="bass">Mono Bass</option><option value="organ">Organ</option></select></label>
+                <label>RANGE<select id="pianoRange"><option value="3">C3 – B4</option><option value="2">C2 – B3</option><option value="4">C4 – B5</option></select></label>
+                <label>LENGTH<select id="pianoBars"><option value="1">1 bar</option><option value="2">2 bars</option><option value="4" selected>4 bars</option><option value="8">8 bars</option></select></label>
+                <label>NOTE SIZE<select id="pianoNoteLength"><option value="1">1/16</option><option value="2" selected>1/8</option><option value="4">1/4</option><option value="8">1/2</option></select></label>
+                <label class="velocity-control">VELOCITY <input id="pianoVelocity" type="range" min="20" max="127" value="96"><output id="pianoVelocityValue">96</output></label>
+              </div>
+              <div class="piano-roll-tools"><span><i class="legend-dot"></i> Click grid cells to add/remove notes · C notes are labelled</span><div><button class="outline-button" id="pianoClear">Clear notes</button><button class="outline-button" id="pianoPlay">▶ Preview</button><button class="outline-button" id="pianoStop">■ Stop</button><button class="outline-button" id="pianoExportMidi">⇩ Export MIDI</button><button class="primary-button" id="pianoRender">⇩ Render to track</button></div></div>
+              <div class="piano-roll-shell"><div class="piano-key-column" id="pianoKeys" aria-hidden="true"></div><div class="piano-grid-scroll"><div class="piano-roll-grid" id="pianoGrid" role="grid" aria-label="Piano roll note grid"></div></div></div>
+              <div class="module-footer"><span id="pianoNoteCount">0 notes</span><span>Tempo follows the DAW BPM control · Pattern stays editable until rendered.</span></div>
+            </section>
+
+            <section class="daw-module" data-module-panel="drums" hidden>
+              <div class="module-heading"><div><div class="eyebrow">RHYTHM DESIGN</div><h2>Drum <span>Sequencer</span></h2><p>Bangun beat 16-step dengan kick, snare, hi-hat, clap, dan perkusi. Pattern bisa diloop saat preview atau dirender ke arrangement.</p></div><span class="module-chip">16-STEP GRID</span></div>
+              <div class="drum-toolbar"><div class="drum-pattern-meta"><span class="live-dot"></span><strong>Beat Pattern 01</strong><small id="drumTempoLabel">118 BPM · 1 bar</small></div><label>BARS TO RENDER<select id="drumBars"><option value="1">1 bar</option><option value="2">2 bars</option><option value="4" selected>4 bars</option><option value="8">8 bars</option></select></label><div class="drum-actions"><button class="outline-button" id="drumClear">Clear</button><button class="outline-button" id="drumPlay">▶ Play loop</button><button class="outline-button" id="drumStop">■ Stop</button><button class="primary-button" id="drumRender">⇩ Render to track</button></div></div>
+              <div class="drum-grid-wrap"><div class="drum-grid-header"><span>INSTRUMENT</span><div id="drumStepNumbers"></div></div><div id="drumGrid" class="drum-grid"></div></div>
+              <div class="drum-legend"><span><i class="kick"></i> Kick</span><span><i class="snare"></i> Snare</span><span><i class="hat"></i> Hats</span><span><i class="perc"></i> Percussion</span><small>Rows can be played together; pattern follows project tempo.</small></div>
+            </section>
+
+            <section class="daw-module" data-module-panel="mixer" hidden>
+              <div class="module-heading"><div><div class="eyebrow">LEVELS / MASTERING</div><h2>Mixing <span>Desk</span></h2><p>Seimbangkan level dan posisi stereo tiap track. Efek master bekerja saat preview arrangement dan saat export mix.</p></div><span class="module-chip">MASTER BUS</span></div>
+              <div class="mixer-layout"><div class="master-rack"><div class="rack-title"><span>MASTER</span><i></i></div>
+                <label class="mixer-range-row"><span>Master level</span><output id="masterVolumeValue">82%</output><input id="masterVolume" type="range" min="0" max="100" value="82"></label>
+                <label class="mixer-range-row"><span>Low-pass tone</span><output id="masterCutoffValue">20 kHz</output><input id="masterCutoff" type="range" min="250" max="20000" step="50" value="20000"></label>
+                <div class="rack-divider"></div>
+                <label class="mixer-range-row"><span>Delay mix</span><output id="masterDelayValue">0%</output><input id="masterDelay" type="range" min="0" max="65" value="0"></label>
+                <label class="mixer-range-row"><span>Delay time</span><output id="masterDelayTimeValue">280 ms</output><input id="masterDelayTime" type="range" min="50" max="800" step="10" value="280"></label>
+                <label class="mixer-range-row"><span>Reverb mix</span><output id="masterReverbValue">0%</output><input id="masterReverb" type="range" min="0" max="65" value="0"></label>
+                <label class="mixer-range-row"><span>Compressor</span><output id="masterCompValue">25%</output><input id="masterComp" type="range" min="0" max="100" value="25"></label>
+                <div class="rack-divider"></div><div class="automation-title"><div><strong>Master volume automation</strong><small>Linear fade across the arrangement.</small></div><label class="switch"><input id="masterAutomationEnabled" type="checkbox"><span></span></label></div>
+                <label class="mixer-range-row"><span>Start level</span><output id="automationStartValue">82%</output><input id="automationStart" type="range" min="0" max="100" value="82"></label>
+                <label class="mixer-range-row"><span>End level</span><output id="automationEndValue">82%</output><input id="automationEnd" type="range" min="0" max="100" value="82"></label>
+                <div class="master-note"><span>✦</span><p>Efek berjalan real-time untuk playback. Export WAV merender efek menggunakan Web Audio API browser.</p></div>
+              </div><div class="mixer-tracks-panel"><div class="rack-title"><span>TRACK CHANNELS</span><small id="mixerTrackCount">0 CHANNELS</small></div><div id="mixerTracks" class="mixer-track-list"><div class="empty-mixer">Tambahkan audio, MIDI, atau drum pattern untuk membuat channel.</div></div></div></div>
+            </section>
+          </div>
+          <div class="daw-bottom-bar"><div class="bottom-left"><span class="bottom-dot"></span><span id="bottomHint">Tip: import audio, create MIDI notes, or build a beat.</span></div><div class="bottom-right"><button class="text-button small-text-button" id="clearSessionBtn">Clear session</button><span class="bottom-divider">|</span><span>EUPHONIA STUDIO <b>v0.3.3</b></span></div></div>
+        </div>
+        <div class="studio-note"><span>✦</span><p><strong>Browser DAW workspace.</strong> Multitrack audio, MIDI-style piano roll, drum sequencing, track panning, master effects, fade automation, project packaging, and WAV/MIDI export are available. It still does not host VST/AU plugins or provide professional-grade latency compensation and external MIDI hardware support.</p></div>
+      </section>
+    </main>
+  </div>
+
+  <footer class="player-bar" id="playerBar">
+    <div class="now-playing"><div class="album-thumb" id="playerArtwork"><span>♫</span></div><div class="now-playing-meta"><strong id="playerTitle">Nothing playing</strong><span id="playerArtist">Import audio to begin</span></div><button class="player-heart" id="playerFav" title="Favorite">♡</button></div>
+    <div class="player-center"><div class="player-controls"><button id="prevTrack" title="Previous track">|◀</button><button class="main-play" id="playerToggle" title="Play / pause">▶</button><button id="nextTrack" title="Next track">▶|</button></div><div class="player-progress"><span id="playerCurrentTime">0:00</span><input type="range" id="playerSeek" min="0" max="1000" value="0" aria-label="Seek"><span id="playerTotalTime">0:00</span></div></div>
+    <div class="player-extra"><button class="player-extra-btn" id="sendToDaw" title="Send current track to DAW">▦</button><span class="volume-icon">◖</span><input type="range" id="playerVolume" min="0" max="100" value="75" aria-label="Volume"><button class="player-extra-btn" id="playerQueue" title="Queue">☷</button></div>
+    <audio id="audioPlayer" preload="metadata"></audio>
+  </footer>
+  <input type="file" id="audioFilesInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.aiff" multiple hidden />
+  <input type="file" id="singleAudioInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac,.aiff" hidden />
+  <input type="file" id="projectFileInput" accept=".json,.euphonia.json,application/json" hidden />
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+  <div class="modal-backdrop" id="modalBackdrop" hidden><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><button class="modal-close" id="modalClose" aria-label="Close">×</button><div class="modal-symbol">◈</div><h2 id="modalTitle">Save session</h2><p id="modalMessage">Save the arrangement metadata as a JSON file on your device.</p><div class="modal-actions"><button class="outline-button" id="modalCancel">Cancel</button><button class="primary-button" id="modalConfirm">Save JSON</button></div></div></div>
+  <script src="euphonia-storage.js"></script>
+  <script src="app.js"></script>
+  <script src="euphonia-daw.js"></script>
+</body>
+</html>
