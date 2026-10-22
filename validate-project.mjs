@@ -9,7 +9,7 @@ const warnings = [];
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const exists = name => fs.existsSync(path.join(root, name));
 
-for (const file of ['index.html', 'styles.css', 'app.js', 'euphonia-config.js', 'music-accounts.js', 'musicfy-features.js', 'euphonia-daw.js', 'euphonia-storage.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png']) {
+for (const file of ['index.html', 'styles.css', 'app.js', 'euphonia-config.js', 'music-accounts.js', 'musicfy-features.js', 'music-discovery.js', 'euphonia-daw.js', 'euphonia-storage.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png']) {
   if (!exists(file)) errors.push(`Missing required file: ${file}`);
 }
 
@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0349/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0350/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
@@ -57,6 +57,12 @@ if (!appConfig.includes('googleOAuthClientId')) errors.push('Google OAuth Web Cl
 if (appConfig.includes('YOUR_GOOGLE_OAUTH_WEB_CLIENT_ID')) warnings.push('Google login stays disabled until the app maintainer adds its Web Client ID to euphonia-config.js. End users will not need to enter this value.');
 if (!sw.includes("'./music-accounts.js'")) errors.push('Service worker does not cache the account playlist integration module.');
 if (!sw.includes("'./musicfy-features.js'")) errors.push('Service worker does not cache the Musicfy-style player enhancement module.');
+if (!sw.includes("'./music-discovery.js'")) errors.push('Service worker does not cache artist discovery.');
+if (!html.includes('music-discovery.js')) errors.push('Artist discovery module is not included in index.html.');
+const discovery = exists('music-discovery.js') ? read('music-discovery.js') : '';
+for (const marker of ['https://www.googleapis.com/youtube/v3/search', 'https://itunes.apple.com/search', 'videoEmbeddable', 'playQueue', 'playApplePreview', 'CACHE_TTL']) if (!discovery.includes(marker)) errors.push('Artist discovery integration is missing: ' + marker);
+for (const id of ['musicDiscoveryForm', 'musicDiscoveryQuery', 'musicDiscoverySource', 'musicDiscoveryStatus', 'musicDiscoveryResults', 'musicDiscoveryResultsPanel']) if (!idSet.has(id)) errors.push('Artist discovery UI missing from HTML: #' + id);
+if (!appConfig.includes('youtubeDataApiKey')) errors.push('Public YouTube catalog search key setting is missing from app config.');
 if (!html.includes('musicfy-features.js')) errors.push('Musicfy-style player enhancement module is not included in index.html.');
 const musicfy = exists('musicfy-features.js') ? read('musicfy-features.js') : '';
 for (const marker of ['euphonia:account-track-change', 'euphonia:account-playback-started', 'LRCLIB', 'listeningHistory.v1', 'favorites.v1', 'accountQueueItems', 'AbortController', 'Retry-After', 'setActionHandler', 'setPositionState']) if (!musicfy.includes(marker)) errors.push('Musicfy-style player feature marker is missing: ' + marker);
@@ -103,7 +109,7 @@ if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.')
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
 console.log(`EUPHONIA account playlists + one-click Google setup static validation`);
-console.log(`HTML ids: ${idSet.size}; core scripts checked: 7; manifest and local references checked.`);
+console.log(`HTML ids: ${idSet.size}; core scripts checked: 8; manifest and local references checked.`);
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 if (errors.length) {
   for (const error of errors) console.error(`FAIL: ${error}`);
