@@ -440,7 +440,7 @@
     writePlaylistCache();
     renderProviderStates();
     renderPlaylistGrid();
-    setStatus("Sinkronisasi YouTube selesai: " + collected.length + " playlist terbaca. EUPHONIA menampilkan metadata; pemutaran tetap melalui layanan YouTube resmi.", "success");
+    setStatus("Sinkronisasi YouTube selesai: " + collected.length + " playlist terbaca. EUPHONIA hanya menampilkan metadata; pilih Find audio preview untuk mencari preview audio tanpa memutar video.", "success");
     if (pendingYoutubePlaylistId) {
       const id = pendingYoutubePlaylistId;
       pendingYoutubePlaylistId = null;
