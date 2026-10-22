@@ -6,10 +6,10 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="theme-color" content="#101113" />
+  <meta name="theme-color" content="#09080d" />
   <meta name="color-scheme" content="dark" />
-  <meta name="description" content="EUPHONIA — Music Hub dan mini DAW dalam satu workspace." />
-  <title>EUPHONIA — Music Hub & Studio</title>
+  <meta name="description" content="EUPHONIA — Temukan musik, simpan favorit, dan ciptakan audio dalam satu workspace." />
+  <title>EUPHONIA — Your Music Universe</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
@@ -55,24 +55,110 @@
         </div>
       </header>
 
-      <section class="page active" id="page-home">
-        <div class="welcome-row">
-          <div><div class="eyebrow"><span class="status-dot"></span> YOUR SOUND, ONE WORKSPACE</div><h1>Good music. <span>Better workflow.</span></h1><p class="subheading">Temukan musik dari platform favorit, kelola koleksi lokal, lalu bawa ide ke studio.</p></div>
-          <button class="primary-button" data-page="studio"><span>＋</span> Open Studio</button>
+            <section class="page active stream-page" id="page-home">
+        <div class="streaming-home">
+          <div class="stream-intro">
+            <div class="stream-intro-copy">
+              <div class="stream-eyebrow"><span class="stream-live-dot"></span> YOUR NEXT FAVORITE IS HERE</div>
+              <h1>A world of music.<br><em>One place to press play.</em></h1>
+              <p>Jelajahi lagu berdasarkan suasana, temukan musik baru, lalu simpan favoritmu dalam satu workspace.</p>
+            </div>
+            <div class="stream-shortcuts" aria-label="Browse music by style">
+              <button type="button" data-home-search="alternative r&b">Alternative R&amp;B</button>
+              <button type="button" data-home-search="melodic rap">Melodic rap</button>
+              <button type="button" data-home-search="indie pop">Indie pop</button>
+              <button type="button" data-home-search="chill electronic">Electronic</button>
+            </div>
+          </div>
+
+          <section class="stream-hero" aria-label="Featured music">
+            <div class="stream-hero-art" id="streamHeroArt" aria-hidden="true"></div>
+            <div class="stream-hero-shade" aria-hidden="true"></div>
+            <div class="stream-hero-copy">
+              <div class="stream-hero-label"><span><i></i> FEATURED LISTEN</span><span>EUPHONIA SELECTS</span></div>
+              <h2 id="homeFeaturedTitle">Midnight Stories</h2>
+              <div class="stream-hero-meta" id="homeFeaturedMeta">Alternative R&amp;B · Melodic rap · Late night</div>
+              <p id="homeFeaturedDesc">A soundtrack for the ride home, the long nights, and everything in between.</p>
+              <div class="stream-hero-actions">
+                <button class="stream-play-button" id="homeFeaturedPlay" type="button"><span>▶</span> Play preview</button>
+                <button class="stream-list-button" id="homeFeaturedSave" type="button"><span>＋</span> My List</button>
+              </div>
+              <div class="stream-preview-note"><span>♫</span> Preview playback · full tracks depend on the connected source</div>
+            </div>
+            <div class="stream-hero-index" aria-hidden="true"><span>01</span><i></i><i></i><i></i></div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="continueTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">PICK UP WHERE YOU LEFT OFF</span><h2 id="continueTitle">Continue listening <span>›</span></h2></div>
+              <div class="stream-heading-actions"><span class="stream-muted-count" id="homeLocalCount">YOUR LIBRARY</span><button class="stream-text-link" type="button" data-page="library">Open library <span>→</span></button></div>
+            </div>
+            <div class="stream-rail stream-local-rail" id="homeRecent">
+              <div class="stream-shelf-loading"><span class="stream-loading-dot"></span> Your local tracks will appear here.</div>
+            </div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="myListTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">SAVED FOR LATER</span><h2 id="myListTitle">My List <span>›</span></h2></div>
+              <span class="stream-muted-count">YOUR PERSONAL COLLECTION</span>
+            </div>
+            <div class="stream-rail" id="homeSavedRail">
+              <div class="stream-shelf-empty"><strong>Your list starts here.</strong><span>Tap + on any track to keep it close.</span></div>
+            </div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="freshTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">A LITTLE SOMETHING NEW</span><h2 id="freshTitle">Fresh finds <span>›</span></h2><p>Track previews from the Apple Music/iTunes catalog.</p></div>
+              <button class="stream-text-link" type="button" data-home-search="top hits pop">Explore more <span>→</span></button>
+            </div>
+            <div class="stream-rail" id="homeFreshRail"><div class="stream-shelf-loading"><span class="stream-loading-dot"></span> Finding something good…</div></div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="rnbTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">AFTER HOURS</span><h2 id="rnbTitle">Alternative R&amp;B essentials <span>›</span></h2><p>Warm vocals, late-night colors, and slow-burning tracks.</p></div>
+              <button class="stream-text-link" type="button" data-home-search="alternative r&b">See all <span>→</span></button>
+            </div>
+            <div class="stream-rail" id="homeRnbRail"><div class="stream-shelf-loading"><span class="stream-loading-dot"></span> Curating the mood…</div></div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="rapTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">FEEL IT ALL</span><h2 id="rapTitle">Melodic rap &amp; emo <span>›</span></h2><p>For the late drives, heavy thoughts, and songs on repeat.</p></div>
+              <button class="stream-text-link" type="button" data-home-search="melodic rap">See all <span>→</span></button>
+            </div>
+            <div class="stream-rail" id="homeRapRail"><div class="stream-shelf-loading"><span class="stream-loading-dot"></span> Finding your next repeat…</div></div>
+          </section>
+
+          <section class="stream-section stream-mood-section" aria-labelledby="moodTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">WHAT'S YOUR HEADSPACE?</span><h2 id="moodTitle">Choose your mood <span>›</span></h2><p>Pick a feeling. EUPHONIA will search the music catalog for it.</p></div>
+            </div>
+            <div class="stream-mood-grid">
+              <button class="stream-mood-card mood-night" type="button" data-home-search="late night r&b"><span>01 / UNWIND</span><strong>Late Night</strong><i>↗</i></button>
+              <button class="stream-mood-card mood-focus" type="button" data-home-search="ambient focus music"><span>02 / LOCK IN</span><strong>Focus Mode</strong><i>↗</i></button>
+              <button class="stream-mood-card mood-heart" type="button" data-home-search="heartbreak alternative"><span>03 / FEEL IT</span><strong>Heartbreak</strong><i>↗</i></button>
+              <button class="stream-mood-card mood-drive" type="button" data-home-search="indie driving music"><span>04 / KEEP MOVING</span><strong>Night Drive</strong><i>↗</i></button>
+              <button class="stream-mood-card mood-energy" type="button" data-home-search="upbeat electronic dance"><span>05 / TURN IT UP</span><strong>Energy</strong><i>↗</i></button>
+            </div>
+          </section>
+
+          <section class="stream-section" aria-labelledby="indieTitle">
+            <div class="stream-section-heading">
+              <div><span class="stream-section-kicker">SOUNDTRACK FOR THE RIDE</span><h2 id="indieTitle">Indie, for the ride <span>›</span></h2><p>New discoveries for commutes, walks, and long trips.</p></div>
+              <button class="stream-text-link" type="button" data-home-search="indie pop">See all <span>→</span></button>
+            </div>
+            <div class="stream-rail" id="homeIndieRail"><div class="stream-shelf-loading"><span class="stream-loading-dot"></span> Loading the next chapter…</div></div>
+          </section>
+
+          <section class="stream-bottom-cta">
+            <div><span class="stream-section-kicker">MORE THAN LISTENING</span><h2>Found a sound. Make something.</h2><p>Bring your own audio into the EUPHONIA Studio and build an idea around it.</p></div>
+            <button type="button" class="stream-play-button" data-page="studio"><span>▦</span> Open Studio</button>
+          </section>
+          <p class="stream-disclaimer">Catalog discovery uses the public iTunes Search API and plays preview URLs when available. Streaming subscriptions, private playlists, and third-party embed availability remain controlled by each provider.</p>
         </div>
-        <div class="hero-panel">
-          <div class="hero-content"><div class="hero-kicker">EUPHONIA MUSIC HUB <span>01 / 03</span></div><h2>Semua inspirasi.<br /><em>Satu tempat.</em></h2><p>Temukan rilisan dan jelajahi platform musik pilihanmu tanpa meninggalkan workspace EUPHONIA.</p><button class="light-button" data-page="discover">Explore music <span>↗</span></button></div>
-          <div class="hero-art" aria-hidden="true"><div class="orb orb-one"></div><div class="orb orb-two"></div><div class="disc"><div class="disc-grooves"></div><div class="disc-center"><span>E</span></div></div><div class="hero-wave wave-a"></div><div class="hero-wave wave-b"></div><div class="hero-tag tag-top">AUDIO / 001</div><div class="hero-tag tag-bottom">LISTEN DIFFERENTLY</div></div>
-          <div class="hero-side-label">S O N A R A&nbsp; / &nbsp; S O U N D&nbsp; S Y S T E M</div>
-        </div>
-        <div class="section-heading"><div><div class="eyebrow">YOUR WORKSPACE</div><h2>Pick up where you left off</h2></div><span class="muted-label">QUICK ACCESS</span></div>
-        <div class="quick-grid">
-          <button class="quick-card quick-studio" data-page="studio"><div class="quick-icon">▦</div><div class="quick-card-label">CREATE</div><h3>Studio / DAW</h3><p>Susun audio, atur tempo, rekam ide, dan export mix.</p><span class="card-arrow">↗</span><div class="mini-timeline"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></button>
-          <button class="quick-card quick-discover" data-page="discover"><div class="quick-icon">⌕</div><div class="quick-card-label">DISCOVER</div><h3>Music Hub</h3><p>Temukan preview dan putar link musik dari berbagai layanan.</p><span class="card-arrow">↗</span><div class="platform-orbs"><b>YT</b><b>Sp</b><b>Sc</b><b>AM</b><b>De</b></div></button>
-          <button class="quick-card quick-library" data-page="library"><div class="quick-icon">♫</div><div class="quick-card-label">COLLECT</div><h3>Local Library</h3><p>Putar file audio lokal dan bawa file yang sama ke dalam DAW.</p><span class="card-arrow">↗</span><div class="library-art-stack"><span></span><span></span><span></span></div></button>
-        </div>
-        <div class="section-heading compact-heading"><div><div class="eyebrow">RECENT AUDIO</div><h2>Recently added</h2></div><button class="text-button" data-page="library">View library <span>→</span></button></div>
-        <div class="recent-list" id="homeRecent"><div class="empty-state small-empty"><span class="empty-note">♫</span><div><strong>Your music starts here</strong><p>Import file audio untuk mulai mengisi library.</p></div><button class="outline-button" id="emptyImport">Import audio</button></div></div>
       </section>
 
       <section class="page" id="page-discover">
