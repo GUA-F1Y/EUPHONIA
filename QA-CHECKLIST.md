@@ -45,6 +45,7 @@ This is a manual checklist. Check each item on the actual supported browser/devi
 - [ ] `node validate-project.mjs` passes with no missing asset/ID/syntax issue.
 - [ ] Open browser DevTools; no uncaught JavaScript errors on startup.
 - [ ] Service worker installs, activates the current cache version, and updates after a versioned deployment.
+- [ ] Simulate a failed fetch for one required core asset during a new Service Worker install; verify the partial new cache is removed and the previously active worker/version remains available.
 - [ ] PWA manifest loads and all icons return HTTP 200.
 
 ## Library and recovery
