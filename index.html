@@ -173,6 +173,28 @@
             <div class="hub-api-copy"><strong>Aktifkan pencarian YouTube</strong><p>Gunakan YouTube Data API v3. Buat API key di Google Cloud, aktifkan API tersebut, lalu batasi key berdasarkan HTTP referrer dan API yang diizinkan. Key disimpan hanya di browser ini.</p></div>
             <div class="hub-api-controls"><input id="youtubeApiKeyInput" type="password" autocomplete="off" placeholder="Masukkan YouTube Data API key" aria-label="YouTube Data API key"><button class="primary-button" id="saveYoutubeApiKey" type="button">Simpan key</button><button class="outline-button" id="clearYoutubeApiKey" type="button">Hapus</button></div>
           </div>
+
+          <section class="spotify-connect-panel" id="spotifyConnectPanel" hidden aria-label="Spotify account connection">
+            <div class="spotify-connect-head">
+              <div class="spotify-connect-identity"><span class="spotify-connect-mark">≋</span><div><strong id="spotifyAccountTitle">Connect Spotify</strong><small id="spotifyAccountStatus">Browse your own Spotify playlists inside EUPHONIA.</small></div></div>
+              <div class="spotify-connect-actions">
+                <button class="outline-button" id="spotifyConnectSettings" type="button">Setup</button>
+                <button class="primary-button" id="spotifyConnectButton" type="button">Connect account</button>
+                <button class="outline-button" id="spotifyDisconnectButton" type="button" hidden>Disconnect</button>
+              </div>
+            </div>
+            <div class="spotify-config-panel" id="spotifyClientConfigPanel" hidden>
+              <div class="spotify-config-copy"><strong>Connect using Spotify OAuth (PKCE)</strong><p>Paste your Spotify app's Client ID. EUPHONIA uses the browser-safe PKCE flow; a Client Secret is not needed or requested. In Spotify Developer Dashboard, register this exact Redirect URI before connecting.</p></div>
+              <div class="spotify-config-row"><label for="spotifyClientIdInput">SPOTIFY CLIENT ID</label><div><input id="spotifyClientIdInput" type="text" autocomplete="off" spellcheck="false" placeholder="Paste your Spotify Client ID"><button class="primary-button" id="spotifySaveClientId" type="button">Save Client ID</button></div></div>
+              <div class="spotify-redirect-row"><span>REDIRECT URI</span><code id="spotifyRedirectUri">Loading current app URL…</code><button class="text-button" id="spotifyCopyRedirect" type="button">Copy URI</button></div>
+            </div>
+            <div class="spotify-playlist-panel" id="spotifyPlaylistPanel" hidden>
+              <div class="spotify-playlist-heading"><div><strong>Your Spotify playlists</strong><small id="spotifyProfileSummary">Playlist access is requested only after you authorize EUPHONIA.</small></div><button class="outline-button" id="spotifyRefreshPlaylists" type="button">↻ Refresh</button></div>
+              <div class="spotify-playlist-grid" id="spotifyPlaylistGrid"></div>
+              <button class="outline-button spotify-load-more" id="spotifyLoadMore" type="button" hidden>Load more playlists</button>
+            </div>
+            <div class="spotify-account-notice" id="spotifyAccountNotice" role="status" aria-live="polite"><span>i</span><p>Spotify uses its official authorization flow. Full-track playback remains in Spotify's official embedded player.</p></div>
+          </section>
           <form class="hub-link-form" id="embedLinkForm">
             <div class="hub-link-heading"><strong>Playlist kamu di EUPHONIA</strong><small>Tempel tautan Share dari playlist/album publik atau link embed resmi. Link akan disimpan di browser ini untuk tombol platform yang dipilih.</small></div>
             <div class="hub-link-controls"><input id="embedLinkInput" type="url" inputmode="url" autocomplete="url" placeholder="Tempel link Share playlist / album…" aria-label="Link playlist atau media untuk diputar"><button class="primary-button" type="submit">Putar di EUPHONIA <span>▶</span></button></div><div class="hub-saved-link-row"><span id="savedPlaylistNote">Pilih platform lalu tempel link playlist.</span><button class="text-button" id="clearSavedPlaylist" type="button">Hapus link tersimpan</button></div>
