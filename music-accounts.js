@@ -5,11 +5,16 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const CONFIG_KEY = "euphonia.musicHub.accountConfig.v1";
   const CACHE_KEY = "euphonia.musicHub.accountPlaylists.v1";
+  const IMPORTED_KEY = "euphonia.musicHub.importedPlaylists.v1";
   const APPLE_TOKEN_KEY = "euphonia.musicHub.appleDeveloperToken.session";
   const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
 
   let config = readJSON(localStorage, CONFIG_KEY, {});
   let cache = readJSON(localStorage, CACHE_KEY, {});
+  let importedPlaylists = readJSON(localStorage, IMPORTED_KEY, {});
+  if (!importedPlaylists || typeof importedPlaylists !== "object" || Array.isArray(importedPlaylists)) importedPlaylists = {};
+  const selectedPlaylistKeys = new Set();
+  let importingSelected = false;
   let youtubeAccessToken = null;
   let youtubeTokenExpiresAt = 0;
   let appleMusic = null;
@@ -162,19 +167,59 @@
     return link;
   }
 
+  function allImportedPlaylists() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(IMPORTED_KEY) || "{}");
+      importedPlaylists = stored && typeof stored === "object" && !Array.isArray(stored) ? stored : {};
+    } catch (_) {
+      importedPlaylists = {};
+    }
+    return Object.values(importedPlaylists).map(item => ({ ...item, importedLocal: true, key: item.sourceKey || item.key }));
+  }
+
+  function persistImportedPlaylists() {
+    try {
+      localStorage.setItem(IMPORTED_KEY, JSON.stringify(importedPlaylists));
+      return true;
+    } catch (_) {
+      setStatus("Playlist belum tersimpan karena ruang penyimpanan browser tidak cukup. Hapus beberapa playlist lokal atau simpan salinan metadata.", "error");
+      return false;
+    }
+  }
+
+  function renderSelectionControls(visibleRemoteItems) {
+    const importButton = $("#accountImportSelected");
+    const selectVisibleButton = $("#accountSelectVisible");
+    if (importButton) {
+      const count = selectedPlaylistKeys.size;
+      importButton.textContent = importingSelected ? "Importing…" : "Import selected (" + count + ")";
+      importButton.disabled = importingSelected || count === 0;
+    }
+    if (selectVisibleButton) {
+      const visibleKeys = visibleRemoteItems.map(item => item.key);
+      const allSelected = visibleKeys.length > 0 && visibleKeys.every(key => selectedPlaylistKeys.has(key));
+      selectVisibleButton.textContent = allSelected ? "Deselect visible" : "Select visible";
+      selectVisibleButton.disabled = importingSelected || visibleKeys.length === 0;
+    }
+  }
+
   function renderPlaylistGrid() {
     const host = $("#accountPlaylistGrid");
     const countNode = $("#accountPlaylistCount");
     if (!host) return;
     const query = ($("#accountPlaylistSearch")?.value || "").trim().toLocaleLowerCase();
     const filter = $("#accountPlaylistFilter")?.value || "all";
-    const all = allCachedPlaylists();
-    const filtered = all.filter(item => {
-      if (filter !== "all" && item.provider !== filter) return false;
+    const remote = allCachedPlaylists();
+    const imported = allImportedPlaylists();
+    const isImportedView = filter === "imported";
+    const sourceItems = isImportedView ? imported : remote;
+    const filtered = sourceItems.filter(item => {
+      if (!isImportedView && filter !== "all" && item.provider !== filter) return false;
       const searchText = [item.title, item.description, item.providerName, item.visibility].filter(Boolean).join(" ").toLocaleLowerCase();
       return !query || searchText.includes(query);
     });
-    if (countNode) countNode.textContent = filtered.length + " / " + all.length + " PLAYLISTS";
+    if (countNode) countNode.textContent = filtered.length + " / " + sourceItems.length + " " + (isImportedView ? "SAVED PLAYLISTS" : "PLAYLISTS");
+    renderSelectionControls(filtered.filter(item => !item.importedLocal));
     host.replaceChildren();
     if (!filtered.length) {
       const empty = document.createElement("div");
@@ -183,11 +228,13 @@
       icon.className = "account-empty-icon";
       icon.textContent = "♫";
       const title = document.createElement("strong");
-      title.textContent = all.length ? "No matching playlists" : "Your playlists will appear here";
+      title.textContent = isImportedView ? "Your EUPHONIA playlists will appear here" : (sourceItems.length ? "No matching playlists" : "Your playlists will appear here");
       const description = document.createElement("p");
-      description.textContent = all.length
-        ? "Coba kata kunci lain atau pilih All services."
-        : "Hubungkan YouTube Music atau Apple Music untuk mengambil daftar playlist dari akunmu. Data yang tersimpan di sini hanya cache metadata playlist di browser ini.";
+      description.textContent = isImportedView
+        ? "Impor satu atau beberapa playlist dari akun yang terhubung. EUPHONIA menyimpan daftar track dan metadata secara lokal; audio tetap diputar dari layanan asal."
+        : (sourceItems.length
+          ? "Coba kata kunci lain atau pilih All services."
+          : "Hubungkan YouTube Music atau Apple Music untuk membaca playlist akunmu. Pilih playlist, lalu impor ke EUPHONIA.");
       empty.append(icon, title, description);
       host.append(empty);
       return;
@@ -214,6 +261,20 @@
       }
       const body = document.createElement("div");
       body.className = "account-playlist-body";
+      if (!item.importedLocal) {
+        const selectLabel = document.createElement("label");
+        selectLabel.className = "account-playlist-select";
+        const select = document.createElement("input");
+        select.type = "checkbox";
+        select.checked = selectedPlaylistKeys.has(item.key);
+        select.dataset.accountSelect = item.key;
+        select.setAttribute("aria-label", "Select " + (item.title || "playlist"));
+        select.disabled = importingSelected;
+        const selectText = document.createElement("span");
+        selectText.textContent = "Select for import";
+        selectLabel.append(select, selectText);
+        body.append(selectLabel);
+      }
       const service = document.createElement("span");
       service.className = "account-playlist-provider";
       service.textContent = item.providerName || providerTitle(item.provider);
@@ -225,15 +286,27 @@
       const meta = document.createElement("div");
       meta.className = "account-playlist-meta";
       const tracks = document.createElement("span");
-      tracks.textContent = countLabel(item);
+      tracks.textContent = item.importedLocal ? ((item.tracks || []).length + " saved tracks") : countLabel(item);
       const visibility = document.createElement("span");
-      visibility.textContent = item.visibility ? item.visibility : "Account library";
+      const importedVersion = importedPlaylists[item.key];
+      visibility.textContent = item.importedLocal ? "Saved in EUPHONIA" : (importedVersion ? ("Imported · " + (importedVersion.tracks || []).length + " tracks") : (item.visibility || "Account library"));
       meta.append(tracks, visibility);
       body.append(service, title, description, meta);
       const actions = document.createElement("div");
       actions.className = "account-playlist-actions";
-      const view = createButton("View tracks", "primary-button small-account-button", () => void viewPlaylist(item));
-      actions.append(view, createExternalLink("Open source ↗", item.url, "outline-button small-account-button"));
+      if (item.importedLocal) {
+        actions.append(
+          createButton("View tracks", "primary-button small-account-button", () => void viewPlaylist(item)),
+          createButton("Sync updates", "outline-button small-account-button", () => void importPlaylist(item, { resync: true })),
+          createExternalLink("Open source ↗", item.url, "outline-button small-account-button")
+        );
+      } else {
+        actions.append(
+          createButton("View tracks", "primary-button small-account-button", () => void viewPlaylist(item)),
+          createButton(importedVersion ? "Sync updates" : "Import to EUPHONIA", "outline-button small-account-button", () => void importPlaylist(item, { resync: Boolean(importedVersion) })),
+          createExternalLink("Open source ↗", item.url, "outline-button small-account-button")
+        );
+      }
       card.append(artWrap, body, actions);
       host.append(card);
     });
