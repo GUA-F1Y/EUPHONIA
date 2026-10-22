@@ -10,7 +10,7 @@ The account Music Hub now has a Musicfy-inspired set of everyday listening workf
 
 - Save or remove account tracks from local **Favorites**; the collection survives page reloads in the same browser profile.
 - A **Recently played** list for account tracks that start playback.
-- A managed playback queue: add tracks from playlist details, play a queued item, move it up/down, remove items, or clear the queue.
+- A managed playback queue: add tracks from playlist details, play a queued item, move it up/down, remove items, or clear the queue. Queue ordering and Shuffle/Repeat mode are also saved locally and restored after reload (playback must be started again because account sessions are not stored).
 - **Shuffle**, **Repeat all**, and **Repeat one** for the active account queue.
 - **Synchronized or plain lyrics** via LRCLIB when a matching lyrics record exists; synced lines follow the official player's playback position where supported.
 - The existing account-based playlist import/resync workflow remains metadata-only and never modifies the provider's original playlist.
