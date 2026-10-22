@@ -19,6 +19,7 @@
   let lyricsTimer = null;
   let lastHistoryKey = "";
   let lastHistoryTime = 0;
+  let accountMediaSessionActive = false;
 
   function readJSON(key, fallback) {
     try {
@@ -545,6 +546,94 @@
     if (volumeOutput && volumeInput) volumeOutput.value = volumeInput.value + "%";
   }
 
+  function mediaSession() {
+    try {
+      return ("mediaSession" in navigator) ? navigator.mediaSession : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function setMediaSessionTrack(track) {
+    const session = mediaSession();
+    if (!session) return;
+    accountMediaSessionActive = Boolean(track);
+    if (!track) {
+      try {
+        session.metadata = null;
+        session.playbackState = "none";
+        session.setPositionState?.({});
+      } catch (_) {}
+      return;
+    }
+    const item = normalizeTrack(track);
+    try {
+      if ("MediaMetadata" in window) {
+        const artwork = /^https:\/\//i.test(item.artwork || "")
+          ? [{ src: item.artwork, sizes: "512x512" }]
+          : [];
+        session.metadata = new MediaMetadata({
+          title: item.title,
+          artist: item.artist || item.providerName || "EUPHONIA",
+          album: item.album || item.playlistTitle || "EUPHONIA Music Hub",
+          artwork
+        });
+      }
+      session.playbackState = "paused";
+      updateMediaSessionPosition();
+    } catch (_) {
+      // Lock-screen metadata is optional; a browser/player limitation must not stop playback.
+    }
+  }
+
+  function updateMediaSessionPosition() {
+    const session = mediaSession();
+    const api = window.EUPHONIA_ACCOUNT_MUSIC;
+    if (!session || !accountMediaSessionActive || typeof session.setPositionState !== "function" || !api) return;
+    const duration = api.getPlaybackDuration?.();
+    const position = api.getPlaybackTime?.();
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(position)) return;
+    try {
+      session.setPositionState({
+        duration,
+        position: Math.min(duration, Math.max(0, position)),
+        playbackRate: 1
+      });
+    } catch (_) {
+      // Some browsers implement Media Session partially; keep in-page controls available.
+    }
+  }
+
+  function configureMediaSession() {
+    const session = mediaSession();
+    if (!session || typeof session.setActionHandler !== "function") return;
+    const bind = (action, callback) => {
+      try { session.setActionHandler(action, details => {
+        if (!accountMediaSessionActive) return;
+        return callback(details || {});
+      }); } catch (_) {}
+    };
+    bind("play", () => window.EUPHONIA_ACCOUNT_MUSIC?.play?.());
+    bind("pause", () => window.EUPHONIA_ACCOUNT_MUSIC?.pause?.());
+    bind("previoustrack", () => window.EUPHONIA_ACCOUNT_MUSIC?.advanceQueue?.(-1));
+    bind("nexttrack", () => window.EUPHONIA_ACCOUNT_MUSIC?.advanceQueue?.(1));
+    bind("seekbackward", details => {
+      const api = window.EUPHONIA_ACCOUNT_MUSIC;
+      const time = api?.getPlaybackTime?.();
+      if (Number.isFinite(time)) void api.seekTo(Math.max(0, time - (Number(details.seekOffset) || 10)));
+    });
+    bind("seekforward", details => {
+      const api = window.EUPHONIA_ACCOUNT_MUSIC;
+      const time = api?.getPlaybackTime?.();
+      const duration = api?.getPlaybackDuration?.();
+      if (Number.isFinite(time)) void api.seekTo(Math.min(Number.isFinite(duration) ? duration : Infinity, time + (Number(details.seekOffset) || 10)));
+    });
+    bind("seekto", details => {
+      const time = Number(details.seekTime);
+      if (Number.isFinite(time)) void window.EUPHONIA_ACCOUNT_MUSIC?.seekTo?.(time);
+    });
+  }
+
   function updatePlaybackModeLabels() {
     const modes = window.EUPHONIA_ACCOUNT_MUSIC?.getModes?.() || { shuffle: false, repeat: "off" };
     const shuffle = $("#accountPlayerShuffle");
@@ -644,6 +733,7 @@
     }));
 
     window.addEventListener("euphonia:account-track-change", event => {
+      if (event.detail?.track) setMediaSessionTrack(event.detail.track);
       refreshFavoriteButtons();
       renderQueue();
       const panel = $("#accountLyricsPanel");
@@ -651,8 +741,20 @@
     });
     window.addEventListener("euphonia:account-playback-started", event => {
       appendHistory(event.detail?.track || window.EUPHONIA_ACCOUNT_MUSIC?.getCurrentTrack?.());
+      const session = mediaSession();
+      if (session && accountMediaSessionActive) {
+        try { session.playbackState = "playing"; } catch (_) {}
+        updateMediaSessionPosition();
+      }
       refreshFavoriteButtons();
     });
+    window.addEventListener("euphonia:account-playback-state", event => {
+      const session = mediaSession();
+      if (!session || !accountMediaSessionActive) return;
+      try { session.playbackState = event.detail?.state === "playing" ? "playing" : "paused"; } catch (_) {}
+      updateMediaSessionPosition();
+    });
+    window.addEventListener("euphonia:local-audio-start", () => setMediaSessionTrack(null));
     window.addEventListener("euphonia:account-queue-change", () => {
       renderQueue();
       updatePlaybackModeLabels();
@@ -662,8 +764,9 @@
     renderQueue();
     refreshFavoriteButtons();
     updatePlaybackModeLabels();
+    configureMediaSession();
     updateAccountProgress();
-    window.setInterval(updateAccountProgress, 500);
+    window.setInterval(updateAccountProgress, 1000);
   }
 
   window.EUPHONIA_MUSICFY = Object.freeze({
