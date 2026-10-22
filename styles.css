@@ -491,12 +491,12 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-library-section{margin-top:34px}
 .account-library-section .section-heading{align-items:flex-end}
 .account-library-section .section-heading p{max-width:600px;margin:7px 0 0;color:#858c95;font-size:11px;line-height:1.6}
-.account-library-controls{display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:10px;margin:16px 0}
+.account-library-controls{display:grid;grid-template-columns:minmax(0,1fr) 170px auto auto auto;gap:9px;margin:16px 0}
 .account-search{display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #33383e;border-radius:8px;background:#17191c;color:var(--lime)}
 .account-search span{font-size:22px}
 .account-search input{padding:11px 0;border:0;background:transparent;font-size:11px}
 .account-library-controls select{font-size:11px}
-.account-library-controls>.outline-button{justify-content:center;padding:10px 13px;font-size:10px}
+.account-library-controls>.outline-button,.account-library-controls>.primary-button{justify-content:center;padding:10px 11px;font-size:10px;white-space:nowrap}
 .account-playlist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
 .account-playlist-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid #2d3136;border-radius:12px;background:#17191d}
 .account-playlist-art{position:relative;display:grid;place-items:center;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(140deg,#303e2b,#1d2122 68%,#242031);color:#bce66e;font-size:32px}
@@ -510,6 +510,11 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-playlist-actions{display:flex;gap:8px;padding:12px 13px 13px}
 .small-account-button{min-height:32px;justify-content:center;padding:8px 9px;font-size:9px;white-space:nowrap;text-decoration:none}
 .account-playlist-actions>*{flex:1;min-width:0}
+.account-playlist-select{display:flex;align-items:center;gap:7px;width:max-content;max-width:100%;color:#8f9890;font-size:9px;cursor:pointer}
+.account-playlist-select input{width:14px;height:14px;accent-color:var(--lime);margin:0}
+.account-playlist-card:has(.account-playlist-select input:checked){border-color:#71884a;box-shadow:inset 0 0 0 1px #71884a}
+.account-track-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.account-track-actions>*{font-size:9px;white-space:nowrap}
 .account-empty-state{grid-column:1/-1;display:flex;min-height:190px;flex-direction:column;align-items:center;justify-content:center;padding:22px;border:1px dashed #343a3f;border-radius:12px;text-align:center;color:#e8ece5}
 .account-empty-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:10px;border-radius:12px;background:#293222;color:#c3ed71;font-size:22px}
 .account-empty-state strong{font-size:13px}
@@ -529,5 +534,5 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-track-text{display:grid;gap:4px;min-width:0}
 .account-track-text strong{overflow:hidden;color:#e6e9e3;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
 .account-track-text small{overflow:hidden;color:#818992;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
-@media(max-width:1100px){.account-service-grid,.account-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-library-controls{grid-template-columns:minmax(0,1fr) 165px}.account-library-controls>.outline-button{grid-column:1/-1}}
-@media(max-width:700px){.account-hub-intro{align-items:flex-start;flex-direction:column;padding:19px;gap:15px}.account-hub-intro h2{font-size:24px}.account-setup-grid{grid-template-columns:1fr}.account-services-heading{align-items:flex-start;flex-direction:column;gap:8px}.account-service-grid,.account-playlist-grid{grid-template-columns:1fr}.account-service-card>p{min-height:0}.account-library-controls{grid-template-columns:minmax(0,1fr);gap:8px}.account-library-controls select,.account-library-controls>.outline-button{width:100%;grid-column:auto}.account-library-section .section-heading{align-items:flex-start;flex-direction:column;gap:10px}.account-detail-heading{flex-direction:column}.account-detail-heading>.outline-button{width:100%}.account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}.account-track-art{width:42px;height:42px}.account-track-row>.outline-button{grid-column:2/-1;justify-self:stretch}.account-playlist-detail{padding:12px}.account-playlist-actions{flex-wrap:wrap}.account-setup-actions{align-items:flex-start;flex-wrap:wrap}}
+@media(max-width:1100px){.account-service-grid,.account-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-library-controls{grid-template-columns:minmax(0,1fr) 165px}.account-library-controls>.outline-button,.account-library-controls>.primary-button{width:100%;box-sizing:border-box}.account-library-controls>.outline-button:last-child{grid-column:1/-1}}
+@media(max-width:700px){.account-hub-intro{align-items:flex-start;flex-direction:column;padding:19px;gap:15px}.account-hub-intro h2{font-size:24px}.account-setup-grid{grid-template-columns:1fr}.account-services-heading{align-items:flex-start;flex-direction:column;gap:8px}.account-service-grid,.account-playlist-grid{grid-template-columns:1fr}.account-service-card>p{min-height:0}.account-library-controls{grid-template-columns:minmax(0,1fr);gap:8px}.account-library-controls select,.account-library-controls>.outline-button{width:100%;grid-column:auto}.account-library-section .section-heading{align-items:flex-start;flex-direction:column;gap:10px}.account-detail-heading{flex-direction:column}.account-detail-heading>.outline-button{width:100%}.account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}.account-track-art{width:42px;height:42px}.account-track-actions{grid-column:2/-1;justify-self:stretch;justify-content:flex-start}.account-playlist-detail{padding:12px}.account-playlist-actions{flex-wrap:wrap}.account-setup-actions{align-items:flex-start;flex-wrap:wrap}}
