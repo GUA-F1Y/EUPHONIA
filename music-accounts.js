@@ -888,7 +888,6 @@
       setStatus("Pemutaran di dalam EUPHONIA tersedia untuk YouTube dan Apple Music yang terhubung. Gunakan Open source untuk provider lain.", "info");
       return;
     }
-    accountPlaybackProvider = provider;
     accountPlaybackQueue = tracks.map(track => ({ ...track, provider }));
     void playAccountQueueIndex(index);
   }
@@ -898,7 +897,7 @@
       try { youtubePlayer.stopVideo(); } catch (_) {}
     }
     if (appleMusic && appleAuthorized) {
-      try { void appleMusic.pause(); } catch (_) {}
+      try { void appleMusic.pause().catch(() => {}); } catch (_) {}
     }
     const panel = $("#accountNowPlaying");
     if (panel) panel.hidden = true;
