@@ -1,16 +1,48 @@
-## Music Hub v0.3.3 regression checks — no tab switching
-- [ ] Clicking each of the six platform cards does not change the current tab or navigate away. Clicking provider chrome/links inside the embedded player should not open a popup or navigate the EUPHONIA top-level page.
-- [ ] With no saved URL, a platform card selects that provider and focuses the in-app Share URL field.
-- [ ] Paste a public YouTube/YouTube Music playlist Share URL; the player loads in the EUPHONIA panel and the source link is stored locally.
-- [ ] Refresh the page and click YouTube Music again; the saved playlist loads in the same panel.
-- [ ] Repeat with shareable Spotify, Apple Music, SoundCloud, and Deezer URLs that support official embeds.
-- [ ] Confirm unsupported/private links show an in-app message and never open a new tab.
-- [ ] Clear the saved link for a provider and confirm its card prompts for a new share URL.
-- [ ] Use search with Spotify/SoundCloud/Deezer/Bandcamp selected; app remains in EUPHONIA and shows link guidance instead of opening a tab.
-- [ ] Confirm Apple catalog preview and optional YouTube Data API results still render in the app.
-- [ ] Check on desktop and mobile; iframe player controls remain visible and usable.
+## Account Music Hub, import, and playback — current behavior
 
-**Limitation:** these checks require real provider URLs/accounts and browser testing. Private libraries cannot be read by this static frontend without each provider's approved authentication/API setup; an embed may still reject content or require login.
+Run these checks with real provider credentials in a browser. Do not mark a test complete until it has actually been tried.
+
+- [ ] Confirm normal users do not see a Google Client ID field or API key field. The provider card says Continue with Google.
+- [ ] Confirm Music Hub shows Search artists & songs before the account playlist grid, without needing account sign-in just to open the search panel.
+- [ ] Search an artist/song in Music Hub without signing in; verify results are Apple/iTunes catalog tracks and the UI is labelled AUDIO ONLY.
+- [ ] Play an available track preview and confirm it uses EUPHONIA's bottom audio player; verify tracks without preview URLs show a disabled preview control.
+- [ ] Open a YouTube playlist track and select Find audio preview; confirm EUPHONIA searches the Apple catalog and does not start or show a YouTube video player.
+- [ ] Test zero results, rapid consecutive searches, offline/timeouts, missing preview URLs, and browser autoplay blocking; verify clear recovery guidance.
+- [ ] With MusicKit authorized, verify the optional Full track action uses the official Apple Music player; test no subscription, invalid track URL and unavailable catalog item.
+- [ ] As the app maintainer only, set the Web Client ID in euphonia-config.js, configure the consent screen, add local/production origins to Authorized JavaScript origins, and allow testing accounts when using Testing mode.
+- [ ] With a configured Client ID, click Continue with Google. Verify the Google account chooser/consent appears and the requested scope is YouTube read-only.
+- [ ] Connect YouTube. Confirm OAuth asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
+- [ ] Open View tracks on a YouTube playlist and verify title, channel, artwork and Open source URL.
+- [ ] Select Find audio preview on a YouTube track. Confirm no YouTube iframe is created and the track query is passed to the audio-only catalog search.
+- [ ] Confirm YouTube playlist sync/import still reads metadata after Google OAuth; playback remains audio-only and must not start the video iframe.
+- [ ] Select several YouTube playlists using the checkboxes / Select visible, then Import selected. Confirm all successful imports appear under Imported to EUPHONIA.
+- [ ] Remove one track from an imported playlist locally, add a new track to the source playlist, re-sync, and verify only the newly discovered source track is appended while the locally removed track stays removed.
+- [ ] Disconnect YouTube. Confirm the remote cache clears while already imported EUPHONIA playlists remain local; re-sync should ask you to reconnect.
+- [ ] Trigger two sync clicks rapidly for a connected provider; confirm duplicate playlist requests are coalesced and only one successful refresh is reported.
+- [ ] Simulate a YouTube API 401, quota-exceeded 403, 429, 5xx, and slow network; confirm sessions/errors are actionable and retries are bounded.
+- [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the account.
+- [ ] Verify Apple Music library playlists populate and View tracks gets metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
+- [ ] Press Play audio on an Apple Music track. Confirm MusicKit uses official audio playback and reports useful errors when authorization, subscription, URL, or content access is unavailable.
+- [ ] Test previous/next and play/pause for Apple Music; verify track changes stay within the same provider queue.
+- [ ] Reload EUPHONIA. Playlist metadata remains cached; connecting/syncing again requires an active/renewed provider session as appropriate.
+- [ ] Search/filter by title and description and by provider or Imported to EUPHONIA. Home mood shortcuts should filter the local playlist metadata instead of exposing hidden legacy embed controls.
+- [ ] Confirm SoundCloud clearly reports the secure-backend requirement; no client secret field exists in frontend code or Git history.
+- [ ] Confirm Deezer reports pending OAuth integration, Spotify remains a separate official-service link, and Bandcamp does not claim to sync listener playlists.
+- [ ] Test desktop/tablet/mobile layout, keyboard focus, low storage quota, empty playlists, large collections, repeated imports, API 403/429/5xx failures, and private/deleted provider tracks.
+
+- [ ] Favorite an Apple track (and keep a YouTube playlist track as metadata), reload the page, and confirm Favorites persists in the same browser profile; audio playback should never start a YouTube video.
+- [ ] Start account playback and confirm the track appears in Recently played. Pause/resume the same track and verify the history does not fill with rapid duplicates.
+- [ ] Add several tracks to Queue, play a queued row, move rows up/down, remove current/non-current rows, and clear the queue.
+- [ ] Build a queue, enable Shuffle/Repeat, reload EUPHONIA, and confirm queue order and playback mode are restored without trying to auto-play before account authorization.
+- [ ] Enable Shuffle and verify Next chooses a different queue item; cycle Repeat off/all/one and test natural end-of-track behavior.
+- [ ] Open Lyrics and verify synchronized LRCLIB lines highlight against supported player position; test plain lyrics, not-found, offline and HTTP 429 behavior.
+- [ ] Use the EUPHONIA account seek bar on an authorized Apple Music track; verify time labels and seek behavior. Change account volume and confirm it does not alter the local-file player's separate volume.
+- [ ] Verify a YouTube playlist track redirects to Apple catalog audio search without constructing a YouTube iframe; local audio/DAW playback remains coordinated.
+- [ ] Verify lyrics searches cancel stale track requests, time out on a stalled connection, throttle sequential requests, and honor Retry-After after HTTP 429.
+- [ ] Where supported, test lock-screen/system media metadata, play/pause/previous/next and seek controls. In unsupported browsers, confirm the in-page account-player controls still work.
+- [ ] Add tracks from Favorites/Recently played into Queue, and confirm YouTube metadata items route to audio-preview search while eligible Apple Music items use official MusicKit playback without overlapping local audio/DAW playback.
+
+**Limits:** account sync requires each user's provider setup and consent. YouTube Data API results may not contain all YouTube Music-generated/library collections. Imported playlists store metadata and source identifiers, not copied audio files. The Music Hub discovery player is audio-only: Apple catalog previews are short provider-supplied clips, and full-length audio needs eligible Apple Music/MusicKit access. This static browser implementation is a prototype; production OAuth should use a secure backend for secrets and receive a privacy/security review.
 
 # EUPHONIA v0.3.0 — release checklist
 
@@ -21,6 +53,7 @@ This is a manual checklist. Check each item on the actual supported browser/devi
 - [ ] `node validate-project.mjs` passes with no missing asset/ID/syntax issue.
 - [ ] Open browser DevTools; no uncaught JavaScript errors on startup.
 - [ ] Service worker installs, activates the current cache version, and updates after a versioned deployment.
+- [ ] Simulate a failed fetch for one required core asset during a new Service Worker install; verify the partial new cache is removed and the previously active worker/version remains available.
 - [ ] PWA manifest loads and all icons return HTTP 200.
 
 ## Library and recovery
@@ -65,16 +98,3 @@ This is a manual checklist. Check each item on the actual supported browser/devi
 
 Do not call the release fully production-certified until the checks that apply to the advertised target browsers/devices have passed. For important work, maintain portable project backups even after autosave has been tested.
 
-
-## Music Hub v0.3.2 regression checks
-- [ ] Search a common song/artist in Unified music search; verify result cards and preview buttons appear where available.
-- [ ] Start a preview, stop it, then start a different preview; verify only one preview is active.
-- [ ] Paste a public YouTube watch URL and verify the privacy-enhanced embedded player loads without opening a new tab.
-- [ ] Paste public Spotify track/album/playlist, Apple Music album, SoundCloud track, and Deezer track links; verify each uses the provider's official embed host.
-- [ ] Paste an unsupported or malformed URL; verify a clear in-app error appears and no arbitrary host is framed.
-- [ ] Configure a referrer-restricted YouTube Data API key; verify search results can be selected and loaded in the embed player.
-- [ ] Test mobile portrait and landscape: search controls and results remain usable without horizontal page overflow.
-- [ ] Click each platform card and verify it opens the corresponding playlist/library/collection route in a separate tab or routes to the native app when supported; EUPHONIA remains open.
-- [ ] Test from a phone with each platform installed and signed in. Verify App Links/Universal Links route into the expected account and playlist/library section where the service supports it.
-- [ ] Test with an app absent or signed out; verify the HTTPS website fallback is usable and EUPHONIA remains available.
-- [ ] Enter a query, select Spotify/SoundCloud/Deezer/Bandcamp, and verify Search opens the selected provider search in a new tab. For YouTube, test both with and without the API key.

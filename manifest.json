@@ -2,17 +2,35 @@
   "id": "./index.html",
   "name": "EUPHONIA Music Hub & Studio",
   "short_name": "EUPHONIA",
-  "description": "Local-first music workspace with audio library and browser-based DAW.",
+  "description": "Account-based music playlist hub, local audio library, music discovery, and browser-based DAW.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui", "browser"],
+  "display_override": [
+    "standalone",
+    "minimal-ui",
+    "browser"
+  ],
   "orientation": "any",
-  "background_color": "#101113",
-  "theme_color": "#101113",
-  "categories": ["music", "productivity", "entertainment"],
+  "background_color": "#09090d",
+  "theme_color": "#09090d",
+  "categories": [
+    "music",
+    "productivity",
+    "entertainment"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
   ]
 }

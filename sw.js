@@ -1,17 +1,23 @@
 /* EUPHONIA app-shell cache. User audio and project files are stored in IndexedDB, not Cache Storage. */
-const CACHE_NAME = 'euphonia-studio-v0330';
+const CACHE_NAME = 'euphonia-studio-v0352';
 const CORE_ASSETS = [
-  './', './index.html', './styles.css', './euphonia-storage.js', './app.js',
+  './', './index.html', './styles.css', './euphonia-storage.js', './app.js', './euphonia-config.js', './music-accounts.js', './musicfy-features.js', './music-discovery.js',
   './euphonia-daw.js', './manifest.json', './icon-192.png', './icon-512.png'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    await Promise.all(CORE_ASSETS.map(async asset => {
-      try { await cache.add(asset); } catch (error) { console.warn('Precache skipped:', asset, error); }
-    }));
-    await self.skipWaiting();
+    try {
+      // Keep the previous worker/cache active if any required shell asset cannot be cached.
+      // A partially cached new app shell is worse than retaining the previous working version.
+      await cache.addAll(CORE_ASSETS);
+      await self.skipWaiting();
+    } catch (error) {
+      await caches.delete(CACHE_NAME);
+      console.error('EUPHONIA update failed to precache its core assets; keeping the previous version.', error);
+      throw error;
+    }
   })());
 });
 

@@ -228,3 +228,446 @@ input[type="range"]{min-height:24px;touch-action:pan-x}
 /* v0.3.3: saved playlist controls stay inside the Music Hub. */
 .hub-saved-link-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 15px 13px;color:#838c83;font-size:10px;line-height:1.5}.hub-saved-link-row span{min-width:0;overflow-wrap:anywhere}.hub-saved-link-row button{flex:0 0 auto}.hub-saved-link-row button:disabled{opacity:.35;cursor:not-allowed;pointer-events:none}.platform-card{color:inherit;text-decoration:none;cursor:pointer;text-align:left;font:inherit;width:100%;appearance:none;-webkit-appearance:none}.platform-card:focus-visible{outline:2px solid var(--lime);outline-offset:2px}.external-arrow{color:var(--lime)}
 @media(max-width:600px){.hub-saved-link-row{align-items:flex-start;flex-direction:column;padding:0 12px 13px}.hub-saved-link-row button{min-height:32px}}
+
+/* EUPHONIA streaming discovery — Netflix-inspired browsing, music-first playback. */
+:root{--bg:#09090d;--panel:#14141b;--panel-2:#1b1b25;--panel-3:#252530;--line:#2d2b36;--line-light:#403a4d;--text:#f7f5fb;--muted:#a09bab;--muted-2:#777282;--lime:#c2a0ff;--lime-dark:#9468e8;--violet:#bc9cff;--cyan:#91e7e7;--sidebar:238px;--player:86px}
+html{background:#09090d}
+body{background:#09090d;color:#f7f5fb}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline-color:#c2a0ff}
+.global-search:focus-within{border-color:#72579e;box-shadow:0 0 0 3px #c2a0ff18}
+@media(min-width:1200px){
+  .app-shell{display:block;padding-bottom:var(--player)}
+  .sidebar{position:sticky;top:0;inset:auto;width:100%;height:76px;z-index:42;display:flex;flex-direction:row;align-items:center;gap:24px;padding:0 clamp(22px,4.5vw,76px);background:linear-gradient(180deg,#09090df7 0%,#09090de8 72%,#09090dba 100%);border:0;border-bottom:1px solid #ffffff0a;backdrop-filter:blur(20px)}
+  .brand{flex:0 0 auto;margin:0 10px 0 0;font-size:23px;letter-spacing:.35px}
+  .brand-mark{background:#c2a0ff;box-shadow:0 0 28px #a57af833}
+  .brand-mark i{background:#21132e}
+  .main-nav{display:flex;align-items:center;gap:24px;flex:1;min-width:0;padding-right:400px}
+  .nav-item{width:auto;display:inline-flex;align-items:center;justify-content:center;gap:0;padding:27px 1px 24px;border:0;border-radius:0;background:transparent;color:#b4afbc;white-space:nowrap;font-size:13px;transition:color .18s,box-shadow .18s}
+  .nav-item:hover{background:transparent;color:#fff}
+  .nav-item.active{background:transparent;border:0;border-radius:0;box-shadow:inset 0 -2px #c2a0ff;color:#fff}
+  .nav-icon,.nav-count,.nav-live,.sidebar-label,.side-projects,.sidebar-bottom{display:none!important}
+  .main-area{width:100%;margin:0;min-width:0}
+  .topbar{position:fixed;top:16px;right:clamp(22px,4.5vw,76px);z-index:55;height:43px;width:auto;padding:0;border:0;background:transparent;backdrop-filter:none}
+  .breadcrumbs{display:none}
+  .top-actions{gap:9px}
+  .install-app-button{display:none}
+  .global-search{width:265px;height:39px;background:#17151d;border-color:#34303d}
+  .global-search input{font-size:11px}
+  .global-search kbd{display:none}
+  .icon-button{height:38px;width:38px;border-radius:11px}
+  .avatar-small{height:36px;width:36px}
+  .mobile-menu{display:none!important}
+  .page{padding:23px clamp(30px,4.5vw,76px) 58px}
+  #page-home{padding-top:10px}
+}
+.streaming-home{width:100%;max-width:1900px;margin:0 auto;min-width:0}
+.stream-intro{display:flex;justify-content:space-between;align-items:flex-end;gap:28px;padding:19px 0 7px}
+.stream-intro-copy{min-width:0}
+.stream-eyebrow,.stream-section-kicker{display:flex;align-items:center;gap:8px;color:#9a91a8;font:9px var(--mono);letter-spacing:1.55px;text-transform:uppercase}
+.stream-live-dot{width:6px;height:6px;border-radius:50%;background:#c2a0ff;box-shadow:0 0 0 4px #c2a0ff17}
+.stream-intro h1{font:600 clamp(28px,3.05vw,43px)/1.08 var(--display);letter-spacing:-1.7px;margin:12px 0 10px;color:#fbf9ff}
+.stream-intro h1 em{font-style:normal;color:#c2a0ff}
+.stream-intro p{color:#96919f;margin:0;max-width:580px;font-size:12px;line-height:1.75}
+.stream-shortcuts{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;padding-bottom:4px}
+.stream-shortcuts button{border:1px solid #ffffff16;border-radius:999px;padding:9px 13px;background:#17151d;color:#c9c3d2;font-size:10px;white-space:nowrap;transition:background .18s,border-color .18s,transform .18s}
+.stream-shortcuts button:hover{background:#282032;border-color:#8765b6;color:#fff;transform:translateY(-1px)}
+.stream-hero{position:relative;isolation:isolate;min-height:clamp(400px,43vw,570px);margin:20px 0 42px;overflow:hidden;border:1px solid #ffffff12;border-radius:16px;background:radial-gradient(ellipse at 72% 25%,#593b79 0%,#282039 25%,#15131e 58%,#0e0d12 100%);box-shadow:0 25px 75px #0003;scroll-margin-top:96px}
+.stream-hero-art{position:absolute;inset:0;z-index:-2;background-position:center 34%;background-size:cover;transform:scale(1.015);transition:background-image .4s ease,transform .8s}
+.stream-hero-art:after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 79% 28%,#cbb0ff24 0%,transparent 32%),linear-gradient(90deg,#09090df5 0%,#0d0b13e8 23%,#0d0b13a8 47%,#0d0b1350 69%,#0d0b135b 100%),linear-gradient(0deg,#09090df2 0%,transparent 47%,#09090d12 100%)}
+.stream-hero-shade{position:absolute;inset:0;z-index:-1;background:linear-gradient(120deg,transparent 35%,#0b09101a 65%,#0b091066 100%);pointer-events:none}
+.stream-hero-copy{position:absolute;left:0;bottom:0;width:min(720px,75%);padding:clamp(28px,4vw,59px);padding-bottom:35px}
+.stream-hero-label{display:flex;align-items:center;gap:17px;margin-bottom:17px;color:#e6d9ff;font:9px var(--mono);letter-spacing:1.3px}
+.stream-hero-label span:first-child{display:flex;align-items:center;gap:8px}
+.stream-hero-label i{display:inline-block;width:6px;height:6px;border-radius:50%;background:#c2a0ff;box-shadow:0 0 12px #c2a0ff}
+.stream-hero-label span:last-child{border-left:1px solid #ffffff35;padding-left:17px;color:#aba1b9}
+.stream-hero-copy h2{font:700 clamp(38px,5.5vw,74px)/.99 var(--display);letter-spacing:-3px;text-wrap:balance;margin:0 0 17px;max-width:760px;color:#fff;text-shadow:0 2px 30px #0005}
+.stream-hero-meta{color:#e2d8ee;font-size:12px;font-weight:600;margin-bottom:10px}
+.stream-hero-copy p{font-size:12px;line-height:1.75;color:#c6c0ce;max-width:480px;margin:0}
+.stream-hero-actions{display:flex;align-items:center;gap:10px;margin-top:22px}
+.stream-play-button,.stream-list-button{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:43px;border:1px solid transparent;border-radius:7px;padding:0 20px;font-size:12px;font-weight:700;transition:transform .18s,background .18s,border-color .18s}
+.stream-play-button{background:#fff;color:#151219}
+.stream-play-button:hover{background:#e9dcff;transform:translateY(-1px)}
+.stream-play-button>span{font-size:15px}
+.stream-list-button{background:#38323fca;border-color:#ffffff18;color:#fff}
+.stream-list-button:hover,.stream-list-button.is-saved{background:#55436d;border-color:#b391ec}
+.stream-list-button>span{font-size:17px}
+.stream-preview-note{display:flex;align-items:center;gap:7px;margin-top:20px;color:#aca3b9;font-size:9px}
+.stream-preview-note span{color:#c2a0ff;font-size:13px}
+.stream-hero-index{position:absolute;right:23px;bottom:25px;display:flex;align-items:center;gap:7px;color:#e8ddf9;font:10px var(--mono)}
+.stream-hero-index i{display:block;width:16px;height:2px;background:#ffffff40}.stream-hero-index i:first-of-type{width:27px;background:#c2a0ff}
+.stream-section{margin:0 0 42px;min-width:0;scroll-margin-top:94px}
+.stream-section-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;margin-bottom:15px}
+.stream-section-heading>div:first-child{min-width:0}
+.stream-section-heading h2{font:600 clamp(18px,1.8vw,23px)/1.25 var(--display);letter-spacing:-.5px;color:#f7f4fb;margin:6px 0 0}
+.stream-section-heading h2>span{color:#c2a0ff;opacity:0;transform:translateX(-4px);display:inline-block;transition:opacity .18s,transform .18s}
+.stream-section:hover .stream-section-heading h2>span{opacity:1;transform:translateX(0)}
+.stream-section-heading p{margin:6px 0 0;color:#8e8899;font-size:10px;line-height:1.5}
+.stream-heading-actions{display:flex;align-items:center;gap:17px}
+.stream-muted-count{font:8px var(--mono);letter-spacing:1px;color:#6e6878;white-space:nowrap}
+.stream-text-link{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:8px 0;color:#b5a9c7;font-size:10px;white-space:nowrap}
+.stream-text-link:hover{color:#e2d2ff}
+.stream-text-link span{font-size:14px}
+.stream-rail{display:flex;gap:14px;min-width:0;overflow-x:auto;overflow-y:hidden;padding:3px 2px 15px;scrollbar-width:none;scroll-snap-type:x proximity}
+.stream-rail::-webkit-scrollbar{display:none}
+.stream-track-card{flex:0 0 clamp(142px,14vw,186px);min-width:0;scroll-snap-align:start;position:relative}
+.stream-track-card:hover{z-index:2}
+.stream-track-art-wrap{position:relative;aspect-ratio:1/1;border-radius:9px;overflow:hidden;background:#1c1822;box-shadow:0 5px 17px #0002}
+.stream-art-button{display:block;position:absolute;inset:0;width:100%;height:100%;border:0;padding:0;overflow:hidden;border-radius:inherit;background:#211a2b;text-align:left}
+.stream-art-button img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s,filter .35s}
+.stream-track-card:hover .stream-art-button img{transform:scale(1.055);filter:brightness(.72)}
+.stream-art-button:after{content:"";position:absolute;inset:42% 0 0;background:linear-gradient(0deg,#07060bd9,transparent);opacity:.6;pointer-events:none}
+.stream-art-play{position:absolute;right:11px;bottom:10px;z-index:2;display:grid;place-items:center;width:41px;height:41px;border-radius:50%;background:#f9f6ff;color:#18111f;box-shadow:0 5px 20px #0007;font-size:14px;padding-left:2px;opacity:0;transform:translateY(5px);transition:opacity .18s,transform .18s}
+.stream-track-card:hover .stream-art-play,.stream-art-button:focus-visible .stream-art-play{opacity:1;transform:translateY(0)}
+.stream-save-track{position:absolute;z-index:4;left:9px;top:9px;display:grid;place-items:center;width:29px;height:29px;border:1px solid #ffffff25;border-radius:50%;background:#0a0910b8;color:#fff;font-size:18px;opacity:0;transition:opacity .18s,background .18s}
+.stream-track-card:hover .stream-save-track,.stream-save-track:focus-visible,.stream-save-track.is-saved{opacity:1}
+.stream-save-track.is-saved{background:#b28af4;color:#160f20;border-color:#d7c0ff;font-size:14px}
+.stream-track-meta{display:grid;gap:4px;min-width:0;padding:10px 2px 0}
+.stream-track-meta strong{font-size:11px;font-weight:600;color:#f1edf7;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stream-track-meta small{font-size:9px;color:#8f8999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stream-track-card:hover .stream-track-meta strong{color:#d9c6ff}
+.stream-local-rail .stream-track-art-wrap:after{content:"LOCAL FILE";position:absolute;left:8px;bottom:8px;z-index:2;padding:4px 6px;border:1px solid #ffffff20;border-radius:4px;background:#100e16b8;color:#eee4ff;font:7px var(--mono);letter-spacing:.8px;pointer-events:none}
+.stream-local-rail .stream-track-card{flex-basis:clamp(148px,15vw,198px)}
+.stream-shelf-loading,.stream-shelf-empty{min-height:112px;display:flex;align-items:center;gap:10px;padding:18px 21px;border:1px solid #ffffff0e;border-radius:10px;background:linear-gradient(120deg,#14121a,#100f15);color:#a49cae;font-size:11px}
+.stream-shelf-empty{display:grid;align-content:center;gap:7px;min-width:280px;max-width:450px}
+.stream-shelf-empty strong{font-size:12px;color:#e5dfee}
+.stream-shelf-empty span{color:#938b9e;font-size:10px}
+.stream-loading-dot{width:7px;height:7px;border-radius:50%;background:#c2a0ff;box-shadow:0 0 0 5px #c2a0ff17;animation:streamPulse 1.3s infinite ease-in-out}
+@keyframes streamPulse{0%,100%{opacity:.5;transform:scale(.9)}50%{opacity:1;transform:scale(1.12)}}
+.stream-mood-section{margin-top:3px}
+.stream-mood-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px}
+.stream-mood-card{position:relative;display:flex;flex-direction:column;justify-content:space-between;gap:20px;min-height:145px;overflow:hidden;border:1px solid #ffffff14;border-radius:10px;padding:16px;text-align:left;color:#fff;background:#201827;isolation:isolate;transition:transform .2s,border-color .2s}
+.stream-mood-card:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 82% 12%,#ffffff30,transparent 42%),linear-gradient(135deg,#ffffff0a,transparent 66%);transition:transform .35s}
+.stream-mood-card:after{content:"";position:absolute;right:-35px;bottom:-56px;z-index:-1;width:155px;height:155px;border:1px solid #ffffff18;border-radius:50%;box-shadow:0 0 0 20px #ffffff05,0 0 0 42px #ffffff04;transition:transform .4s}
+.stream-mood-card:hover{transform:translateY(-3px);border-color:#b48ce95e}
+.stream-mood-card:hover:after{transform:scale(1.13) translate(-5px,-5px)}
+.stream-mood-card span{font:8px var(--mono);letter-spacing:1.1px;color:#ffffffa3}
+.stream-mood-card strong{font:600 clamp(13px,1.3vw,17px) var(--display)}
+.stream-mood-card i{position:absolute;right:15px;bottom:14px;font-style:normal;color:#ffffffa8;font-size:16px}
+.mood-night{background:linear-gradient(145deg,#4c2c67,#22152f 75%)}
+.mood-focus{background:linear-gradient(145deg,#23515b,#152b36 75%)}
+.mood-heart{background:linear-gradient(145deg,#7a3347,#341b31 75%)}
+.mood-drive{background:linear-gradient(145deg,#2d3b76,#171b3c 75%)}
+.mood-energy{background:linear-gradient(145deg,#754024,#321d28 75%)}
+.stream-bottom-cta{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px 28px;border:1px solid #ffffff13;border-radius:12px;background:radial-gradient(ellipse at 88% 0%,#8055aa2d,transparent 38%),linear-gradient(120deg,#17141e,#111016);margin:5px 0 17px}
+.stream-bottom-cta h2{font:600 clamp(19px,2vw,27px) var(--display);letter-spacing:-.7px;margin:7px 0;color:#f8f4ff}
+.stream-bottom-cta p{font-size:10px;color:#9b94a5;margin:0}
+.stream-bottom-cta .stream-play-button{flex:0 0 auto}
+.stream-disclaimer{font-size:9px;line-height:1.6;color:#6e6878;margin:16px 0 0;max-width:1100px}
+@media(max-width:1199px) and (min-width:701px){
+  .stream-intro{align-items:flex-start;flex-direction:column;gap:18px}
+  .stream-shortcuts{justify-content:flex-start}
+  .stream-hero{min-height:420px}
+  .stream-mood-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stream-mood-card{min-height:126px}
+}
+@media(max-width:950px){
+  .stream-intro h1{font-size:36px}
+  .stream-hero{min-height:400px}
+  .stream-hero-copy{width:86%;padding:28px}
+  .stream-hero-copy h2{font-size:clamp(37px,7vw,57px)}
+  .stream-mood-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .stream-muted-count{display:none}
+}
+@media(max-width:700px){
+  #page-home{padding-top:17px}
+  .stream-intro{padding-top:6px;gap:15px}
+  .stream-intro h1{font-size:32px;letter-spacing:-1.3px;margin-top:10px}
+  .stream-intro p{font-size:11px}
+  .stream-shortcuts{gap:7px}
+  .stream-shortcuts button{padding:8px 10px;font-size:9px}
+  .stream-hero{min-height:410px;margin:20px 0 34px;border-radius:12px}
+  .stream-hero-art{background-position:62% center}
+  .stream-hero-art:after{background:linear-gradient(90deg,#09090df2 0%,#09090da8 66%,#09090d4a 100%),linear-gradient(0deg,#09090df5 0%,#09090d60 65%,transparent 100%)}
+  .stream-hero-copy{width:100%;padding:22px 19px 25px}
+  .stream-hero-label{font-size:8px;letter-spacing:.7px;gap:10px;margin-bottom:14px}
+  .stream-hero-label span:last-child{padding-left:10px}
+  .stream-hero-copy h2{font-size:clamp(35px,11vw,50px);letter-spacing:-1.7px;margin-bottom:13px}
+  .stream-hero-meta{font-size:10px;line-height:1.5}
+  .stream-hero-copy p{font-size:10px;max-width:310px}
+  .stream-hero-actions{margin-top:18px}
+  .stream-play-button,.stream-list-button{min-height:41px;padding:0 13px;font-size:10px}
+  .stream-preview-note{font-size:8px;margin-top:15px}
+  .stream-hero-index{right:14px;top:15px;bottom:auto}
+  .stream-section{margin-bottom:32px}
+  .stream-section-heading{align-items:flex-start;gap:10px;margin-bottom:12px}
+  .stream-section-heading h2{font-size:17px}
+  .stream-section-heading p{max-width:290px;font-size:9px}
+  .stream-section-kicker{font-size:8px;letter-spacing:1px}
+  .stream-heading-actions{align-items:flex-end;flex-direction:column;gap:0}
+  .stream-heading-actions .stream-text-link{padding-top:0}
+  .stream-rail{gap:10px;margin-right:-15px;padding-right:15px}
+  .stream-track-card{flex-basis:137px}
+  .stream-local-rail .stream-track-card{flex-basis:145px}
+  .stream-track-meta{padding-top:8px}
+  .stream-track-meta strong{font-size:10px}
+  .stream-track-meta small{font-size:9px}
+  .stream-art-play{right:8px;bottom:8px;width:34px;height:34px;opacity:1;transform:none}
+  .stream-save-track{opacity:1;left:7px;top:7px;width:26px;height:26px}
+  .stream-mood-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .stream-mood-card{min-height:115px;padding:12px}
+  .stream-mood-card strong{font-size:13px}
+  .stream-mood-card span{font-size:7px}
+  .stream-bottom-cta{align-items:flex-start;flex-direction:column;padding:19px;margin-top:0}
+  .stream-bottom-cta .stream-play-button{width:100%}
+  .stream-disclaimer{font-size:8px}
+}
+@media(max-width:380px){
+  .stream-intro h1{font-size:29px}
+  .stream-hero{min-height:390px}
+  .stream-hero-copy{padding:19px 15px 22px}
+  .stream-hero-copy h2{font-size:35px}
+  .stream-hero-label span:last-child{display:none}
+  .stream-rail{gap:9px}
+  .stream-track-card{flex-basis:128px}
+  .stream-mood-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(min-width:1200px) and (max-width:1380px){
+  .main-nav{gap:17px;padding-right:370px}
+  .global-search{width:235px}
+}
+@media(prefers-reduced-motion:reduce){
+  .stream-loading-dot{animation:none}
+  .stream-hero-art,.stream-track-art-wrap img,.stream-mood-card,.stream-mood-card:after{transition:none}
+}
+
+/* Local library artwork cards */
+.stream-local-art{background:linear-gradient(145deg,#352443,#111016)}
+.stream-local-cover{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:7px;overflow:hidden;background:radial-gradient(ellipse at 30% 15%,color-mix(in srgb,var(--track-accent,#c2a0ff) 33%,transparent),transparent 55%),linear-gradient(145deg,#31243e,#121016)}
+.stream-local-cover:before{content:"";position:absolute;inset:16%;border:1px solid #ffffff19;border-radius:50%;box-shadow:0 0 0 15px #ffffff05,0 0 0 32px #ffffff04}
+.stream-local-cover i{position:relative;z-index:1;display:block;width:4px;border-radius:5px;background:var(--track-accent,#c2a0ff);box-shadow:0 0 13px color-mix(in srgb,var(--track-accent,#c2a0ff) 45%,transparent)}
+.stream-local-cover i:nth-child(1){height:22%}
+.stream-local-cover i:nth-child(2){height:42%}
+.stream-local-cover i:nth-child(3){height:30%}
+.stream-local-cover b{position:relative;z-index:1;display:grid;place-items:center;width:40px;height:40px;margin:0 3px;border:1px solid #ffffff35;border-radius:50%;background:#111016a8;color:#f6edff;font:500 19px var(--display);box-shadow:0 5px 18px #0006}
+
+
+
+/* Account-first Music Hub: playlist metadata is synchronized from official APIs. */
+.legacy-music-hub{display:none!important}
+.account-hub-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin:20px 0 18px;padding:24px;border:1px solid #31363b;border-radius:16px;background:radial-gradient(ellipse at 86% 0%,#303a241c,transparent 42%),#17191d}
+.account-hub-intro>div{max-width:680px}
+.account-hub-intro h2{margin:9px 0 8px;font-size:clamp(22px,3vw,32px);letter-spacing:-.8px}
+.account-hub-intro p{margin:0;color:#969da5;font-size:12px;line-height:1.75}
+.account-setup-toggle{white-space:nowrap;flex:0 0 auto}
+.account-setup{margin:0 0 17px;padding:20px;border:1px solid #3b4231;border-radius:13px;background:#1a1e18}
+.account-setup[hidden],.account-playlist-detail[hidden]{display:none!important}
+.account-setup-heading strong{font-size:13px;color:#edf2e8}
+.account-setup-heading p,.account-setup-note{font-size:11px;line-height:1.65;color:#969e91;margin:7px 0 13px}
+.account-setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.account-setup-grid label{display:grid;gap:7px;font-size:10px;color:#b7beb1}
+.account-setup-grid input,.account-search input,.account-library-controls select{min-width:0;width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #3b4038;border-radius:8px;background:#111315;color:#f3f5ef;font:inherit;outline:0}
+.account-setup-grid input:focus,.account-search:focus-within,.account-library-controls select:focus{border-color:#a0c55c}
+.account-setup-actions{display:flex;align-items:center;gap:14px;margin-top:13px}
+.account-setup-note{margin-bottom:0}
+.account-doc-links{display:flex;flex-wrap:wrap;gap:16px;margin-top:11px}
+.account-doc-links a{font-size:10px;color:#c7ed7d;text-decoration:none}
+.account-doc-links a:hover{text-decoration:underline}
+.account-hub-status{margin:0 0 23px;border:1px solid #2c3135;border-radius:10px}
+.account-hub-status[data-tone="success"]{border-color:#3d4c2e}
+.account-hub-status[data-tone="error"]{border-color:#673c3e}
+.account-services-heading{margin-top:30px}
+.account-services-heading .count-label{align-self:center;white-space:nowrap}
+.account-service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:17px}
+.account-service-card{display:flex;min-width:0;flex-direction:column;gap:11px;padding:17px;border:1px solid #2d3137;border-radius:13px;background:#191b1f;transition:border-color .18s,transform .18s,background .18s}
+.account-service-card:hover{border-color:#42483b;background:#1b1e1d;transform:translateY(-1px)}
+.account-service-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.account-service-card .platform-logo{flex:0 0 42px;width:42px;height:42px}
+.account-service-spotify .platform-logo{background:#213a29;color:#75efa0}
+.account-service-apple .platform-logo{background:#343238;color:#f3f3f5}
+.account-service-soundcloud .platform-logo{background:#3e2b20;color:#ffa568}
+.account-service-deezer .platform-logo{background:#302b43;color:#b7a4ff}
+.account-service-bandcamp .platform-logo{background:#21383b;color:#8ce8db;font:700 25px var(--display)}
+.account-service-tag{display:inline-flex;align-items:center;padding:5px 7px;border-radius:5px;background:#283321;color:#c6ed7c;font:9px var(--mono);letter-spacing:.35px}
+.account-tag-pending{background:#29251d;color:#d8bb83}
+.account-tag-policy{background:#28252e;color:#d0b8fb}
+.account-service-card h3{margin:0;color:#f0f2ee;font-size:14px}
+.account-service-card>p{min-height:48px;margin:0;color:#9299a0;font-size:11px;line-height:1.65}
+.account-service-status{min-height:32px;padding:9px 10px;border:1px solid #2c3035;border-radius:7px;background:#131518;color:#919aa0;font-size:10px;line-height:1.5}
+.account-service-status[data-connected="true"]{border-color:#39492a;color:#c9e994;background:#1b2117}
+.account-service-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto}
+.account-service-actions .primary-button,.account-service-actions .outline-button{justify-content:center;min-height:36px;padding:9px 11px;font-size:10px;text-decoration:none}
+.account-service-actions .text-button{font-size:10px}
+.account-service-actions [hidden]{display:none!important}
+.account-library-section{margin-top:34px}
+.account-library-section .section-heading{align-items:flex-end}
+.account-library-section .section-heading p{max-width:600px;margin:7px 0 0;color:#858c95;font-size:11px;line-height:1.6}
+.account-library-controls{display:grid;grid-template-columns:minmax(0,1fr) 170px auto auto auto;gap:9px;margin:16px 0}
+.account-search{display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #33383e;border-radius:8px;background:#17191c;color:var(--lime)}
+.account-search span{font-size:22px}
+.account-search input{padding:11px 0;border:0;background:transparent;font-size:11px}
+.account-library-controls select{font-size:11px}
+.account-library-controls>.outline-button,.account-library-controls>.primary-button{justify-content:center;padding:10px 11px;font-size:10px;white-space:nowrap}
+.account-playlist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.account-playlist-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid #2d3136;border-radius:12px;background:#17191d}
+.account-playlist-art{position:relative;display:grid;place-items:center;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(140deg,#303e2b,#1d2122 68%,#242031);color:#bce66e;font-size:32px}
+.account-playlist-art img{width:100%;height:100%;object-fit:cover}
+.account-playlist-art.no-art{background:radial-gradient(ellipse at 75% 12%,#3f3c50,#1e2225 70%)}
+.account-playlist-body{display:flex;min-width:0;flex:1;flex-direction:column;gap:7px;padding:13px 13px 5px}
+.account-playlist-provider{color:#bce66e;font:9px var(--mono);text-transform:uppercase;letter-spacing:.65px}
+.account-playlist-body h3{display:-webkit-box;overflow:hidden;margin:0;color:#f0f2ee;font-size:13px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.account-playlist-description{display:-webkit-box;overflow:hidden;min-height:30px;margin:0;color:#858c95;font-size:10px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.account-playlist-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto;color:#777f88;font-size:9px}
+.account-playlist-actions{display:flex;gap:8px;padding:12px 13px 13px}
+.small-account-button{min-height:32px;justify-content:center;padding:8px 9px;font-size:9px;white-space:nowrap;text-decoration:none}
+.account-playlist-actions>*{flex:1;min-width:0}
+.account-playlist-select{display:flex;align-items:center;gap:7px;width:max-content;max-width:100%;color:#8f9890;font-size:9px;cursor:pointer}
+.account-playlist-select input{width:14px;height:14px;accent-color:var(--lime);margin:0}
+.account-playlist-card:has(.account-playlist-select input:checked){border-color:#71884a;box-shadow:inset 0 0 0 1px #71884a}
+.account-track-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.account-track-actions>*{font-size:9px;white-space:nowrap}
+.account-empty-state{grid-column:1/-1;display:flex;min-height:190px;flex-direction:column;align-items:center;justify-content:center;padding:22px;border:1px dashed #343a3f;border-radius:12px;text-align:center;color:#e8ece5}
+.account-empty-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:10px;border-radius:12px;background:#293222;color:#c3ed71;font-size:22px}
+.account-empty-state strong{font-size:13px}
+.account-empty-state p{max-width:460px;margin:8px 0 0;color:#8a9299;font-size:11px;line-height:1.65}
+.account-empty-state.compact{min-height:80px;color:#9aa19a;font-size:11px}
+.account-playlist-detail{margin-top:26px;padding:18px;border:1px solid #33383e;border-radius:13px;background:#17191d;scroll-margin-top:90px}
+.account-detail-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.account-detail-heading h2{margin:6px 0;font-size:20px}
+.account-detail-heading p{margin:0;font-size:10px}
+.account-detail-heading>.outline-button{font-size:10px;white-space:nowrap}
+.account-detail-note{margin:14px 0;color:#89918d;font-size:10px;line-height:1.65}
+.account-playlist-tracks{display:grid;gap:6px}
+.account-track-row{display:grid;grid-template-columns:28px 48px minmax(0,1fr) auto;align-items:center;gap:11px;padding:8px;border:1px solid #292e32;border-radius:8px;background:#141619}
+.account-track-number{color:#777f88;font:10px var(--mono);text-align:center}
+.account-track-art{display:grid;place-items:center;width:48px;height:48px;overflow:hidden;border-radius:6px;background:#262c25;color:#c3ed71}
+.account-track-art img{width:100%;height:100%;object-fit:cover}
+.account-track-text{display:grid;gap:4px;min-width:0}
+.account-track-text strong{overflow:hidden;color:#e6e9e3;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.account-track-text small{overflow:hidden;color:#818992;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:1100px){.account-service-grid,.account-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-library-controls{grid-template-columns:minmax(0,1fr) 165px}.account-library-controls>.outline-button,.account-library-controls>.primary-button{width:100%;box-sizing:border-box}.account-library-controls>.outline-button:last-child{grid-column:1/-1}}
+@media(max-width:700px){.account-hub-intro{align-items:flex-start;flex-direction:column;padding:19px;gap:15px}.account-hub-intro h2{font-size:24px}.account-setup-grid{grid-template-columns:1fr}.account-services-heading{align-items:flex-start;flex-direction:column;gap:8px}.account-service-grid,.account-playlist-grid{grid-template-columns:1fr}.account-service-card>p{min-height:0}.account-library-controls{grid-template-columns:minmax(0,1fr);gap:8px}.account-library-controls select,.account-library-controls>.outline-button{width:100%;grid-column:auto}.account-library-section .section-heading{align-items:flex-start;flex-direction:column;gap:10px}.account-detail-heading{flex-direction:column}.account-detail-heading>.outline-button{width:100%}.account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}.account-track-art{width:42px;height:42px}.account-track-actions{grid-column:2/-1;justify-self:stretch;justify-content:flex-start}.account-playlist-detail{padding:12px}.account-playlist-actions{flex-wrap:wrap}.account-setup-actions{align-items:flex-start;flex-wrap:wrap}}
+
+
+.account-now-playing{margin:16px 0;padding:15px;border:1px solid #3e4930;border-radius:12px;background:radial-gradient(ellipse at 100% 0%,#2e40261f,transparent 60%),#151815}
+.account-now-playing[hidden],.account-youtube-player-wrap[hidden],.account-apple-player-status[hidden]{display:none!important}
+.account-now-playing-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.account-now-playing-title{display:grid;gap:5px;min-width:0}
+.account-now-playing-title strong{overflow:hidden;color:#edf1e7;font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+.account-now-playing-title small{color:#8b9585;font-size:10px}
+.account-player-transport{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.account-player-transport .outline-button,.account-player-transport .primary-button{justify-content:center;min-width:37px;padding:8px 10px;font-size:10px}
+.account-player-transport .text-button{font-size:10px}
+.account-youtube-player-wrap{max-width:640px;margin:0 auto}
+#accountYouTubePlayer{width:100%;min-width:200px;min-height:250px;aspect-ratio:16/9;overflow:hidden;border-radius:9px;background:#08090a}
+#accountYouTubePlayer iframe{display:block;width:100%;height:100%;min-height:250px;border:0}
+.account-youtube-player-wrap p{margin:8px 0 0;color:#7f897d;font-size:9px;text-align:center}
+.account-apple-player-status{padding:22px 15px;border:1px solid #303831;border-radius:9px;background:#111513;color:#a5b29d;font-size:11px;line-height:1.7;text-align:center}
+@media(max-width:700px){.account-now-playing{padding:11px}.account-now-playing-header{align-items:flex-start;flex-direction:column}.account-player-transport{width:100%}.account-player-transport button{flex:1}.account-player-transport .text-button{flex:0 0 auto}.account-track-actions{gap:5px}.account-track-actions>*{flex:1}}
+
+
+/* Musicfy-inspired player tools, built in the existing EUPHONIA visual system. */
+.account-player-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0}
+.account-player-tools .outline-button{justify-content:center;padding:9px 11px;font-size:10px}
+.account-player-tools .outline-button.is-active,.account-saved-tabs .outline-button.active{border-color:#647c3a;background:#252e1b;color:#d8f5a4}
+.account-queue-panel,.account-lyrics-panel{margin-top:12px;padding:14px;border:1px solid #30362b;border-radius:11px;background:#121512}
+.account-queue-panel[hidden],.account-lyrics-panel[hidden]{display:none!important}
+.account-subpanel-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.account-subpanel-heading>div{display:grid;gap:3px}
+.account-subpanel-heading strong{font-size:13px;color:#edf1e7}
+.account-subpanel-heading .text-button{font-size:10px;white-space:nowrap}
+.account-queue-items{display:grid;gap:6px}
+.account-queue-row{display:grid;grid-template-columns:25px 42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border:1px solid #292f29;border-radius:8px;background:#161916}
+.account-queue-row.is-current{border-color:#657b3b;background:#20271b}
+.account-queue-art{display:grid;place-items:center;width:42px;height:42px;overflow:hidden;border-radius:6px;background:#2a3024;color:#c9f36a}
+.account-queue-art img{width:100%;height:100%;object-fit:cover}
+.account-queue-actions{display:flex;align-items:center;gap:5px}
+.account-queue-actions button{min-width:28px;padding:6px 8px;font-size:9px}
+.account-lyrics-status{margin:0 0 10px;color:#9ca598;font-size:10px;line-height:1.6}
+.account-lyrics-lines{display:flex;max-height:340px;flex-direction:column;gap:8px;overflow:auto;padding:12px 7px;overscroll-behavior:contain}
+.account-lyric-line{margin:0;padding:7px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;color:#818a80;font-size:15px;line-height:1.7;transition:color .18s,background .18s}
+.account-lyric-line.is-active{border-left-color:var(--lime);background:#c9f36a12;color:#f2f7e9;font-weight:700}
+.account-plain-lyrics{margin:0;color:#d9dfd4;font:13px/1.9 var(--font);white-space:pre-wrap;overflow-wrap:anywhere}
+.account-saved-section{margin:30px 0 25px}
+.account-saved-heading{align-items:flex-end;gap:14px;flex-wrap:wrap}
+.account-saved-heading>div:first-child p{margin-top:6px}
+.account-saved-tabs{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.account-saved-tabs .outline-button{padding:9px 11px;font-size:10px}
+.account-saved-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:13px 0;color:#7f887e;font-size:10px}
+.account-saved-toolbar>div{display:flex;align-items:center;gap:9px}
+.account-saved-toolbar .primary-button{padding:9px 11px;font-size:10px}
+.account-saved-toolbar .text-button{font-size:10px}
+.account-saved-toolbar [hidden]{display:none!important}
+.account-saved-tracks{display:grid;gap:7px}
+.account-saved-tracks .account-track-row{grid-template-columns:28px 48px minmax(0,1fr) auto}
+.account-saved-tracks .account-track-actions{justify-content:flex-end}
+@media(max-width:700px){
+  .account-player-tools{gap:6px}
+  .account-player-tools .outline-button{flex:1;min-width:calc(50% - 6px)}
+  .account-subpanel-heading{align-items:flex-start}
+  .account-queue-row{grid-template-columns:22px 38px minmax(0,1fr);gap:7px}
+  .account-queue-art{width:38px;height:38px}
+  .account-queue-actions{grid-column:2/-1;justify-content:flex-start}
+  .account-queue-actions button{flex:1}
+  .account-saved-heading{align-items:flex-start;flex-direction:column}
+  .account-saved-tabs{width:100%}
+  .account-saved-tabs button{flex:1}
+  .account-saved-toolbar{align-items:flex-start;flex-direction:column}
+  .account-saved-toolbar>div{width:100%;flex-wrap:wrap}
+  .account-saved-toolbar .primary-button{flex:1}
+  .account-saved-tracks .account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}
+  .account-saved-tracks .account-track-art{width:42px;height:42px}
+  .account-saved-tracks .account-track-actions{grid-column:2/-1;justify-content:flex-start}
+}
+
+.account-progress-row{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:10px;margin:16px 0 8px;color:#8e9888;font:10px var(--mono);font-variant-numeric:tabular-nums}
+.account-progress-row input,.account-volume-row input{width:100%;min-width:0;accent-color:var(--lime);cursor:pointer}
+.account-volume-row{display:grid;grid-template-columns:auto minmax(90px,220px) 38px;align-items:center;justify-content:end;gap:10px;margin:0 0 12px;color:#8e9888;font-size:10px}
+.account-volume-row output{text-align:right;font:10px var(--mono);font-variant-numeric:tabular-nums}
+@media(max-width:700px){.account-progress-row{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.account-volume-row{grid-template-columns:auto minmax(70px,1fr) 38px}}
+
+
+/* Artist/song discovery: new tools follow the existing EUPHONIA dark + lime design. */
+.music-discovery-section{margin:26px 0 32px;padding:20px;border:1px solid #30353a;border-radius:14px;background:radial-gradient(ellipse at 92% 0%,#a4ce4e0b,transparent 46%),#17191c}
+.account-discovery-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:17px}
+.account-discovery-heading h2{margin:5px 0 7px;color:#f0f2ee;font-size:22px;letter-spacing:-.5px}
+.account-discovery-heading p{max-width:660px;margin:0;color:#9199a0;font-size:11px;line-height:1.65}
+.account-discovery-heading>.count-label{white-space:nowrap}
+.music-discovery-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(185px,240px) auto auto;gap:9px}
+.music-discovery-query{display:flex;min-width:0;align-items:center;gap:10px;padding:0 13px;border:1px solid #353b40;border-radius:8px;background:#111315;color:var(--lime)}
+.music-discovery-query>span{font-size:22px}
+.music-discovery-query input{width:100%;min-width:0;padding:12px 0;border:0;outline:none;background:transparent;color:#eef0e9;font:inherit;font-size:12px}
+.music-discovery-query input:focus-visible{outline:none}
+.music-discovery-form select{min-width:0;font-size:11px}
+.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{justify-content:center;padding:10px 13px;font-size:10px;white-space:nowrap}
+.music-discovery-hint{margin:10px 0 12px;color:#7f8982;font-size:10px;line-height:1.6}
+.music-discovery-status{margin-bottom:16px;border:1px solid #2c3135;border-radius:8px;font-size:10px;line-height:1.65}
+.music-discovery-status[data-tone="success"]{border-color:#3d4c2e}
+.music-discovery-status[data-tone="error"]{border-color:#673c3e}
+.music-discovery-results-panel[hidden]{display:none!important}
+.music-discovery-results-panel .hub-results-heading{margin:14px 0}
+.music-discovery-results-panel .hub-results-heading h2{margin:5px 0;color:#edf0e9;font-size:18px}
+.music-discovery-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.music-discovery-card{display:flex;min-width:0;overflow:hidden;flex-direction:column;border:1px solid #2c3136;border-radius:10px;background:#121416;transition:border-color .18s,transform .18s}
+.music-discovery-card:hover{border-color:#576943;transform:translateY(-1px)}
+.music-discovery-art{aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#343d2b,#20232a);color:#c7ec75;font-size:30px}
+.music-discovery-art img{display:block;width:100%;height:100%;object-fit:cover}
+.music-discovery-card-body{display:flex;min-width:0;flex:1;flex-direction:column;gap:7px;padding:12px}
+.music-discovery-track-title{display:-webkit-box;overflow:hidden;color:#ebeee8;font-size:12px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.music-discovery-track-artist,.music-discovery-album{overflow:hidden;color:#88918a;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.music-discovery-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:5px}
+.music-discovery-actions button{justify-content:center;min-height:32px;padding:8px 9px;font-size:9px}
+.music-discovery-source{color:#b8db7a;font-size:9px;text-decoration:none}
+.music-discovery-source:hover{text-decoration:underline}
+.music-discovery-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:1100px){.music-discovery-form{grid-template-columns:minmax(0,1fr) minmax(170px,220px)}.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%;box-sizing:border-box}.music-discovery-form>.primary-button{grid-column:auto}.music-discovery-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.music-discovery-section{padding:13px;margin-top:20px}.account-discovery-heading{align-items:flex-start;flex-direction:column;gap:9px}.account-discovery-heading h2{font-size:20px}.account-discovery-heading>.count-label{align-self:flex-start}.music-discovery-form{grid-template-columns:minmax(0,1fr);gap:8px}.music-discovery-form select,.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%}.music-discovery-results{grid-template-columns:minmax(0,1fr)}.music-discovery-card{display:grid;grid-template-columns:112px minmax(0,1fr)}.music-discovery-art{height:100%;min-height:120px;aspect-ratio:auto}.music-discovery-card-body{padding:10px}.music-discovery-actions button{flex:1}.music-discovery-actions{gap:5px}}
+
+
+/* Visible local-only YouTube API setup for the artist/song discovery panel. */
+.music-discovery-api-setup{margin:0 0 13px;border:1px solid #343a40;border-radius:9px;background:#141618;color:#e6eae2}
+.music-discovery-api-setup summary{padding:11px 13px;color:#c8eb8a;font-size:10px;font-weight:700;cursor:pointer;list-style-position:inside}
+.music-discovery-api-setup[open] summary{border-bottom:1px solid #2d3236}
+.music-discovery-api-copy{margin:0;padding:11px 13px 8px;color:#929a91;font-size:10px;line-height:1.65}
+.music-discovery-api-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:0 13px}
+.music-discovery-api-controls input{min-width:0;border:1px solid #353b40;border-radius:8px;background:#0e1012;color:#edf0e9;padding:10px 12px;font-size:11px}
+.music-discovery-api-controls button{font-size:10px;padding:9px 11px}
+.music-discovery-api-status{margin:8px 13px 12px;color:#858e83;font-size:10px;line-height:1.6}
+.music-discovery-api-status[data-tone="success"]{color:#c7eb8a}
+.music-discovery-api-status[data-tone="error"]{color:#ff9ba6}
+@media(max-width:700px){.music-discovery-api-controls{grid-template-columns:minmax(0,1fr)}.music-discovery-api-controls button{width:100%}}
+
+
+/* Audio-only discovery mode: no video source selector in Music Hub search. */
+.music-discovery-audio-mode{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #3a4430;border-radius:8px;background:#20271b;color:#c9f36a;font:9px var(--mono);letter-spacing:.7px;white-space:nowrap}
+@media(max-width:1100px){.music-discovery-audio-mode{width:100%;min-height:36px}}
+@media(max-width:700px){.music-discovery-audio-mode{min-height:40px}}
