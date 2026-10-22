@@ -1103,6 +1103,7 @@
     if (!panel || !host) return;
     if (title) title.textContent = playlist.title || "Playlist details";
     if (subtitle) subtitle.textContent = (playlist.providerName || providerTitle(playlist.provider)) + " · " + tracks.length + " item";
+    host.hidden = false;
     host.replaceChildren();
     if (!tracks.length) {
       const empty = document.createElement("div");
