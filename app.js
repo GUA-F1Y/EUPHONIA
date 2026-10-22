@@ -701,6 +701,7 @@
 
   function playItem(item) {
     if (!item) return;
+    window.dispatchEvent(new Event('euphonia:local-audio-start'));
     state.externalTrack = null;
     state.externalQueue = [];
     $('#playerArtwork').style.backgroundImage = 'none';
@@ -730,6 +731,7 @@
       return;
     }
     if (audioPlayer.paused) {
+      window.dispatchEvent(new Event('euphonia:local-audio-start'));
       audioPlayer.play().then(() => { $('#playerToggle').textContent = 'Ⅱ'; }).catch(() => toast('Playback belum bisa dimulai.', 'error'));
     } else {
       audioPlayer.pause();
@@ -962,6 +964,7 @@
       setHubStatus('Preview tidak tersedia untuk track ini.', 'error');
       return;
     }
+    window.dispatchEvent(new Event('euphonia:local-audio-start'));
     const embeddedPreview = $('#hubPreviewAudio');
     if (embeddedPreview) { embeddedPreview.pause(); embeddedPreview.removeAttribute('src'); embeddedPreview.load(); }
     const playableQueue = Array.isArray(queue) ? queue.filter(track => track && track.previewUrl) : [item];
@@ -1509,6 +1512,7 @@
       askImport('daw');
       return;
     }
+    window.dispatchEvent(new Event('euphonia:local-audio-start'));
     const startToken = ++state.playbackStartToken;
     state.isStartingPlayback = true;
     try {
@@ -1972,6 +1976,10 @@
       if ($('#page-studio').classList.contains('active')) { event.preventDefault(); state.dawPlaying ? pauseDaw() : startDaw(); }
       else if (state.currentFileId) { event.preventDefault(); togglePlayer(); }
     }
+  });
+
+  window.addEventListener('euphonia:account-playback-start', () => {
+    if (state.dawPlaying || state.isStartingPlayback) pauseDaw();
   });
 
   // In-app Music Hub: catalog previews and official embeds only; never frame entire service search pages.
