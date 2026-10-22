@@ -67,7 +67,7 @@ if (!accounts.includes('onAutoplayBlocked')) errors.push('YouTube autoplay-block
 if (!accounts.includes('153:')) errors.push('YouTube player client identity/referrer error handling is missing.');
 if (!accounts.includes('youtubeSyncPromise') || !accounts.includes('appleSyncPromise')) errors.push('Provider sync requests are not coalesced.');
 if (!accounts.includes('Request YouTube API timeout')) errors.push('YouTube request timeout handling is missing.');
-if (!accounts.includes('quota/rate limit')) errors.push('YouTube quota/rate-limit messaging is missing.');
+if (!/kuota\/rate limit/i.test(accounts)) errors.push('YouTube quota/rate-limit messaging is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlistItems')) errors.push('YouTube playlist item endpoint is missing.');
 if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music library playlist endpoint is missing.');
