@@ -27,6 +27,17 @@ Google still requires OAuth authorization to access the playlists belonging to t
 7. Do not put a client secret, access token, refresh token, or any private key in that file. A web OAuth Client ID is a public identifier, but it must be restricted to the origins that EUPHONIA uses.
 8. Push the config and deploy. Users now just click **Continue with Google**; Google displays the account chooser and asks permission the first time.
 
+## Enable artist/song search in Music Hub
+
+The new **Search artists & songs** panel supports two sources:
+
+- **YouTube Music**: uses the public YouTube Data API v3 search endpoint, then opens selected videos in EUPHONIA's official YouTube IFrame Player. Searching public videos does not require users to sign in to Google; reading private playlists still does.
+- **Apple Music previews**: uses Apple's public iTunes Search API to find tracks and play previews when the catalog provides a preview URL. Full Apple Music playback is separately available through MusicKit after the account and developer token are configured.
+
+For YouTube catalog search, replace `youtubeDataApiKey` in `euphonia-config.js` with a key from the same Google Cloud project after enabling YouTube Data API v3. **Treat the key as publicly visible**, because it is loaded by every browser. Restrict it to EUPHONIA's exact HTTP referrer/origin(s) and restrict the key to YouTube Data API v3; do not ship an unrestricted key. Configure development origins and deployed production origins separately. See [Google API key best practices](https://cloud.google.com/docs/authentication/api-keys) and [YouTube Data API quota guidance](https://developers.google.com/youtube/data/determine_quota_cost).
+
+The YouTube search bucket has a daily request limit that can be reached, especially if the search is repeated frequently or the app receives many users. EUPHONIA keeps a short in-memory result cache, limits each query to 12 items, reports quota errors, and does not auto-search on every keystroke. Check the Google Cloud quota dashboard before public launch. The API key is not an OAuth token and does not grant access to private playlists.
+
 ## Why this is still OAuth
 
 Reading a user's YouTube playlists requires a user-authorized access token with the YouTube read-only scope. The current browser code requests only `https://www.googleapis.com/auth/youtube.readonly`, keeps the access token in memory, and uses it for the YouTube Data API. It does not store Google access tokens in localStorage.
