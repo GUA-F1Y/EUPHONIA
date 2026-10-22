@@ -2,8 +2,9 @@
 
 Run these checks with real provider credentials in a browser. Do not mark a test complete until it has actually been tried.
 
-- [ ] Open Connection setup and save a Google OAuth Web Client ID; confirm only the client configuration persists in this browser.
-- [ ] Configure the Google OAuth consent screen, add the local origin to Authorized JavaScript origins, enable YouTube Data API v3, and allow the testing account when using OAuth Testing mode.
+- [ ] Confirm normal users do not see a Google Client ID field or API key field. The provider card says Continue with Google.
+- [ ] As the app maintainer only, set the Web Client ID in euphonia-config.js, configure the consent screen, add local/production origins to Authorized JavaScript origins, enable YouTube Data API v3, and allow testing accounts when using Testing mode.
+- [ ] With a configured Client ID, click Continue with Google. Verify the Google account chooser/consent appears and the requested scope is YouTube read-only.
 - [ ] Connect YouTube. Confirm OAuth asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
 - [ ] Open View tracks on a YouTube playlist and verify title, channel, artwork and Open source URL.
 - [ ] Press Play here on a YouTube track. Confirm the official YouTube iframe player appears inside EUPHONIA, plays the selected video, and does not embed the whole YouTube website.
