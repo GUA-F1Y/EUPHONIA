@@ -61,7 +61,7 @@ Implementation guardrails:
 Implementation guardrails:
 - Keep access tokens and provider secrets out of persistent local storage and Git history. Current Google access tokens should remain in memory; Apple developer tokens used in the browser are session-only and must never be the private signing key.
 - Treat local browser data as user-modifiable and potentially malformed. Validate parsed structures, cap queue/history/cache sizes, and handle storage quota or disabled storage gracefully.
-- Keep static app-shell cache versions synchronized whenever core scripts/styles change, and test upgrade/offline fallback behavior.
+- Keep static app-shell cache versions synchronized whenever core scripts/styles change. The current worker precaches its required shell atomically; if a required asset fails, it rejects that install and cleans up the incomplete cache so the previous worker can remain active. Test this recovery path and offline fallback behavior.
 - Do not apply a CSP blindly to static hosting; first enumerate the required Google, Apple, YouTube, lyrics, font, and artwork origins. Test in report-only mode before enforcing headers.
 
 ## 4. Automated testing and release quality
