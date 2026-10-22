@@ -963,6 +963,19 @@
     const track = accountPlaybackQueue[index];
     if (!track) return;
     const nextProvider = track.provider || accountPlaybackProvider;
+
+    // YouTube's official web player streams a video, not an audio-only track.
+    // Keep EUPHONIA audio-only by sending YouTube playlist selections to the Apple catalog preview search.
+    if (nextProvider === "youtube") {
+      const query = [track.title, track.artist].filter(Boolean).join(" ").trim();
+      setStatus("EUPHONIA menggunakan pemutaran audio-only. YouTube menyediakan video player, jadi mencari preview audio untuk lagu ini di katalog Apple Music.", "info");
+      if (query) {
+        window.dispatchEvent(new CustomEvent("euphonia:find-audio-preview", { detail: { query } }));
+      } else {
+        setStatus("Track YouTube ini tidak punya metadata judul/artis untuk mencari preview audio. Gunakan Open source atau cari judulnya di Music Hub.", "info");
+      }
+      return;
+    }
     if (accountPlaybackProvider === "youtube" && nextProvider !== "youtube" && youtubePlayer && typeof youtubePlayer.stopVideo === "function") {
       try { youtubePlayer.stopVideo(); } catch (_) {}
     }
@@ -1137,8 +1150,17 @@
         const actions = document.createElement("div");
         actions.className = "account-track-actions";
         const accountTrack = { ...track, provider: playlist.provider, providerName: playlist.providerName || providerTitle(playlist.provider), playlistTitle: playlist.title || "" };
-        if (["youtube", "apple"].includes(playlist.provider)) {
-          actions.append(createButton("Play here", "primary-button small-account-button", () => playTrackFromPlaylist(playlist, tracks, index)));
+        if (playlist.provider === "youtube") {
+          actions.append(createButton("Find audio preview", "primary-button small-account-button", () => {
+            const query = [track.title, track.artist].filter(Boolean).join(" ").trim();
+            if (!query) {
+              setStatus("Track ini tidak punya judul/artis untuk mencari preview audio.", "info");
+              return;
+            }
+            window.dispatchEvent(new CustomEvent("euphonia:find-audio-preview", { detail: { query } }));
+          }));
+        } else if (playlist.provider === "apple") {
+          actions.append(createButton("Play audio", "primary-button small-account-button", () => playTrackFromPlaylist(playlist, tracks, index)));
           actions.append(createButton("＋ Queue", "outline-button small-account-button", () => window.EUPHONIA_ACCOUNT_MUSIC?.enqueueTrack(accountTrack)));
         }
         const favoriteButton = createButton(window.EUPHONIA_MUSICFY?.isFavorite(accountTrack) ? "♥ Saved" : "♡ Favorite", "outline-button small-account-button", () => window.EUPHONIA_MUSICFY?.toggleFavorite(accountTrack));
