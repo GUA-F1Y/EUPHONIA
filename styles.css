@@ -536,3 +536,20 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-track-text small{overflow:hidden;color:#818992;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:1100px){.account-service-grid,.account-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-library-controls{grid-template-columns:minmax(0,1fr) 165px}.account-library-controls>.outline-button,.account-library-controls>.primary-button{width:100%;box-sizing:border-box}.account-library-controls>.outline-button:last-child{grid-column:1/-1}}
 @media(max-width:700px){.account-hub-intro{align-items:flex-start;flex-direction:column;padding:19px;gap:15px}.account-hub-intro h2{font-size:24px}.account-setup-grid{grid-template-columns:1fr}.account-services-heading{align-items:flex-start;flex-direction:column;gap:8px}.account-service-grid,.account-playlist-grid{grid-template-columns:1fr}.account-service-card>p{min-height:0}.account-library-controls{grid-template-columns:minmax(0,1fr);gap:8px}.account-library-controls select,.account-library-controls>.outline-button{width:100%;grid-column:auto}.account-library-section .section-heading{align-items:flex-start;flex-direction:column;gap:10px}.account-detail-heading{flex-direction:column}.account-detail-heading>.outline-button{width:100%}.account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}.account-track-art{width:42px;height:42px}.account-track-actions{grid-column:2/-1;justify-self:stretch;justify-content:flex-start}.account-playlist-detail{padding:12px}.account-playlist-actions{flex-wrap:wrap}.account-setup-actions{align-items:flex-start;flex-wrap:wrap}}
+
+
+.account-now-playing{margin:16px 0;padding:15px;border:1px solid #3e4930;border-radius:12px;background:radial-gradient(ellipse at 100% 0%,#2e40261f,transparent 60%),#151815}
+.account-now-playing[hidden],.account-youtube-player-wrap[hidden],.account-apple-player-status[hidden]{display:none!important}
+.account-now-playing-header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.account-now-playing-title{display:grid;gap:5px;min-width:0}
+.account-now-playing-title strong{overflow:hidden;color:#edf1e7;font-size:13px;text-overflow:ellipsis;white-space:nowrap}
+.account-now-playing-title small{color:#8b9585;font-size:10px}
+.account-player-transport{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.account-player-transport .outline-button,.account-player-transport .primary-button{justify-content:center;min-width:37px;padding:8px 10px;font-size:10px}
+.account-player-transport .text-button{font-size:10px}
+.account-youtube-player-wrap{max-width:640px;margin:0 auto}
+#accountYouTubePlayer{width:100%;min-width:200px;min-height:250px;aspect-ratio:16/9;overflow:hidden;border-radius:9px;background:#08090a}
+#accountYouTubePlayer iframe{display:block;width:100%;height:100%;min-height:250px;border:0}
+.account-youtube-player-wrap p{margin:8px 0 0;color:#7f897d;font-size:9px;text-align:center}
+.account-apple-player-status{padding:22px 15px;border:1px solid #303831;border-radius:9px;background:#111513;color:#a5b29d;font-size:11px;line-height:1.7;text-align:center}
+@media(max-width:700px){.account-now-playing{padding:11px}.account-now-playing-header{align-items:flex-start;flex-direction:column}.account-player-transport{width:100%}.account-player-transport button{flex:1}.account-player-transport .text-button{flex:0 0 auto}.account-track-actions{gap:5px}.account-track-actions>*{flex:1}}
