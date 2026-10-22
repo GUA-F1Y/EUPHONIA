@@ -440,3 +440,94 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .stream-local-cover i:nth-child(3){height:30%}
 .stream-local-cover b{position:relative;z-index:1;display:grid;place-items:center;width:40px;height:40px;margin:0 3px;border:1px solid #ffffff35;border-radius:50%;background:#111016a8;color:#f6edff;font:500 19px var(--display);box-shadow:0 5px 18px #0006}
 
+
+
+/* Account-first Music Hub: playlist metadata is synchronized from official APIs. */
+.legacy-music-hub{display:none!important}
+.account-hub-intro{display:flex;align-items:flex-end;justify-content:space-between;gap:22px;margin:20px 0 18px;padding:24px;border:1px solid #31363b;border-radius:16px;background:radial-gradient(ellipse at 86% 0%,#303a241c,transparent 42%),#17191d}
+.account-hub-intro>div{max-width:680px}
+.account-hub-intro h2{margin:9px 0 8px;font-size:clamp(22px,3vw,32px);letter-spacing:-.8px}
+.account-hub-intro p{margin:0;color:#969da5;font-size:12px;line-height:1.75}
+.account-setup-toggle{white-space:nowrap;flex:0 0 auto}
+.account-setup{margin:0 0 17px;padding:20px;border:1px solid #3b4231;border-radius:13px;background:#1a1e18}
+.account-setup[hidden],.account-playlist-detail[hidden]{display:none!important}
+.account-setup-heading strong{font-size:13px;color:#edf2e8}
+.account-setup-heading p,.account-setup-note{font-size:11px;line-height:1.65;color:#969e91;margin:7px 0 13px}
+.account-setup-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.account-setup-grid label{display:grid;gap:7px;font-size:10px;color:#b7beb1}
+.account-setup-grid input,.account-search input,.account-library-controls select{min-width:0;width:100%;box-sizing:border-box;padding:11px 12px;border:1px solid #3b4038;border-radius:8px;background:#111315;color:#f3f5ef;font:inherit;outline:0}
+.account-setup-grid input:focus,.account-search:focus-within,.account-library-controls select:focus{border-color:#a0c55c}
+.account-setup-actions{display:flex;align-items:center;gap:14px;margin-top:13px}
+.account-setup-note{margin-bottom:0}
+.account-doc-links{display:flex;flex-wrap:wrap;gap:16px;margin-top:11px}
+.account-doc-links a{font-size:10px;color:#c7ed7d;text-decoration:none}
+.account-doc-links a:hover{text-decoration:underline}
+.account-hub-status{margin:0 0 23px;border:1px solid #2c3135;border-radius:10px}
+.account-hub-status[data-tone="success"]{border-color:#3d4c2e}
+.account-hub-status[data-tone="error"]{border-color:#673c3e}
+.account-services-heading{margin-top:30px}
+.account-services-heading .count-label{align-self:center;white-space:nowrap}
+.account-service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin-top:17px}
+.account-service-card{display:flex;min-width:0;flex-direction:column;gap:11px;padding:17px;border:1px solid #2d3137;border-radius:13px;background:#191b1f;transition:border-color .18s,transform .18s,background .18s}
+.account-service-card:hover{border-color:#42483b;background:#1b1e1d;transform:translateY(-1px)}
+.account-service-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.account-service-card .platform-logo{flex:0 0 42px;width:42px;height:42px}
+.account-service-spotify .platform-logo{background:#213a29;color:#75efa0}
+.account-service-apple .platform-logo{background:#343238;color:#f3f3f5}
+.account-service-soundcloud .platform-logo{background:#3e2b20;color:#ffa568}
+.account-service-deezer .platform-logo{background:#302b43;color:#b7a4ff}
+.account-service-bandcamp .platform-logo{background:#21383b;color:#8ce8db;font:700 25px var(--display)}
+.account-service-tag{display:inline-flex;align-items:center;padding:5px 7px;border-radius:5px;background:#283321;color:#c6ed7c;font:9px var(--mono);letter-spacing:.35px}
+.account-tag-pending{background:#29251d;color:#d8bb83}
+.account-tag-policy{background:#28252e;color:#d0b8fb}
+.account-service-card h3{margin:0;color:#f0f2ee;font-size:14px}
+.account-service-card>p{min-height:48px;margin:0;color:#9299a0;font-size:11px;line-height:1.65}
+.account-service-status{min-height:32px;padding:9px 10px;border:1px solid #2c3035;border-radius:7px;background:#131518;color:#919aa0;font-size:10px;line-height:1.5}
+.account-service-status[data-connected="true"]{border-color:#39492a;color:#c9e994;background:#1b2117}
+.account-service-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:auto}
+.account-service-actions .primary-button,.account-service-actions .outline-button{justify-content:center;min-height:36px;padding:9px 11px;font-size:10px;text-decoration:none}
+.account-service-actions .text-button{font-size:10px}
+.account-service-actions [hidden]{display:none!important}
+.account-library-section{margin-top:34px}
+.account-library-section .section-heading{align-items:flex-end}
+.account-library-section .section-heading p{max-width:600px;margin:7px 0 0;color:#858c95;font-size:11px;line-height:1.6}
+.account-library-controls{display:grid;grid-template-columns:minmax(0,1fr) 180px auto;gap:10px;margin:16px 0}
+.account-search{display:flex;align-items:center;gap:9px;padding:0 12px;border:1px solid #33383e;border-radius:8px;background:#17191c;color:var(--lime)}
+.account-search span{font-size:22px}
+.account-search input{padding:11px 0;border:0;background:transparent;font-size:11px}
+.account-library-controls select{font-size:11px}
+.account-library-controls>.outline-button{justify-content:center;padding:10px 13px;font-size:10px}
+.account-playlist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
+.account-playlist-card{display:flex;min-width:0;flex-direction:column;overflow:hidden;border:1px solid #2d3136;border-radius:12px;background:#17191d}
+.account-playlist-art{position:relative;display:grid;place-items:center;aspect-ratio:16/9;overflow:hidden;background:linear-gradient(140deg,#303e2b,#1d2122 68%,#242031);color:#bce66e;font-size:32px}
+.account-playlist-art img{width:100%;height:100%;object-fit:cover}
+.account-playlist-art.no-art{background:radial-gradient(ellipse at 75% 12%,#3f3c50,#1e2225 70%)}
+.account-playlist-body{display:flex;min-width:0;flex:1;flex-direction:column;gap:7px;padding:13px 13px 5px}
+.account-playlist-provider{color:#bce66e;font:9px var(--mono);text-transform:uppercase;letter-spacing:.65px}
+.account-playlist-body h3{display:-webkit-box;overflow:hidden;margin:0;color:#f0f2ee;font-size:13px;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.account-playlist-description{display:-webkit-box;overflow:hidden;min-height:30px;margin:0;color:#858c95;font-size:10px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.account-playlist-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:auto;color:#777f88;font-size:9px}
+.account-playlist-actions{display:flex;gap:8px;padding:12px 13px 13px}
+.small-account-button{min-height:32px;justify-content:center;padding:8px 9px;font-size:9px;white-space:nowrap;text-decoration:none}
+.account-playlist-actions>*{flex:1;min-width:0}
+.account-empty-state{grid-column:1/-1;display:flex;min-height:190px;flex-direction:column;align-items:center;justify-content:center;padding:22px;border:1px dashed #343a3f;border-radius:12px;text-align:center;color:#e8ece5}
+.account-empty-icon{display:grid;place-items:center;width:42px;height:42px;margin-bottom:10px;border-radius:12px;background:#293222;color:#c3ed71;font-size:22px}
+.account-empty-state strong{font-size:13px}
+.account-empty-state p{max-width:460px;margin:8px 0 0;color:#8a9299;font-size:11px;line-height:1.65}
+.account-empty-state.compact{min-height:80px;color:#9aa19a;font-size:11px}
+.account-playlist-detail{margin-top:26px;padding:18px;border:1px solid #33383e;border-radius:13px;background:#17191d;scroll-margin-top:90px}
+.account-detail-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.account-detail-heading h2{margin:6px 0;font-size:20px}
+.account-detail-heading p{margin:0;font-size:10px}
+.account-detail-heading>.outline-button{font-size:10px;white-space:nowrap}
+.account-detail-note{margin:14px 0;color:#89918d;font-size:10px;line-height:1.65}
+.account-playlist-tracks{display:grid;gap:6px}
+.account-track-row{display:grid;grid-template-columns:28px 48px minmax(0,1fr) auto;align-items:center;gap:11px;padding:8px;border:1px solid #292e32;border-radius:8px;background:#141619}
+.account-track-number{color:#777f88;font:10px var(--mono);text-align:center}
+.account-track-art{display:grid;place-items:center;width:48px;height:48px;overflow:hidden;border-radius:6px;background:#262c25;color:#c3ed71}
+.account-track-art img{width:100%;height:100%;object-fit:cover}
+.account-track-text{display:grid;gap:4px;min-width:0}
+.account-track-text strong{overflow:hidden;color:#e6e9e3;font-size:11px;text-overflow:ellipsis;white-space:nowrap}
+.account-track-text small{overflow:hidden;color:#818992;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:1100px){.account-service-grid,.account-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.account-library-controls{grid-template-columns:minmax(0,1fr) 165px}.account-library-controls>.outline-button{grid-column:1/-1}}
+@media(max-width:700px){.account-hub-intro{align-items:flex-start;flex-direction:column;padding:19px;gap:15px}.account-hub-intro h2{font-size:24px}.account-setup-grid{grid-template-columns:1fr}.account-services-heading{align-items:flex-start;flex-direction:column;gap:8px}.account-service-grid,.account-playlist-grid{grid-template-columns:1fr}.account-service-card>p{min-height:0}.account-library-controls{grid-template-columns:minmax(0,1fr);gap:8px}.account-library-controls select,.account-library-controls>.outline-button{width:100%;grid-column:auto}.account-library-section .section-heading{align-items:flex-start;flex-direction:column;gap:10px}.account-detail-heading{flex-direction:column}.account-detail-heading>.outline-button{width:100%}.account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}.account-track-art{width:42px;height:42px}.account-track-row>.outline-button{grid-column:2/-1;justify-self:stretch}.account-playlist-detail{padding:12px}.account-playlist-actions{flex-wrap:wrap}.account-setup-actions{align-items:flex-start;flex-wrap:wrap}}
