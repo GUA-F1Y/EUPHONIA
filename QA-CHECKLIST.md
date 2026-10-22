@@ -3,6 +3,11 @@
 Run these checks with real provider credentials in a browser. Do not mark a test complete until it has actually been tried.
 
 - [ ] Confirm normal users do not see a Google Client ID field or API key field. The provider card says Continue with Google.
+- [ ] Confirm Music Hub shows Search artists & songs before the account playlist grid, without needing account sign-in just to open the search panel.
+- [ ] Configure a referrer-restricted YouTube Data API v3 key in euphonia-config.js; search an artist name, verify results are videos, and press Play here. Confirm the official YouTube player appears in the visible account playback panel without leaving the page.
+- [ ] Test query with zero results, rapid consecutive searches, offline/timeouts, API key restriction failure, YouTube quota 403, and a result that fails to embed; verify clear recovery guidance.
+- [ ] Search the Apple Music source without signing in. Play an available preview and confirm it uses the main EUPHONIA bottom player; verify tracks without preview URLs show a disabled Preview control.
+- [ ] With MusicKit authorized, verify the optional Full track action uses the official Apple Music player; test no subscription, invalid track URL and unavailable catalog item.
 - [ ] As the app maintainer only, set the Web Client ID in euphonia-config.js, configure the consent screen, add local/production origins to Authorized JavaScript origins, enable YouTube Data API v3, and allow testing accounts when using Testing mode.
 - [ ] With a configured Client ID, click Continue with Google. Verify the Google account chooser/consent appears and the requested scope is YouTube read-only.
 - [ ] Connect YouTube. Confirm OAuth asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
