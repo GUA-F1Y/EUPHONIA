@@ -545,12 +545,13 @@
       homeCatalogItems.set(key, item);
       homeCatalogQueues.set(key, queueItems.length ? queueItems : [item]);
     });
+    const savedIds = new Set(getHomeSavedTracks().map(entry => String(entry.trackId)));
     host.innerHTML = playable.slice(0, 14).map((item, index) => {
       const key = homeTrackKey(item);
       const art = homeArtwork(item, 600);
       const title = item.trackName || item.collectionName || 'Untitled track';
       const artist = item.artistName || 'Unknown artist';
-      const saved = getHomeSavedTracks().some(entry => String(entry.trackId) === key);
+      const saved = savedIds.has(key);
       const color = trackColors[index % trackColors.length];
       return `<article class="stream-track-card">
         <div class="stream-track-art-wrap" style="--track-accent:${color}">
