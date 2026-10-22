@@ -1,16 +1,23 @@
-## Music Hub v0.3.3 regression checks — no tab switching
-- [ ] Clicking each of the six platform cards does not change the current tab or navigate away. Clicking provider chrome/links inside the embedded player should not open a popup or navigate the EUPHONIA top-level page.
-- [ ] With no saved URL, a platform card selects that provider and focuses the in-app Share URL field.
-- [ ] Paste a public YouTube/YouTube Music playlist Share URL; the player loads in the EUPHONIA panel and the source link is stored locally.
-- [ ] Refresh the page and click YouTube Music again; the saved playlist loads in the same panel.
-- [ ] Repeat with shareable Spotify, Apple Music, SoundCloud, and Deezer URLs that support official embeds.
-- [ ] Confirm unsupported/private links show an in-app message and never open a new tab.
-- [ ] Clear the saved link for a provider and confirm its card prompts for a new share URL.
-- [ ] Use search with Spotify/SoundCloud/Deezer/Bandcamp selected; app remains in EUPHONIA and shows link guidance instead of opening a tab.
-- [ ] Confirm Apple catalog preview and optional YouTube Data API results still render in the app.
-- [ ] Check on desktop and mobile; iframe player controls remain visible and usable.
+## Music discovery homepage & Music Hub — current behavior
 
-**Limitation:** these checks require real provider URLs/accounts and browser testing. Private libraries cannot be read by this static frontend without each provider's approved authentication/API setup; an embed may still reject content or require login.
+Run these checks on the current Netflix-inspired music-discovery UI. Mark each item only after trying it in a real browser.
+
+- [ ] Load Home with the network available. Featured artwork and the Fresh Finds, Alternative R&B, Melodic Rap, and Indie shelves populate when the public iTunes Search API returns previewable tracks.
+- [ ] Temporarily block the catalog endpoint or use offline mode. Home remains usable, and empty/error shelves do not crash the rest of the app.
+- [ ] Play a track from a catalog shelf. The persistent player shows its title, artist, and artwork and controls the same preview audio.
+- [ ] Test play/pause, progress/seek, volume, previous/next, track-ended queue advance, and navigation between Home, Music Hub, Library, and Studio while audio is playing.
+- [ ] Add a previewable track to My List, remove it, refresh the page, and verify saved entries remain in the same browser profile.
+- [ ] Click every mood/genre shortcut. It opens Music Hub, fills the search field, and returns usable results or a clear provider error.
+- [ ] With an empty Library, click Import audio from the Home shelf. Import local MP3/WAV, verify the file appears in Continue listening and Library, and play it using the same persistent player.
+- [ ] Verify switching between a local file and catalog preview updates artwork/title/favorite state without leaving two audio previews playing at once.
+- [ ] Verify Send to DAW works for local files. A catalog preview must not be imported into the DAW as if it were a local source file.
+- [ ] Confirm five provider cards stay inside the Music Hub UI: YouTube Music, Apple Music, SoundCloud, Deezer, and Bandcamp. They should focus the appropriate catalog/API/share-link workflow.
+- [ ] Paste valid public share/embed links for providers that support the official embedded player. Check saved links survive refresh, reload works, close clears the frame, and invalid/unsupported hosts are rejected.
+- [ ] Test YouTube search with no API key and with a referrer-restricted YouTube Data API key. Without a key, the interface should request a supported share link; with a valid key, search results should load into the official embed player.
+- [ ] Click Spotify. The official Spotify website opens in a separate tab and EUPHONIA stays open. Spotify is intentionally not embedded or mixed into the other in-app catalogs.
+- [ ] Check desktop, tablet and mobile portrait/landscape. Confirm rails scroll horizontally, no page-wide horizontal overflow appears, and the persistent player and buttons remain usable.
+
+**Limits:** iTunes/Apple results are provider-supplied previews, not unrestricted full-track streams. Third-party embeds can require sign-in or refuse content by account, region, or provider policy. Real-browser playback checks are required before claiming release readiness.
 
 # EUPHONIA v0.3.0 — release checklist
 
@@ -65,16 +72,3 @@ This is a manual checklist. Check each item on the actual supported browser/devi
 
 Do not call the release fully production-certified until the checks that apply to the advertised target browsers/devices have passed. For important work, maintain portable project backups even after autosave has been tested.
 
-
-## Music Hub v0.3.2 regression checks
-- [ ] Search a common song/artist in Unified music search; verify result cards and preview buttons appear where available.
-- [ ] Start a preview, stop it, then start a different preview; verify only one preview is active.
-- [ ] Paste a public YouTube watch URL and verify the privacy-enhanced embedded player loads without opening a new tab.
-- [ ] Paste public Spotify track/album/playlist, Apple Music album, SoundCloud track, and Deezer track links; verify each uses the provider's official embed host.
-- [ ] Paste an unsupported or malformed URL; verify a clear in-app error appears and no arbitrary host is framed.
-- [ ] Configure a referrer-restricted YouTube Data API key; verify search results can be selected and loaded in the embed player.
-- [ ] Test mobile portrait and landscape: search controls and results remain usable without horizontal page overflow.
-- [ ] Click each platform card and verify it opens the corresponding playlist/library/collection route in a separate tab or routes to the native app when supported; EUPHONIA remains open.
-- [ ] Test from a phone with each platform installed and signed in. Verify App Links/Universal Links route into the expected account and playlist/library section where the service supports it.
-- [ ] Test with an app absent or signed out; verify the HTTPS website fallback is usable and EUPHONIA remains available.
-- [ ] Enter a query, select Spotify/SoundCloud/Deezer/Bandcamp, and verify Search opens the selected provider search in a new tab. For YouTube, test both with and without the API key.
