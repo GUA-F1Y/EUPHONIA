@@ -1,23 +1,22 @@
-## Music discovery homepage & Music Hub — current behavior
+## Account-based Music Hub — current behavior
 
-Run these checks on the current Netflix-inspired music-discovery UI. Mark each item only after trying it in a real browser.
+Run these checks in a real browser after configuring provider credentials. Do not mark a test complete until it has actually been tried.
 
-- [ ] Load Home with the network available. Featured artwork and the Fresh Finds, Alternative R&B, Melodic Rap, and Indie shelves populate when the public iTunes Search API returns previewable tracks.
-- [ ] Temporarily block the catalog endpoint or use offline mode. Home remains usable, and empty/error shelves do not crash the rest of the app.
-- [ ] Play a track from a catalog shelf. The persistent player shows its title, artist, and artwork and controls the same preview audio.
-- [ ] Test play/pause, progress/seek, volume, previous/next, track-ended queue advance, and navigation between Home, Music Hub, Library, and Studio while audio is playing.
-- [ ] Add a previewable track to My List, remove it, refresh the page, and verify saved entries remain in the same browser profile.
-- [ ] Click every mood/genre shortcut. It opens Music Hub, fills the search field, and returns usable results or a clear provider error.
-- [ ] With an empty Library, click Import audio from the Home shelf. Import local MP3/WAV, verify the file appears in Continue listening and Library, and play it using the same persistent player.
-- [ ] Verify switching between a local file and catalog preview updates artwork/title/favorite state without leaving two audio previews playing at once.
-- [ ] Verify Send to DAW works for local files. A catalog preview must not be imported into the DAW as if it were a local source file.
-- [ ] Confirm five provider cards stay inside the Music Hub UI: YouTube Music, Apple Music, SoundCloud, Deezer, and Bandcamp. They should focus the appropriate catalog/API/share-link workflow.
-- [ ] Paste valid public share/embed links for providers that support the official embedded player. Check saved links survive refresh, reload works, close clears the frame, and invalid/unsupported hosts are rejected.
-- [ ] Test YouTube search with no API key and with a referrer-restricted YouTube Data API key. Without a key, the interface should request a supported share link; with a valid key, search results should load into the official embed player.
-- [ ] Click Spotify. The official Spotify website opens in a separate tab and EUPHONIA stays open. Spotify is intentionally not embedded or mixed into the other in-app catalogs.
-- [ ] Check desktop, tablet and mobile portrait/landscape. Confirm rails scroll horizontally, no page-wide horizontal overflow appears, and the persistent player and buttons remain usable.
+- [ ] Open Connection setup and save a Google OAuth Web Client ID; confirm it persists only as client configuration in this browser.
+- [ ] Configure the Google Cloud OAuth consent screen, add the actual local origin as an authorized JavaScript origin, enable YouTube Data API v3, and add the testing account if the consent screen is in Testing mode.
+- [ ] Connect YouTube. Confirm the OAuth consent request asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
+- [ ] Refresh the YouTube list; check playlist title, artwork, item count and privacy metadata. Verify no OAuth access token appears in localStorage.
+- [ ] Open View tracks on a YouTube playlist. Confirm video metadata appears from playlistItems.list and Open source uses an official YouTube Music URL.
+- [ ] Disconnect YouTube. Confirm its local playlist cache clears and the current access token is revoked where the provider endpoint permits it.
+- [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the Apple Music account.
+- [ ] Verify Apple Music library playlists populate; open a playlist and check track metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
+- [ ] Reload the app. Cached playlist metadata remains visible, but provider sync requires a fresh account authorization if no live session is present.
+- [ ] Search/filter the library by playlist title/description and source. Use Home mood shortcuts and global search to filter local playlist metadata instead of opening hidden legacy embed controls.
+- [ ] Confirm SoundCloud clearly reports the secure-backend requirement; no client secret field exists in the browser UI or repository.
+- [ ] Confirm Deezer reports that its adapter needs separate OAuth validation, Spotify stays on its official service link, and Bandcamp does not pretend to sync consumer playlists.
+- [ ] Test desktop, tablet and mobile layouts, keyboard focus, API permission denial, expired/revoked token, offline state, zero-playlist accounts and large playlist collections.
 
-**Limits:** iTunes/Apple results are provider-supplied previews, not unrestricted full-track streams. Third-party embeds can require sign-in or refuse content by account, region, or provider policy. Real-browser playback checks are required before claiming release readiness.
+**Limits:** provider account sync requires each user's own provider setup and permission. YouTube's API result is limited to playlists returned by the YouTube Data API and may not reflect all YouTube Music-generated/library collections. This static browser integration is a personal-use prototype; production OAuth should use a secure backend and be reviewed against current provider requirements. Real-browser tests are still required.
 
 # EUPHONIA v0.3.0 — release checklist
 
