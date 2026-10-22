@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0351/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0352/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
@@ -60,8 +60,10 @@ if (!sw.includes("'./musicfy-features.js'")) errors.push('Service worker does no
 if (!sw.includes("'./music-discovery.js'")) errors.push('Service worker does not cache artist discovery.');
 if (!html.includes('music-discovery.js')) errors.push('Artist discovery module is not included in index.html.');
 const discovery = exists('music-discovery.js') ? read('music-discovery.js') : '';
-for (const marker of ['https://www.googleapis.com/youtube/v3/search', 'https://itunes.apple.com/search', 'videoEmbeddable', 'playQueue', 'playApplePreview', 'CACHE_TTL']) if (!discovery.includes(marker)) errors.push('Artist discovery integration is missing: ' + marker);
-for (const id of ['musicDiscoveryForm', 'musicDiscoveryQuery', 'musicDiscoverySource', 'musicDiscoveryStatus', 'musicDiscoveryResults', 'musicDiscoveryResultsPanel']) if (!idSet.has(id)) errors.push('Artist discovery UI missing from HTML: #' + id);
+for (const marker of ['https://itunes.apple.com/search', 'playApplePreview', 'CACHE_TTL', 'euphonia:find-audio-preview', 'Apple Music · Audio Only']) if (!discovery.includes(marker)) errors.push('Audio-only artist discovery integration is missing: ' + marker);
+for (const id of ['musicDiscoveryForm', 'musicDiscoveryQuery', 'musicDiscoveryStatus', 'musicDiscoveryResults', 'musicDiscoveryResultsPanel']) if (!idSet.has(id)) errors.push('Artist discovery UI missing from HTML: #' + id);
+if (!html.includes('music-discovery-audio-mode')) errors.push('Music Hub does not visibly identify audio-only playback.');
+if (discovery.includes('searchYouTube') || discovery.includes('videoId')) errors.push('Music Hub discovery must not search/play video results.');
 if (!appConfig.includes('youtubeDataApiKey')) errors.push('Public YouTube catalog search key setting is missing from app config.');
 if (!html.includes('musicfy-features.js')) errors.push('Musicfy-style player enhancement module is not included in index.html.');
 const musicfy = exists('musicfy-features.js') ? read('musicfy-features.js') : '';
