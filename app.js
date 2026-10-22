@@ -997,11 +997,13 @@
     $('#playerFav').textContent = saved || state.favorites.has(state.externalTrack.id) ? '♥' : '♡';
     $('#playerToggle').textContent = 'Ⅱ';
     renderLibrary();
-    audioPlayer.play().then(() => {
+    return audioPlayer.play().then(() => {
       setHubStatus(`Memutar preview ${state.externalTrack.trackName} di player EUPHONIA.`, 'success');
+      return true;
     }).catch(() => {
       $('#playerToggle').textContent = '▶';
       setHubStatus('Preview siap. Tekan Play pada player bawah jika browser belum memulainya.', 'info');
+      return false;
     });
   }
 
