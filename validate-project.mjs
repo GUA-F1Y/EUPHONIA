@@ -68,6 +68,8 @@ if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music lib
 if (!accounts.includes('async function importPlaylist(') || !accounts.includes('async function importSelectedPlaylists(')) errors.push('Playlist import workflow is missing.');
 if (!accounts.includes('lastRemoteTrackKeys')) errors.push('Playlist resync no longer tracks prior remote keys to preserve local removals.');
 if (!accounts.includes('ensureYouTubeIframeAPI') || !accounts.includes('appleMusic.setQueue')) errors.push('Official account playback adapters are missing.');
+if (!accounts.includes('ACCOUNT_QUEUE_KEY') || !accounts.includes('ACCOUNT_MODES_KEY')) errors.push('Account queue and playback mode persistence is missing.');
+if (!accounts.includes('appleMusic.player.seekToTime(value)')) errors.push('Apple Music seek adapter does not use the player seek method.');
 for (const id of ['accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle']) if (!idSet.has(id)) errors.push(`Account playback/import control missing from HTML: #${id}`);
 if (accounts.includes('localStorage.setItem(APPLE_TOKEN_KEY')) errors.push('Apple developer token should not be saved to localStorage.');
 if (!html.includes('manifest.json')) errors.push('PWA manifest is not linked in index.html.');
