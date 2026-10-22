@@ -1153,6 +1153,36 @@
   }
 
   window.EUPHONIA_ACCOUNT_MUSIC = Object.freeze({
+    play: async () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer) {
+          youtubePlayer.playVideo();
+          return true;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic && appleAuthorized) {
+          await appleMusic.play();
+          return true;
+        }
+      } catch (error) {
+        setStatus("Play gagal: " + (error.message || "provider tidak merespons."), "error");
+      }
+      return false;
+    },
+    pause: async () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer) {
+          youtubePlayer.pauseVideo();
+          return true;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic && appleAuthorized) {
+          await appleMusic.pause();
+          return true;
+        }
+      } catch (error) {
+        setStatus("Pause gagal: " + (error.message || "provider tidak merespons."), "error");
+      }
+      return false;
+    },
     togglePlayback: async () => {
       try {
         if (accountPlaybackProvider === "youtube" && youtubePlayer) {
