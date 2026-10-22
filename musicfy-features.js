@@ -13,6 +13,9 @@
   let savedView = "favorites";
   let activeLyrics = [];
   let lyricsRequestId = 0;
+  let lyricsController = null;
+  let nextLyricsRequestAt = 0;
+  let lyricsRateLimitedUntil = 0;
   let lyricsTimer = null;
   let lastHistoryKey = "";
   let lastHistoryTime = 0;
@@ -350,6 +353,33 @@
     stopLyricsTimer();
   }
 
+  function retryAfterMs(response) {
+    const header = response?.headers?.get("Retry-After");
+    if (!header) return 30000;
+    const seconds = Number(header);
+    if (Number.isFinite(seconds) && seconds >= 0) return Math.min(24 * 60 * 60 * 1000, seconds * 1000);
+    const date = Date.parse(header);
+    return Number.isFinite(date) ? Math.max(1000, Math.min(24 * 60 * 60 * 1000, date - Date.now())) : 30000;
+  }
+
+  function wait(ms, signal) {
+    if (ms <= 0) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+      if (signal?.aborted) return reject(new DOMException("Aborted", "AbortError"));
+      const finish = () => {
+        signal?.removeEventListener("abort", abort);
+        resolve();
+      };
+      const timer = window.setTimeout(finish, ms);
+      const abort = () => {
+        window.clearTimeout(timer);
+        signal?.removeEventListener("abort", abort);
+        reject(new DOMException("Aborted", "AbortError"));
+      };
+      signal?.addEventListener("abort", abort, { once: true });
+    });
+  }
+
   async function loadLyrics(track, force) {
     if (!track) {
       setStatus("Pilih track dari playlist akun sebelum mencari lirik.", "info");
@@ -360,6 +390,8 @@
     const host = $("#accountLyricsLines");
     if (!status || !host) return;
     const requestId = ++lyricsRequestId;
+    if (lyricsController) lyricsController.abort();
+    lyricsController = null;
     host.replaceChildren();
     activeLyrics = [];
     status.textContent = "Mencari lirik untuk “" + item.title + "”…";
@@ -370,21 +402,44 @@
       return;
     }
 
+    const cooldownRemaining = lyricsRateLimitedUntil - Date.now();
+    if (cooldownRemaining > 0) {
+      status.textContent = "LRCLIB sedang membatasi request. Coba kembali dalam sekitar " + Math.ceil(cooldownRemaining / 1000) + " detik.";
+      return;
+    }
+
+    const controller = new AbortController();
+    lyricsController = controller;
+    let timedOut = false;
+    let timeoutId = null;
     try {
+      // LRCLIB asks clients to serialize searches and leave a short gap between requests.
+      await wait(Math.max(0, nextLyricsRequestAt - Date.now()), controller.signal);
+      if (requestId !== lyricsRequestId) return;
+      nextLyricsRequestAt = Date.now() + 350;
+
       const url = new URL("https://lrclib.net/api/search");
       url.searchParams.set("track_name", item.title);
       if (item.artist) url.searchParams.set("artist_name", item.artist);
+      timeoutId = window.setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 12000);
       const response = await fetch(url.toString(), {
-        headers: { "X-User-Agent": "EUPHONIA/0.2 (+https://github.com/GUA-F1Y/EUPHONIA)" }
+        signal: controller.signal,
+        headers: { "X-User-Agent": "EUPHONIA/0.4.0 (https://github.com/GUA-F1Y/EUPHONIA)" },
+        cache: "no-store"
       });
       if (requestId !== lyricsRequestId) return;
       if (response.status === 429) {
-        const retry = response.headers.get("Retry-After");
-        status.textContent = "LRCLIB membatasi request. Coba kembali" + (retry ? " setelah " + retry + " detik." : " beberapa saat lagi.");
+        const waitMs = retryAfterMs(response);
+        lyricsRateLimitedUntil = Date.now() + waitMs;
+        status.textContent = "LRCLIB membatasi request. EUPHONIA menghormati Retry-After; coba kembali dalam sekitar " + Math.ceil(waitMs / 1000) + " detik.";
         return;
       }
       if (!response.ok) throw new Error("LRCLIB menjawab HTTP " + response.status);
       const results = await response.json();
+      if (requestId !== lyricsRequestId) return;
       if (!Array.isArray(results)) throw new Error("Format jawaban LRCLIB tidak dikenal.");
       const clean = value => String(value || "").toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
       const targetTitle = clean(item.title);
@@ -394,7 +449,7 @@
         const artist = clean(record.artistName);
         let score = 0;
         if (title === targetTitle) score += 8;
-        else if (title && (title.includes(targetTitle) || targetTitle.includes(title))) score += 3;
+        else if (title && targetTitle && (title.includes(targetTitle) || targetTitle.includes(title))) score += 3;
         if (targetArtist && artist === targetArtist) score += 6;
         else if (targetArtist && artist && (artist.includes(targetArtist) || targetArtist.includes(artist))) score += 3;
         if (record.syncedLyrics) score += 2;
@@ -418,7 +473,14 @@
       if (requestId === lyricsRequestId) renderLyrics(item, record);
     } catch (error) {
       if (requestId !== lyricsRequestId) return;
-      status.textContent = "Tidak dapat mengambil lirik saat ini: " + (error.message || "periksa koneksi internet.");
+      status.textContent = timedOut
+        ? "Permintaan lirik timeout setelah 12 detik. Coba kembali saat koneksi stabil."
+        : error.name === "AbortError"
+          ? "Pencarian lirik dibatalkan."
+          : "Tidak dapat mengambil lirik saat ini: " + (error.message || "periksa koneksi internet.");
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId);
+      if (lyricsController === controller) lyricsController = null;
     }
   }
 
