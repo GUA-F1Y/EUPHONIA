@@ -1,6 +1,6 @@
 # EUPHONIA — Music Hub & Studio
 
-EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-discovery homepage, provider links/embeds, an audio-preview player, local audio library, and browser-based DAW (multitrack arrangement, MIDI-style piano roll, drum sequencer, mixer/effects and project export). The project is static HTML/CSS/JavaScript; there is no build step, backend, account system, or cloud synchronization.
+EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-discovery homepage, an account-based Music Hub that reads playlist metadata from supported providers, a local audio library, and browser-based DAW (multitrack arrangement, MIDI-style piano roll, drum sequencer, mixer/effects and project export). The core UI is static HTML/CSS/JavaScript; playlist metadata is cached in the current browser profile, while provider sign-in and playback remain governed by each official service.
 
 > Release status: production-oriented beta. Static validation is included, but this package has not been certified through end-to-end testing on every target browser/phone. Complete the release checklist in `QA-CHECKLIST.md` before using it for important work or distributing it broadly.
 
@@ -30,12 +30,15 @@ EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-disc
 ## Included tools
 
 ### Music Hub
-- Home uses a Netflix-inspired browsing layout: a featured hero, horizontal catalog shelves, mood shortcuts, local tracks, and a browser-local My List.
-- The default catalog uses the public Apple/iTunes Search API and plays provider-supplied audio previews when available. These are previews, not unrestricted full-track streams.
-- Spotify opens its official service in a separate tab. EUPHONIA does not mix Spotify content into its other provider catalogs or route Spotify audio through its custom player/DAW. See [docs/spotify-connection.md](docs/spotify-connection.md) and the [Spotify Developer Policy](https://developer.spotify.com/policy).
-- YouTube Data API search is optional; official embed/share links are supported for services and content that permit them.
+- Home uses a Netflix-inspired browsing layout: a featured hero, horizontal discovery shelves, mood shortcuts, local tracks, and browser-local My List.
+- Music Hub can read YouTube account playlists using Google OAuth read access and YouTube Data API v3, then fetch playlist items on demand. YouTube API visibility rules apply; not every automatically generated YouTube Music library or playlist is necessarily returned.
+- Music Hub can read Apple Music library playlists through MusicKit on the Web after the user authorizes access. The user must supply their own Apple Music developer token; the token is held in session storage for the current tab.
+- Playlist metadata is cached in browser local storage; OAuth access tokens are not intentionally persisted. Disconnect clears the local cached metadata for that provider.
+- Spotify stays a separate official-service link because its developer policy prohibits integrating Spotify content/streams with content from another service. See [docs/spotify-connection.md](docs/spotify-connection.md) and the [Spotify Developer Policy](https://developer.spotify.com/policy).
+- SoundCloud account sync is not enabled in this static build: current OAuth token exchange requires a client secret, which must be handled by a secure backend and never exposed in browser code. Deezer needs separate app registration and OAuth validation. Bandcamp's official API is for label/merch partner account workflows, not a general listener-playlist API.
+- Opening a playlist or track links back to the official service for playback. EUPHONIA does not rip, proxy, or route third-party streams through its custom player/DAW.
+- The public iTunes Search API remains available for the Home discovery shelves and preview playback. These are provider-supplied previews, not unrestricted full-track streams.
 - Local library playback includes seek, volume, next/previous and favorites. Imported local audio stays in the browser profile's IndexedDB workspace.
-- EUPHONIA does not bypass DRM, licensing, paywalls, or provider iframe restrictions. Not every service will play within an embedded panel.
 
 ### Arrangement / multitrack DAW
 - Import local audio clips into tracks, move clips and move them across tracks, trim the clip start/end, split at the playhead, duplicate/delete clips, draw placement, select tools and undo/redo.
