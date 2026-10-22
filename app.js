@@ -880,6 +880,8 @@
   }
 
   function getYoutubeApiKey() {
+    const configured = String(window.EUPHONIA_CONFIG?.youtubeDataApiKey || '').trim();
+    if (configured && !configured.startsWith('YOUR_YOUTUBE_')) return configured;
     try { return localStorage.getItem('euphonia.youtubeDataApiKey') || ''; }
     catch (_) { return ''; }
   }
@@ -2353,6 +2355,8 @@
     setTrackControl: (trackId, action) => handleTrackAction(action, Number(trackId)),
     refreshDawMix: () => { if (state.dawPlaying) { pauseDaw(); startDaw(); } renderDaw(); },
     saveProject: saveSessionJSON,
+    // Reuse the established local player state/queue when playing official Apple preview URLs.
+    playApplePreview: (item, queue = null) => playApplePreview(item, queue),
     markDirty: queueWorkspaceSave,
     getView: () => window.EUPHONIA_DAW?.getView?.() || 'arrangement'
   };
