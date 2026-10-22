@@ -4,6 +4,15 @@ EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-disc
 
 > Release status: production-oriented beta. Static validation is included, but this package has not been certified through end-to-end testing on every target browser/phone. Complete the release checklist in `QA-CHECKLIST.md` before using it for important work or distributing it broadly.
 
+## Artist and song search
+
+The visible Music Hub includes **Search artists & songs**:
+- Search YouTube music videos by an artist or track name and play the selected result in the official YouTube player embedded in EUPHONIA.
+- Search the Apple catalog without sign-in and play catalog-provided previews through EUPHONIA's existing bottom player.
+- Add supported YouTube/Apple Music items to the account playback queue. Full Apple Music playback is offered only when the MusicKit account is ready and an Apple Music URL is available.
+
+YouTube catalog search needs a one-time maintainer setup: set a referrer-restricted YouTube Data API v3 key in `euphonia-config.js`. The key is publicly visible in a static frontend and must be restricted. The feature does not require each user to enter a key, and public catalog search does not require OAuth; private account playlists still require Google consent. Apple catalog previews are only available when Apple returns a preview URL; previews are not guaranteed to be full-length tracks. See `docs/google-account-setup.md` for configuration.
+
 ## Music Hub player features
 
 The account Music Hub now has a Musicfy-inspired set of everyday listening workflows while retaining EUPHONIA's original web UI:
