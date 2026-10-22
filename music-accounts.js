@@ -5,6 +5,8 @@
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const CACHE_KEY = "euphonia.musicHub.accountPlaylists.v1";
   const IMPORTED_KEY = "euphonia.musicHub.importedPlaylists.v1";
+  const ACCOUNT_QUEUE_KEY = "euphonia.musicHub.accountQueue.v1";
+  const ACCOUNT_MODES_KEY = "euphonia.musicHub.accountPlaybackModes.v1";
   const APPLE_TOKEN_KEY = "euphonia.musicHub.appleDeveloperToken.session";
   const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
 
@@ -25,16 +27,17 @@
   let pendingYoutubePlaylistId = null;
   let pendingApplePlaylistId = null;
   let activePlaylistDetailKey = null;
-  let accountPlaybackQueue = [];
+  let accountPlaybackQueue = readJSON(localStorage, ACCOUNT_QUEUE_KEY, []);
   let accountPlaybackIndex = -1;
   let accountPlaybackProvider = null;
+  const restoredPlaybackModes = readJSON(localStorage, ACCOUNT_MODES_KEY, {});
+  let accountShuffleEnabled = Boolean(restoredPlaybackModes && restoredPlaybackModes.shuffle);
+  let accountRepeatMode = restoredPlaybackModes && ["off", "all", "one"].includes(restoredPlaybackModes.repeat) ? restoredPlaybackModes.repeat : "off";
   let youtubePlayer = null;
   let youtubeApiPromise = null;
   let applePlaybackBusy = false;
   let applePlaybackEventInstance = null;
   let lastAppleEndedAt = 0;
-  let accountShuffleEnabled = false;
-  let accountRepeatMode = "off";
 
   function readJSON(storage, key, fallback) {
     try {
@@ -528,8 +531,8 @@
       if (accountPlaybackProvider !== "apple") return;
       const state = appleMusic?.player?.playbackState ?? appleMusic?.playbackState;
       const states = MusicKit?.PlaybackStates || {};
-      const isPlaying = state === states.playing || state === 2 || state === "playing";
-      const isEnded = state === states.ended || state === states.completed || state === 5 || state === 10 || state === "ended" || state === "completed";
+      const isPlaying = state === states.playing || state === 5 || state === "playing";
+      const isEnded = state === states.ended || state === states.completed || state === 1 || state === 0 || state === "ended" || state === "completed";
       if (isPlaying) {
         window.dispatchEvent(new CustomEvent("euphonia:account-playback-started", { detail: { track: currentAccountTrack() } }));
         const button = $("#accountPlayerToggle");
@@ -538,7 +541,7 @@
       if (isEnded && Date.now() - lastAppleEndedAt > 1500) {
         lastAppleEndedAt = Date.now();
         advanceAccountQueue(1, true);
-      } else if (state === states.paused || state === 3 || state === "paused") {
+      } else if (state === states.paused || state === 4 || state === "paused") {
         const button = $("#accountPlayerToggle");
         if (button) button.textContent = "▶ Play";
       }
@@ -833,6 +836,16 @@
   }
 
   function emitAccountQueueChange() {
+    try {
+      const safeQueue = accountPlaybackQueue.slice(0, 500).map(track => {
+        const { queueIndex, active, ...metadata } = track || {};
+        return metadata;
+      });
+      localStorage.setItem(ACCOUNT_QUEUE_KEY, JSON.stringify(safeQueue));
+      localStorage.setItem(ACCOUNT_MODES_KEY, JSON.stringify({ shuffle: accountShuffleEnabled, repeat: accountRepeatMode }));
+    } catch (_) {
+      setStatus("Queue hanya tersimpan selama sesi ini karena browser menolak penyimpanan lokal.", "error");
+    }
     const queue = accountPlaybackQueue.map((track, index) => ({ ...track, queueIndex: index, active: index === accountPlaybackIndex }));
     window.dispatchEvent(new CustomEvent("euphonia:account-queue-change", {
       detail: { queue, index: accountPlaybackIndex, shuffle: accountShuffleEnabled, repeat: accountRepeatMode }
@@ -1152,8 +1165,8 @@
           youtubePlayer.seekTo(value, true);
           return Promise.resolve();
         }
-        if (accountPlaybackProvider === "apple" && appleMusic && typeof appleMusic.seekToTime === "function") {
-          return appleMusic.seekToTime(value);
+        if (accountPlaybackProvider === "apple" && appleMusic?.player && typeof appleMusic.player.seekToTime === "function") {
+          return appleMusic.player.seekToTime(value);
         }
       } catch (error) {
         return Promise.reject(error);
@@ -1413,6 +1426,12 @@
   });
 
   function init() {
+    if (!Array.isArray(accountPlaybackQueue)) accountPlaybackQueue = [];
+    accountPlaybackQueue = accountPlaybackQueue
+      .filter(track => track && ["youtube", "apple"].includes(track.provider) && (track.id || track.url))
+      .slice(0, 500);
+    accountPlaybackIndex = -1;
+    accountPlaybackProvider = null;
     initSettings();
     initListeners();
     renderProviderStates();
