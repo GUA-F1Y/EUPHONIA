@@ -665,3 +665,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .music-discovery-api-status[data-tone="success"]{color:#c7eb8a}
 .music-discovery-api-status[data-tone="error"]{color:#ff9ba6}
 @media(max-width:700px){.music-discovery-api-controls{grid-template-columns:minmax(0,1fr)}.music-discovery-api-controls button{width:100%}}
+
+
+/* Audio-only discovery mode: no video source selector in Music Hub search. */
+.music-discovery-audio-mode{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid #3a4430;border-radius:8px;background:#20271b;color:#c9f36a;font:9px var(--mono);letter-spacing:.7px;white-space:nowrap}
+@media(max-width:1100px){.music-discovery-audio-mode{width:100%;min-height:36px}}
+@media(max-width:700px){.music-discovery-audio-mode{min-height:40px}}
