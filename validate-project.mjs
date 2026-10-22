@@ -9,11 +9,11 @@ const warnings = [];
 const read = name => fs.readFileSync(path.join(root, name), 'utf8');
 const exists = name => fs.existsSync(path.join(root, name));
 
-for (const file of ['index.html', 'styles.css', 'app.js', 'music-accounts.js', 'euphonia-daw.js', 'euphonia-storage.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png']) {
+for (const file of ['index.html', 'styles.css', 'app.js', 'euphonia-config.js', 'music-accounts.js', 'euphonia-daw.js', 'euphonia-storage.js', 'manifest.json', 'sw.js', 'icon-192.png', 'icon-512.png']) {
   if (!exists(file)) errors.push(`Missing required file: ${file}`);
 }
 
-for (const file of ['app.js', 'music-accounts.js', 'euphonia-daw.js', 'euphonia-storage.js', 'sw.js']) {
+for (const file of ['app.js', 'euphonia-config.js', 'music-accounts.js', 'euphonia-daw.js', 'euphonia-storage.js', 'sw.js']) {
   const result = spawnSync(process.execPath, ['--check', path.join(root, file)], { encoding: 'utf8' });
   if (result.status !== 0) errors.push(`Syntax check failed for ${file}: ${(result.stderr || result.stdout || 'unknown error').trim()}`);
 }
@@ -47,9 +47,14 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0344/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0345/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
+if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
+if (!sw.includes("'./euphonia-config.js'")) errors.push('Service worker does not cache the public app configuration.');
+const appConfig = exists('euphonia-config.js') ? read('euphonia-config.js') : '';
+if (!appConfig.includes('googleOAuthClientId')) errors.push('Google OAuth Web Client ID config entry is missing.');
+if (appConfig.includes('YOUR_GOOGLE_OAUTH_WEB_CLIENT_ID')) warnings.push('Google login stays disabled until the app maintainer adds its Web Client ID to euphonia-config.js. End users will not need to enter this value.');
 if (!sw.includes("'./music-accounts.js'")) errors.push('Service worker does not cache the account playlist integration module.');
 const accounts = exists('music-accounts.js') ? read('music-accounts.js') : '';
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
@@ -61,7 +66,7 @@ if (!accounts.includes('ensureYouTubeIframeAPI') || !accounts.includes('appleMus
 for (const id of ['accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle']) if (!idSet.has(id)) errors.push(`Account playback/import control missing from HTML: #${id}`);
 if (accounts.includes('localStorage.setItem(APPLE_TOKEN_KEY')) errors.push('Apple developer token should not be saved to localStorage.');
 if (!html.includes('manifest.json')) errors.push('PWA manifest is not linked in index.html.');
-for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist', 'accountHubStatus', 'accountSetup', 'accountGoogleClientId', 'accountAppleDeveloperToken', 'accountPlaylistGrid', 'accountPlaylistSearch', 'accountPlaylistFilter', 'accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountApplePlayerStatus', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle', 'accountPlayerClose']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
+for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist', 'accountHubStatus', 'accountSetup', 'accountAppleDeveloperToken', 'accountPlaylistGrid', 'accountPlaylistSearch', 'accountPlaylistFilter', 'accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountApplePlayerStatus', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle', 'accountPlayerClose']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
 if (/frame\.src\s*=\s*destination/.test(app)) errors.push('Unsafe legacy behavior still attempts to frame whole platform search URLs.');
 if (!app.includes('https://www.googleapis.com/youtube/v3/search')) errors.push('YouTube Data API search integration is missing.');
 if (!app.includes('https://itunes.apple.com/search')) errors.push('No-key catalog search integration is missing.');
@@ -82,7 +87,7 @@ if (!/addEventListener\(['"]activate['"]/.test(sw)) errors.push('Service worker 
 if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.');
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
-console.log(`EUPHONIA account playlist + playback static validation`);
+console.log(`EUPHONIA account playlists + one-click Google setup static validation`);
 console.log(`HTML ids: ${idSet.size}; core scripts checked: 5; manifest and local references checked.`);
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 if (errors.length) {
