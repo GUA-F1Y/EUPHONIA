@@ -4,6 +4,19 @@ EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-disc
 
 > Release status: production-oriented beta. Static validation is included, but this package has not been certified through end-to-end testing on every target browser/phone. Complete the release checklist in `QA-CHECKLIST.md` before using it for important work or distributing it broadly.
 
+## Music Hub player features
+
+The account Music Hub now has a Musicfy-inspired set of everyday listening workflows while retaining EUPHONIA's original web UI:
+
+- Save or remove account tracks from local **Favorites**; the collection survives page reloads in the same browser profile.
+- A **Recently played** list for account tracks that start playback.
+- A managed playback queue: add tracks from playlist details, play a queued item, move it up/down, remove items, or clear the queue.
+- **Shuffle**, **Repeat all**, and **Repeat one** for the active account queue.
+- **Synchronized or plain lyrics** via LRCLIB when a matching lyrics record exists; synced lines follow the official player's playback position where supported.
+- The existing account-based playlist import/resync workflow remains metadata-only and never modifies the provider's original playlist.
+
+Favorites, history, queue state, playlist metadata and lyric cache are browser-local. Official provider SDKs control streaming and provider restrictions still apply. Spotify content is not mixed into EUPHONIA's cross-service player. LRCLIB lyrics are best-effort: tracks without a matching record, API throttling or network errors may have no lyrics.
+
 ## Run on Windows / VS Code
 
 1. Extract the ZIP and open the `euphonia-studio` folder in VS Code.
