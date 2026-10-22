@@ -17,6 +17,8 @@ The account Music Hub now has a Musicfy-inspired set of everyday listening workf
 
 Favorites, history, queue state, playlist metadata and lyric cache are browser-local. Official provider SDKs control streaming and provider restrictions still apply. Spotify content is not mixed into EUPHONIA's cross-service player. LRCLIB lyrics are best-effort: tracks without a matching record, API throttling or network errors may have no lyrics.
 
+For implementation choices, official provider/API references, security and stability guidance, and the recommended release roadmap, see [docs/engineering-resources.md](docs/engineering-resources.md). This resource map is the starting point for future provider adapters, browser testing, and deployment hardening.
+
 ## Run on Windows / VS Code
 
 1. Extract the ZIP and open the `euphonia-studio` folder in VS Code.
