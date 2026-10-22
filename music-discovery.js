@@ -266,10 +266,21 @@
       if (!response.ok || data.error) {
         const reason = data.error?.errors?.[0]?.reason || "";
         if (response.status === 403 && /quotaExceeded|dailyLimitExceeded|rateLimitExceeded/i.test(reason)) {
-          throw new Error("Kuota pencarian YouTube sedang habis. Coba lagi setelah kuota reset atau gunakan Apple Music Previews.");
+          throw new Error("Kuota pencarian YouTube sedang habis (" + reason + "). Coba lagi setelah kuota reset atau gunakan Apple Music Previews.");
         }
-        if (response.status === 403) throw new Error("YouTube API menolak permintaan. Periksa pembatasan HTTP referrer, izin YouTube Data API v3, dan API key pemilik aplikasi.");
-        throw new Error(data.error?.message || "YouTube API HTTP " + response.status);
+        if (/keyInvalid|invalidKey|API_KEY_INVALID/i.test(reason)) {
+          throw new Error("API key ditolak (" + reason + "). Buat key pengganti di Google Cloud, aktifkan YouTube Data API v3, lalu simpan key baru di pengaturan pencarian EUPHONIA.");
+        }
+        if (/accessNotConfigured|SERVICE_DISABLED|accessNotConfigured/i.test(reason)) {
+          throw new Error("YouTube Data API v3 belum aktif untuk project Google Cloud pemilik key (" + reason + "). Aktifkan API pada project yang sama dengan key.");
+        }
+        if (/ipRefererBlocked|refererNotAllowed|referrerNotAllowed|API_KEY_HTTP_REFERRER_BLOCKED/i.test(reason)) {
+          throw new Error("Alamat website EUPHONIA tidak cocok dengan Website restrictions (" + reason + "). Tambahkan origin browser yang tepat, termasuk host dan port, di Google Cloud.");
+        }
+        if (response.status === 403) {
+          throw new Error("Google menolak YouTube API (403; reason: " + (reason || "tidak disediakan") + "). Periksa Website restrictions, API restrictions, status API, dan kuota di Google Cloud.");
+        }
+        throw new Error(data.error?.message || "YouTube API HTTP " + response.status + (reason ? " (" + reason + ")" : ""));
       }
       const items = (Array.isArray(data.items) ? data.items : []).filter(item => item?.id?.videoId && item.snippet);
       cache.set(cacheKey, { items, at: Date.now() });
