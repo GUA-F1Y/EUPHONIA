@@ -143,8 +143,9 @@
     const link = document.createElement("a");
     link.className = "outline-button small-account-button";
     link.textContent = label;
-    link.href = /^https:\/\//i.test(href || "") ? href : "#";
-    if (link.href !== "#") {
+    const validUrl = /^https:\/\//i.test(href || "");
+    link.href = validUrl ? href : "#";
+    if (validUrl) {
       link.target = "_blank";
       link.rel = "noopener noreferrer";
     } else {
