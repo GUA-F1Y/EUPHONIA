@@ -336,24 +336,76 @@
   }
 
   async function fetchYouTubeJSON(endpoint, token) {
-    const response = await fetch(endpoint, {
-      headers: { Authorization: "Bearer " + token, Accept: "application/json" },
-      cache: "no-store"
-    });
-    let data = {};
-    try { data = await response.json(); } catch (_) {}
-    if (!response.ok || data.error) {
-      const message = data.error && data.error.message ? data.error.message : "YouTube API HTTP " + response.status;
+    let lastError = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 15000);
+      let response;
+      try {
+        response = await fetch(endpoint, {
+          headers: { Authorization: "Bearer " + token, Accept: "application/json" },
+          cache: "no-store",
+          signal: controller.signal
+        });
+      } catch (error) {
+        if (controller.signal.aborted) {
+          lastError = new Error("Request YouTube API timeout setelah 15 detik. Periksa koneksi lalu coba sync lagi.");
+        } else {
+          lastError = new Error("Tidak dapat menjangkau YouTube API. Periksa koneksi internet dan coba lagi.");
+        }
+        window.clearTimeout(timeoutId);
+        if (attempt < 2 && !controller.signal.aborted) {
+          await new Promise(resolve => window.setTimeout(resolve, 350 * (attempt + 1)));
+          continue;
+        }
+        throw lastError;
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+
+      let data = {};
+      try { data = await response.json(); } catch (_) {}
+      if (response.ok && !data.error) return data;
+
+      const reason = data.error?.errors?.[0]?.reason || "";
+      const message = data.error?.message || "YouTube API HTTP " + response.status;
       if (response.status === 401) {
         youtubeAccessToken = null;
         youtubeTokenExpiresAt = 0;
+        renderProviderStates();
+        throw new Error("Sesi Google sudah kedaluwarsa atau izin tidak berlaku. Tekan Reconnect with Google lalu coba lagi.");
+      }
+      if (response.status === 403 && /quotaExceeded|dailyLimitExceeded|rateLimitExceeded/i.test(reason)) {
+        throw new Error("Kuota/rate limit YouTube Data API sedang habis. Cek Google Cloud Quotas dan tunggu sebelum sync berikutnya.");
+      }
+      if ((response.status === 429 || [500, 502, 503, 504].includes(response.status)) && attempt < 2) {
+        const retryHeader = response.headers.get("Retry-After");
+        const retrySeconds = Number(retryHeader);
+        const delayMs = retryHeader && Number.isFinite(retrySeconds) && retrySeconds >= 0
+          ? Math.min(5000, retrySeconds * 1000)
+          : 350 * (attempt + 1);
+        lastError = new Error(message);
+        await new Promise(resolve => window.setTimeout(resolve, delayMs));
+        continue;
       }
       throw new Error(message);
     }
-    return data;
+    throw lastError || new Error("YouTube API request gagal setelah beberapa percobaan.");
   }
 
+  let youtubeSyncPromise = null;
+
   async function loadYouTubePlaylists(token) {
+    if (youtubeSyncPromise) return youtubeSyncPromise;
+    youtubeSyncPromise = loadYouTubePlaylistsInternal(token);
+    try {
+      return await youtubeSyncPromise;
+    } finally {
+      youtubeSyncPromise = null;
+    }
+  }
+
+  async function loadYouTubePlaylistsInternal(token) {
     setStatus("Mengambil playlist milik akun YouTube…");
     const collected = [];
     let pageToken = "";
@@ -480,7 +532,19 @@
     return url ? url.replace("{w}", "600").replace("{h}", "600").replace("{f}", "jpg") : "";
   }
 
+  let appleSyncPromise = null;
+
   async function loadApplePlaylists() {
+    if (appleSyncPromise) return appleSyncPromise;
+    appleSyncPromise = loadApplePlaylistsInternal();
+    try {
+      return await appleSyncPromise;
+    } finally {
+      appleSyncPromise = null;
+    }
+  }
+
+  async function loadApplePlaylistsInternal() {
     if (!appleMusic || !appleAuthorized) throw new Error("Hubungkan Apple Music untuk membaca library playlist.");
     setStatus("Mengambil playlist dari Apple Music…");
     const collected = [];
