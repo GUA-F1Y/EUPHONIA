@@ -25,6 +25,7 @@ Run these checks with real provider credentials in a browser. Do not mark a test
 - [ ] Favorite a YouTube/Apple track, reload the page, and confirm Favorites persists in the same browser profile; remove it and confirm the list updates.
 - [ ] Start account playback and confirm the track appears in Recently played. Pause/resume the same track and verify the history does not fill with rapid duplicates.
 - [ ] Add several tracks to Queue, play a queued row, move rows up/down, remove current/non-current rows, and clear the queue.
+- [ ] Build a queue, enable Shuffle/Repeat, reload EUPHONIA, and confirm queue order and playback mode are restored without trying to auto-play before account authorization.
 - [ ] Enable Shuffle and verify Next chooses a different queue item; cycle Repeat off/all/one and test natural end-of-track behavior.
 - [ ] Open Lyrics and verify synchronized LRCLIB lines highlight against supported player position; test plain lyrics, not-found, offline and HTTP 429 behavior.
 - [ ] Use the EUPHONIA account seek bar on a YouTube/Apple track; verify the time labels update and seeking changes provider playback position. Change account volume and confirm it does not alter the local-file player's separate volume.
