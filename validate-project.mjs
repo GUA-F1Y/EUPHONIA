@@ -93,7 +93,7 @@ if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.')
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
 console.log(`EUPHONIA account playlists + one-click Google setup static validation`);
-console.log(`HTML ids: ${idSet.size}; core scripts checked: 6; manifest and local references checked.`);
+console.log(`HTML ids: ${idSet.size}; core scripts checked: 7; manifest and local references checked.`);
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 if (errors.length) {
   for (const error of errors) console.error(`FAIL: ${error}`);
