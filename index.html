@@ -164,22 +164,21 @@
       <section class="page" id="page-discover">
         <div class="page-title-row"><div><div class="eyebrow">YOUR CONNECTED MUSIC</div><h1>Music <span>Hub</span></h1><p class="subheading">Hubungkan akun musikmu, sinkronkan playlist asli, lalu jelajahi metadata dan daftar lagu di satu workspace.</p></div><div class="hub-mark">◎</div></div>
         
-        <section class="account-hub-intro"><div><span class="stream-section-kicker">ONE WORKSPACE · YOUR ACCOUNTS</span><h2>Your music, from your accounts.</h2><p>EUPHONIA mengambil daftar playlist dari API resmi setelah kamu memberi izin. Tidak ada situs layanan musik yang ditanamkan di sini; playback tetap menjadi milik layanan asal.</p></div><button class="outline-button account-setup-toggle" id="accountSetupToggle" type="button" aria-expanded="false">⚙ Connection setup</button></section>
+        <section class="account-hub-intro"><div><span class="stream-section-kicker">ONE WORKSPACE · YOUR ACCOUNTS</span><h2>Your music, from your accounts.</h2><p>EUPHONIA mengambil daftar playlist dari API resmi setelah kamu memberi izin. Tidak ada situs layanan musik yang ditanamkan di sini; playback tetap menjadi milik layanan asal.</p></div><button class="outline-button account-setup-toggle" id="accountSetupToggle" type="button" aria-expanded="false">⚙ Advanced setup</button></section>
         <section class="account-setup" id="accountSetup" hidden aria-label="Pengaturan koneksi akun">
-          <div class="account-setup-heading"><div><strong>Connect your services</strong><p>Masukkan identifier resmi yang kamu buat sendiri. Jangan pernah masukkan password akun atau private key.</p></div></div>
+          <div class="account-setup-heading"><div><strong>Optional provider setup</strong><p>Google login sudah disiapkan oleh pemilik aplikasi—pengguna tidak perlu memasukkan Client ID atau API key. Bagian ini hanya untuk token developer Apple Music.</p></div></div>
           <div class="account-setup-grid">
-            <label><span>Google OAuth Web Client ID</span><input id="accountGoogleClientId" type="text" autocomplete="off" placeholder="xxxxx.apps.googleusercontent.com"></label>
             <label><span>Apple Music developer token (JWT)</span><input id="accountAppleDeveloperToken" type="password" autocomplete="off" placeholder="Paste a signed developer token"></label>
           </div>
           <div class="account-setup-actions"><button class="primary-button" id="saveAccountConfig" type="button">Save setup</button><button class="text-button" id="clearAccountConfig" type="button">Clear setup</button></div>
-          <p class="account-setup-note">Google Client ID disimpan lokal di browser. Apple developer token hanya disimpan di session tab ini. Untuk aplikasi publik/production, gunakan OAuth code flow dengan backend dan secrets di environment variables.</p>
-          <div class="account-doc-links"><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">Google OAuth credentials ↗</a><a href="https://developers.apple.com/account/" target="_blank" rel="noopener noreferrer">Apple Developer ↗</a></div>
+          <p class="account-setup-note">Google sign-in meminta izin YouTube read-only saat pertama kali digunakan. Setup Client ID dilakukan satu kali oleh pemilik aplikasi di euphonia-config.js. Apple developer token hanya disimpan di session tab ini; jangan pernah menempelkan private key .p8.</p>
+          <div class="account-doc-links"><a href="https://developers.apple.com/account/" target="_blank" rel="noopener noreferrer">Apple Developer ↗</a></div>
         </section>
-        <div class="hub-status account-hub-status" id="accountHubStatus" role="status" aria-live="polite"><span class="hub-status-icon">i</span><span data-account-status-message>Connect an account to sync playlists. Account tokens are not saved to localStorage.</span></div>
+        <div class="hub-status account-hub-status" id="accountHubStatus" role="status" aria-live="polite"><span class="hub-status-icon">i</span><span data-account-status-message>Pilih Continue with Google untuk menghubungkan playlist YouTube. Pertama kali, Google akan meminta izin akses baca playlist.</span></div>
         <div class="platform-header account-services-heading"><div><h2>Connect your music accounts</h2><p class="muted-copy">Pilih layanan untuk membaca playlist akunmu. Tiap layanan punya batas API dan autentikasi sendiri.</p></div><span class="count-label">2 READY · OTHERS NEED SETUP</span></div>
         <div class="account-service-grid">
           <article class="account-service-card account-service-youtube">
-            <div class="account-service-top"><span class="platform-logo">▶</span><span class="account-service-tag">API READY</span></div><h3>YouTube Music</h3><p>Baca playlist milik akun YouTube dan tarik daftar videonya dengan izin baca-saja.</p><div class="account-service-status" data-account-status="youtube">Belum terhubung</div><div class="account-service-actions"><button class="primary-button" type="button" data-account-connect="youtube">Connect account</button><button class="text-button" type="button" data-account-disconnect="youtube" hidden>Disconnect</button></div>
+            <div class="account-service-top"><span class="platform-logo">▶</span><span class="account-service-tag">API READY</span></div><h3>YouTube Music</h3><p>Baca playlist milik akun YouTube dan tarik daftar videonya dengan izin baca-saja.</p><div class="account-service-status" data-account-status="youtube">Belum terhubung</div><div class="account-service-actions"><button class="primary-button" type="button" data-account-connect="youtube">Continue with Google</button><button class="text-button" type="button" data-account-disconnect="youtube" hidden>Disconnect</button></div>
           </article>
           <article class="account-service-card account-service-apple">
             <div class="account-service-top"><span class="platform-logo">♫</span><span class="account-service-tag">API READY</span></div><h3>Apple Music</h3><p>Baca playlist di library Apple Music setelah MusicKit mendapat izin dari akunmu.</p><div class="account-service-status" data-account-status="apple">Belum terhubung</div><div class="account-service-actions"><button class="primary-button" type="button" data-account-connect="apple">Connect account</button><button class="text-button" type="button" data-account-disconnect="apple" hidden>Disconnect</button></div>
@@ -357,6 +356,7 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="euphonia-storage.js"></script>
   <script src="app.js"></script>
+  <script src="euphonia-config.js"></script>
   <script src="music-accounts.js"></script>
   <script src="euphonia-daw.js"></script>
 </body>
