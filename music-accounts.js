@@ -544,13 +544,8 @@
     }
   }
 
-  async function loadYouTubeTracks(playlist) {
-    if (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt) {
-      pendingYoutubePlaylistId = playlist.id;
-      connectYouTube();
-      return;
-    }
-    setStatus("Mengambil lagu dari playlist YouTube…");
+  async function fetchYouTubeTracks(playlist) {
+    if (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt) throw new Error("YouTube session expired. Reconnect your account and try again.");
     const tracks = [];
     let pageToken = "";
     let page = 0;
@@ -566,27 +561,39 @@
         const videoId = item.contentDetails?.videoId || snippet.resourceId?.videoId;
         if (!videoId || snippet.title === "Deleted video" || snippet.title === "Private video") return;
         tracks.push({
+          id: String(videoId),
+          sourceKey: "youtube::" + String(videoId),
           title: snippet.title || "Untitled video",
           artist: snippet.videoOwnerChannelTitle || "",
           artwork: snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "",
-          url: "https://music.youtube.com/watch?v=" + encodeURIComponent(videoId),
-          id: videoId
+          url: "https://music.youtube.com/watch?v=" + encodeURIComponent(videoId)
         });
       });
       pageToken = data.nextPageToken || "";
       page += 1;
     } while (pageToken && page < 10);
-    renderPlaylistTracks(playlist, tracks);
-    setStatus("Berhasil memuat " + tracks.length + " item playlist. Tekan Open source untuk mendengarkan lewat layanan resmi.", "success");
+    return tracks;
   }
 
-  async function loadAppleTracks(playlist) {
-    if (!appleMusic || !appleAuthorized) {
-      pendingApplePlaylistId = playlist.id;
-      void connectAppleMusic();
+  async function loadYouTubeTracks(playlist) {
+    if (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt) {
+      pendingYoutubePlaylistId = playlist.id;
+      setStatus("Reconnect akun YouTube untuk membaca lagu dalam playlist ini.", "info");
+      connectYouTube();
       return;
     }
-    setStatus("Mengambil lagu dari playlist Apple Music…");
+    try {
+      setStatus("Mengambil lagu dari playlist YouTube…");
+      const tracks = await fetchYouTubeTracks(playlist);
+      renderPlaylistTracks(playlist, tracks);
+      setStatus("Berhasil memuat " + tracks.length + " item playlist. Pemutaran tetap menggunakan layanan YouTube resmi.", "success");
+    } catch (error) {
+      setStatus("Tidak bisa membaca playlist YouTube: " + (error.message || "request gagal."), "error");
+    }
+  }
+
+  async function fetchAppleTracks(playlist) {
+    if (!appleMusic || !appleAuthorized) throw new Error("Apple Music session expired. Reconnect your account and try again.");
     const tracks = [];
     let offset = 0;
     while (tracks.length < 500) {
@@ -597,18 +604,152 @@
       rows.forEach(item => {
         const attributes = item.attributes || {};
         tracks.push({
+          id: String(item.id),
+          sourceKey: "apple::" + String(item.id),
           title: attributes.name || "Untitled track",
           artist: attributes.artistName || "",
           artwork: appleArtwork(attributes),
-          url: attributes.url || playlist.url,
-          id: item.id
+          url: attributes.url || playlist.url
         });
       });
       if (!rows.length || rows.length < 100) break;
       offset += rows.length;
     }
-    renderPlaylistTracks(playlist, tracks);
-    setStatus("Berhasil memuat " + tracks.length + " item playlist Apple Music. Pemutaran tetap ditangani Apple Music.", "success");
+    return tracks;
+  }
+
+  async function loadAppleTracks(playlist) {
+    if (!appleMusic || !appleAuthorized) {
+      pendingApplePlaylistId = playlist.id;
+      setStatus("Reconnect Apple Music untuk membaca lagu dalam playlist ini.", "info");
+      void connectAppleMusic();
+      return;
+    }
+    try {
+      setStatus("Mengambil lagu dari playlist Apple Music…");
+      const tracks = await fetchAppleTracks(playlist);
+      renderPlaylistTracks(playlist, tracks);
+      setStatus("Berhasil memuat " + tracks.length + " item playlist Apple Music. Pemutaran tetap ditangani Apple Music.", "success");
+    } catch (error) {
+      setStatus("Tidak bisa membaca playlist Apple Music: " + (error.message || "request gagal."), "error");
+    }
+  }
+
+  function normalizedPlaylistKey(playlist) {
+    return playlist.sourceKey || playlist.key || (playlist.provider + "::" + playlist.id);
+  }
+
+  async function importPlaylist(playlist, options = {}) {
+    if (!playlist) return;
+    const key = normalizedPlaylistKey(playlist);
+    const provider = playlist.provider;
+    if (provider === "youtube" && (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt)) {
+      setStatus("Hubungkan ulang akun YouTube, lalu tekan Import to EUPHONIA sekali lagi.", "info");
+      connectYouTube();
+      return;
+    }
+    if (provider === "apple" && (!appleMusic || !appleAuthorized)) {
+      setStatus("Hubungkan ulang akun Apple Music, lalu tekan Import to EUPHONIA sekali lagi.", "info");
+      void connectAppleMusic();
+      return;
+    }
+    try {
+      setStatus((options.resync ? "Sinkronisasi ulang " : "Mengimpor ") + "playlist “" + (playlist.title || "Untitled playlist") + "”…");
+      const tracks = provider === "youtube"
+        ? await fetchYouTubeTracks(playlist)
+        : await fetchAppleTracks(playlist);
+      const existing = importedPlaylists[key];
+      const currentRemoteKeys = tracks.map(track => track.sourceKey || (provider + "::" + track.id));
+      let localTracks;
+      let addedCount;
+      if (existing && options.resync) {
+        const previouslySeen = new Set(existing.lastRemoteTrackKeys || []);
+        const locallyPresent = new Set((existing.tracks || []).map(track => track.sourceKey || (provider + "::" + track.id)));
+        const newlyAvailable = tracks.filter(track => {
+          const trackKey = track.sourceKey || (provider + "::" + track.id);
+          return !previouslySeen.has(trackKey) && !locallyPresent.has(trackKey);
+        });
+        localTracks = [...(existing.tracks || []), ...newlyAvailable];
+        addedCount = newlyAvailable.length;
+      } else {
+        localTracks = tracks;
+        addedCount = tracks.length;
+      }
+      const imported = {
+        key: key,
+        sourceKey: key,
+        provider: provider,
+        providerName: playlist.providerName || providerTitle(provider),
+        id: playlist.id,
+        title: playlist.title || existing?.title || "Untitled playlist",
+        description: playlist.description || existing?.description || "",
+        artwork: playlist.artwork || existing?.artwork || "",
+        url: playlist.url || existing?.url || "",
+        visibility: playlist.visibility || existing?.visibility || "",
+        tracks: localTracks,
+        lastRemoteTrackKeys: currentRemoteKeys,
+        importedAt: existing?.importedAt || new Date().toISOString(),
+        lastSyncedAt: new Date().toISOString()
+      };
+      importedPlaylists[key] = imported;
+      if (!persistImportedPlaylists()) return;
+      selectedPlaylistKeys.delete(key);
+      const checkbox = $("[data-account-select=\"" + CSS.escape(key) + "\"]");
+      if (checkbox) checkbox.checked = false;
+      renderPlaylistGrid();
+      const suffix = existing && options.resync
+        ? " · " + addedCount + " track baru ditambahkan; track yang kamu hapus lokal tetap dihapus."
+        : " · " + localTracks.length + " track disimpan ke koleksi lokal.";
+      setStatus("Playlist “" + imported.title + "” berhasil " + (existing && options.resync ? "disinkronkan ulang" : "diimpor") + suffix, "success");
+    } catch (error) {
+      setStatus("Impor playlist gagal: " + (error.message || "request gagal."), "error");
+    }
+  }
+
+  async function importSelectedPlaylists() {
+    if (importingSelected || !selectedPlaylistKeys.size) return;
+    const selected = allCachedPlaylists().filter(item => selectedPlaylistKeys.has(item.key));
+    if (!selected.length) {
+      selectedPlaylistKeys.clear();
+      renderPlaylistGrid();
+      setStatus("Pilih setidaknya satu playlist dari layanan yang terhubung.", "info");
+      return;
+    }
+    importingSelected = true;
+    renderPlaylistGrid();
+    let completed = 0;
+    const errors = [];
+    for (const item of selected) {
+      try {
+        const providerReady = item.provider === "youtube"
+          ? Boolean(youtubeAccessToken && Date.now() < youtubeTokenExpiresAt)
+          : Boolean(appleMusic && appleAuthorized);
+        if (!providerReady) {
+          errors.push(item.title + ": connect akun " + providerTitle(item.provider) + " terlebih dahulu");
+          continue;
+        }
+        await importPlaylist(item, { resync: Boolean(importedPlaylists[item.key]) });
+        completed++;
+      } catch (error) {
+        errors.push(item.title + ": " + (error.message || "gagal"));
+      }
+    }
+    importingSelected = false;
+    renderPlaylistGrid();
+    if (errors.length) setStatus("Proses selesai: " + completed + "/" + selected.length + " playlist diproses. " + errors.slice(0, 3).join(" · "), "error");
+    else setStatus("Selesai mengimpor/menyinkronkan " + completed + " playlist ke koleksi lokal EUPHONIA.", "success");
+  }
+
+  function removeImportedTrack(playlist, track) {
+    const key = normalizedPlaylistKey(playlist);
+    const current = importedPlaylists[key];
+    if (!current) return;
+    const trackKey = track.sourceKey || (playlist.provider + "::" + track.id);
+    current.tracks = (current.tracks || []).filter(item => (item.sourceKey || (playlist.provider + "::" + item.id)) !== trackKey);
+    if (!persistImportedPlaylists()) return;
+    renderPlaylistTracks({ ...current, importedLocal: true, key: key }, current.tracks);
+    renderPlaylistGrid();
+    setStatus("Track dihapus dari playlist lokal EUPHONIA. Track asal di layanan musik tidak diubah.", "success");
   }
 
   function renderPlaylistTracks(playlist, tracks) {
