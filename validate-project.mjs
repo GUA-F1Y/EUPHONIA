@@ -64,7 +64,6 @@ for (const marker of ['https://itunes.apple.com/search', 'playApplePreview', 'CA
 for (const id of ['musicDiscoveryForm', 'musicDiscoveryQuery', 'musicDiscoveryStatus', 'musicDiscoveryResults', 'musicDiscoveryResultsPanel']) if (!idSet.has(id)) errors.push('Artist discovery UI missing from HTML: #' + id);
 if (!html.includes('music-discovery-audio-mode')) errors.push('Music Hub does not visibly identify audio-only playback.');
 if (discovery.includes('searchYouTube') || discovery.includes('videoId')) errors.push('Music Hub discovery must not search/play video results.');
-if (!appConfig.includes('youtubeDataApiKey')) errors.push('Public YouTube catalog search key setting is missing from app config.');
 if (!html.includes('musicfy-features.js')) errors.push('Musicfy-style player enhancement module is not included in index.html.');
 const musicfy = exists('musicfy-features.js') ? read('musicfy-features.js') : '';
 for (const marker of ['euphonia:account-track-change', 'euphonia:account-playback-started', 'LRCLIB', 'listeningHistory.v1', 'favorites.v1', 'accountQueueItems', 'AbortController', 'Retry-After', 'setActionHandler', 'setPositionState']) if (!musicfy.includes(marker)) errors.push('Musicfy-style player feature marker is missing: ' + marker);
@@ -82,6 +81,7 @@ if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music lib
 if (!accounts.includes('async function importPlaylist(') || !accounts.includes('async function importSelectedPlaylists(')) errors.push('Playlist import workflow is missing.');
 if (!accounts.includes('lastRemoteTrackKeys')) errors.push('Playlist resync no longer tracks prior remote keys to preserve local removals.');
 if (!accounts.includes('ensureYouTubeIframeAPI') || !accounts.includes('appleMusic.setQueue')) errors.push('Official account playback adapters are missing.');
+if (!accounts.includes('EUPHONIA menggunakan pemutaran audio-only') || !accounts.includes('euphonia:find-audio-preview')) errors.push('YouTube playlist selections are not routed to audio-only search.');
 if (!accounts.includes('ACCOUNT_QUEUE_KEY') || !accounts.includes('ACCOUNT_MODES_KEY')) errors.push('Account queue and playback mode persistence is missing.');
 if (!accounts.includes('appleMusic.player.seekToTime(value)')) errors.push('Apple Music seek adapter does not use the player seek method.');
 for (const id of ['accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle']) if (!idSet.has(id)) errors.push(`Account playback/import control missing from HTML: #${id}`);
@@ -89,7 +89,6 @@ if (accounts.includes('localStorage.setItem(APPLE_TOKEN_KEY')) errors.push('Appl
 if (!html.includes('manifest.json')) errors.push('PWA manifest is not linked in index.html.');
 for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist', 'accountHubStatus', 'accountSetup', 'accountAppleDeveloperToken', 'accountPlaylistGrid', 'accountPlaylistSearch', 'accountPlaylistFilter', 'accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountApplePlayerStatus', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle', 'accountPlayerClose']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
 if (/frame\.src\s*=\s*destination/.test(app)) errors.push('Unsafe legacy behavior still attempts to frame whole platform search URLs.');
-if (!app.includes('https://www.googleapis.com/youtube/v3/search')) errors.push('YouTube Data API search integration is missing.');
 if (!app.includes('https://itunes.apple.com/search')) errors.push('No-key catalog search integration is missing.');
 
 const platformLinks = [...html.matchAll(/<a\b[^>]*data-platform=[\"']([^\"']+)[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>/gi)];
