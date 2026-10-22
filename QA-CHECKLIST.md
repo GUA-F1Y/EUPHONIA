@@ -27,6 +27,7 @@ Run these checks with real provider credentials in a browser. Do not mark a test
 - [ ] Add several tracks to Queue, play a queued row, move rows up/down, remove current/non-current rows, and clear the queue.
 - [ ] Enable Shuffle and verify Next chooses a different queue item; cycle Repeat off/all/one and test natural end-of-track behavior.
 - [ ] Open Lyrics and verify synchronized LRCLIB lines highlight against supported player position; test plain lyrics, not-found, offline and HTTP 429 behavior.
+- [ ] Use the EUPHONIA account seek bar on a YouTube/Apple track; verify the time labels update and seeking changes provider playback position. Change account volume and confirm it does not alter the local-file player's separate volume.
 - [ ] Add tracks from Favorites/Recently played into Queue, and check that cross-provider items switch between the official provider players without overlapping EUPHONIA local audio or DAW playback.
 
 **Limits:** account sync requires each user's provider setup and consent. YouTube Data API results may not contain all YouTube Music-generated/library collections. Imported playlists store metadata and source identifiers, not copied audio files. YouTube and Apple playback stay with their official player SDKs and provider rules. This static browser implementation is a prototype; production OAuth should use a secure backend for secrets and receive a privacy/security review.
