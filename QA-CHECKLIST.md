@@ -22,7 +22,7 @@ Run these checks with real provider credentials in a browser. Do not mark a test
 - [ ] Simulate a YouTube API 401, quota-exceeded 403, 429, 5xx, and slow network; confirm sessions/errors are actionable and retries are bounded.
 - [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the account.
 - [ ] Verify Apple Music library playlists populate and View tracks gets metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
-- [ ] Press Play here on an Apple Music track. Confirm MusicKit uses official playback and reports useful errors when authorization, subscription, URL, or content access is unavailable.
+- [ ] Press Play audio on an Apple Music track. Confirm MusicKit uses official audio playback and reports useful errors when authorization, subscription, URL, or content access is unavailable.
 - [ ] Test previous/next and play/pause for Apple Music; verify track changes stay within the same provider queue.
 - [ ] Reload EUPHONIA. Playlist metadata remains cached; connecting/syncing again requires an active/renewed provider session as appropriate.
 - [ ] Search/filter by title and description and by provider or Imported to EUPHONIA. Home mood shortcuts should filter the local playlist metadata instead of exposing hidden legacy embed controls.
