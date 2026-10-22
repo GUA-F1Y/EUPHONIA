@@ -13,7 +13,7 @@ for (const file of ['index.html', 'styles.css', 'app.js', 'euphonia-config.js', 
   if (!exists(file)) errors.push(`Missing required file: ${file}`);
 }
 
-for (const file of ['app.js', 'euphonia-config.js', 'music-accounts.js', 'musicfy-features.js', 'euphonia-daw.js', 'euphonia-storage.js', 'sw.js']) {
+for (const file of ['app.js', 'euphonia-config.js', 'music-accounts.js', 'musicfy-features.js', 'music-discovery.js', 'euphonia-daw.js', 'euphonia-storage.js', 'sw.js']) {
   const result = spawnSync(process.execPath, ['--check', path.join(root, file)], { encoding: 'utf8' });
   if (result.status !== 0) errors.push(`Syntax check failed for ${file}: ${(result.stderr || result.stdout || 'unknown error').trim()}`);
 }
