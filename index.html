@@ -175,6 +175,37 @@
           <div class="account-doc-links"><a href="https://developers.apple.com/account/" target="_blank" rel="noopener noreferrer">Apple Developer ↗</a></div>
         </section>
         <div class="hub-status account-hub-status" id="accountHubStatus" role="status" aria-live="polite"><span class="hub-status-icon">i</span><span data-account-status-message>Pilih Continue with Google untuk menghubungkan playlist YouTube. Pertama kali, Google akan meminta izin akses baca playlist.</span></div>
+        <section class="music-discovery-section" id="musicDiscoverySection" aria-labelledby="musicDiscoveryHeading">
+          <div class="account-discovery-heading">
+            <div>
+              <div class="eyebrow">MUSIC DISCOVERY</div>
+              <h2 id="musicDiscoveryHeading">Search artists &amp; songs</h2>
+              <p class="muted-copy">Cari nama artis atau judul lagu, lalu putar hasilnya langsung dari EUPHONIA. Audio tetap disediakan oleh layanan resmi.</p>
+            </div>
+            <span class="count-label">SEARCH · PLAY · QUEUE</span>
+          </div>
+          <form class="music-discovery-form" id="musicDiscoveryForm">
+            <label class="music-discovery-query">
+              <span aria-hidden="true">⌕</span>
+              <input id="musicDiscoveryQuery" name="query" type="search" placeholder="Contoh: Frank Ocean, Juice WRLD, Reality Club…" autocomplete="off" maxlength="180" aria-label="Nama artis atau lagu" />
+            </label>
+            <select id="musicDiscoverySource" aria-label="Sumber pencarian">
+              <option value="youtube">YouTube Music · Play here</option>
+              <option value="apple">Apple Music · Preview</option>
+            </select>
+            <button class="primary-button" id="musicDiscoverySearchButton" type="submit">Search YouTube</button>
+            <button class="outline-button" id="musicDiscoveryClear" type="button">Clear</button>
+          </form>
+          <p class="music-discovery-hint" id="musicDiscoveryHint">Cari video musik dan putar lewat pemutar YouTube resmi. API key dikonfigurasi pemilik aplikasi.</p>
+          <div class="hub-status music-discovery-status" id="musicDiscoveryStatus" role="status" aria-live="polite">Cari nama artis atau lagu. Apple Music previews bisa dicari tanpa login; YouTube search memerlukan API key milik aplikasi yang dibatasi dengan benar.</div>
+          <section class="music-discovery-results-panel" id="musicDiscoveryResultsPanel" hidden aria-live="polite">
+            <div class="hub-results-heading">
+              <div><div class="eyebrow">CATALOG RESULTS</div><h2 id="musicDiscoveryResultsTitle">Results</h2></div>
+              <span class="count-label" id="musicDiscoveryResultsCount"></span>
+            </div>
+            <div class="music-discovery-results" id="musicDiscoveryResults"></div>
+          </section>
+        </section>
         <div class="platform-header account-services-heading"><div><h2>Connect your music accounts</h2><p class="muted-copy">Pilih layanan untuk membaca playlist akunmu. Tiap layanan punya batas API dan autentikasi sendiri.</p></div><span class="count-label">2 READY · OTHERS NEED SETUP</span></div>
         <div class="account-service-grid">
           <article class="account-service-card account-service-youtube">
@@ -392,6 +423,7 @@
   <script src="euphonia-config.js"></script>
   <script src="music-accounts.js"></script>
   <script src="musicfy-features.js"></script>
+  <script src="music-discovery.js"></script>
   <script src="euphonia-daw.js"></script>
 </body>
 </html>
