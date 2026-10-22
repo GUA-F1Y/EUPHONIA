@@ -651,3 +651,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .music-discovery-actions button:disabled{opacity:.45;cursor:not-allowed}
 @media(max-width:1100px){.music-discovery-form{grid-template-columns:minmax(0,1fr) minmax(170px,220px)}.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%;box-sizing:border-box}.music-discovery-form>.primary-button{grid-column:auto}.music-discovery-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:700px){.music-discovery-section{padding:13px;margin-top:20px}.account-discovery-heading{align-items:flex-start;flex-direction:column;gap:9px}.account-discovery-heading h2{font-size:20px}.account-discovery-heading>.count-label{align-self:flex-start}.music-discovery-form{grid-template-columns:minmax(0,1fr);gap:8px}.music-discovery-form select,.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%}.music-discovery-results{grid-template-columns:minmax(0,1fr)}.music-discovery-card{display:grid;grid-template-columns:112px minmax(0,1fr)}.music-discovery-art{height:100%;min-height:120px;aspect-ratio:auto}.music-discovery-card-body{padding:10px}.music-discovery-actions button{flex:1}.music-discovery-actions{gap:5px}}
+
+
+/* Visible local-only YouTube API setup for the artist/song discovery panel. */
+.music-discovery-api-setup{margin:0 0 13px;border:1px solid #343a40;border-radius:9px;background:#141618;color:#e6eae2}
+.music-discovery-api-setup summary{padding:11px 13px;color:#c8eb8a;font-size:10px;font-weight:700;cursor:pointer;list-style-position:inside}
+.music-discovery-api-setup[open] summary{border-bottom:1px solid #2d3236}
+.music-discovery-api-copy{margin:0;padding:11px 13px 8px;color:#929a91;font-size:10px;line-height:1.65}
+.music-discovery-api-controls{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;padding:0 13px}
+.music-discovery-api-controls input{min-width:0;border:1px solid #353b40;border-radius:8px;background:#0e1012;color:#edf0e9;padding:10px 12px;font-size:11px}
+.music-discovery-api-controls button{font-size:10px;padding:9px 11px}
+.music-discovery-api-status{margin:8px 13px 12px;color:#858e83;font-size:10px;line-height:1.6}
+.music-discovery-api-status[data-tone="success"]{color:#c7eb8a}
+.music-discovery-api-status[data-tone="error"]{color:#ff9ba6}
+@media(max-width:700px){.music-discovery-api-controls{grid-template-columns:minmax(0,1fr)}.music-discovery-api-controls button{width:100%}}
