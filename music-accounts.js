@@ -806,8 +806,16 @@
   async function playAccountQueueIndex(index) {
     const track = accountPlaybackQueue[index];
     if (!track) return;
+    const nextProvider = track.provider || accountPlaybackProvider;
+    if (accountPlaybackProvider === "youtube" && nextProvider !== "youtube" && youtubePlayer && typeof youtubePlayer.stopVideo === "function") {
+      try { youtubePlayer.stopVideo(); } catch (_) {}
+    }
+    if (accountPlaybackProvider === "apple" && nextProvider !== "apple" && appleMusic && appleAuthorized) {
+      try { await appleMusic.pause(); } catch (_) {}
+    }
     accountPlaybackIndex = index;
-    accountPlaybackProvider = track.provider || accountPlaybackProvider;
+    accountPlaybackProvider = nextProvider;
+    window.dispatchEvent(new Event("euphonia:account-playback-start"));
     const panel = $("#accountNowPlaying");
     const youtubeWrap = $("#accountYouTubePlayerWrap");
     const appleStatus = $("#accountApplePlayerStatus");
@@ -1147,6 +1155,18 @@
       setStatus(query ? "Memfilter playlist akun dengan kata kunci: " + query : "Menampilkan semua playlist akun yang tersimpan di browser.", "info");
     });
   }
+
+  window.addEventListener("euphonia:local-audio-start", closeAccountPlayback);
+  window.addEventListener("euphonia:account-playback-start", () => {
+    const localAudio = document.getElementById("audioPlayer");
+    if (localAudio) localAudio.pause();
+    const legacyPreview = document.getElementById("hubPreviewAudio");
+    if (legacyPreview) legacyPreview.pause();
+    const daw = window.EUPHONIA_DAW;
+    if (daw && typeof daw.pause === "function") {
+      try { daw.pause(); } catch (_) {}
+    }
+  });
 
   function init() {
     initSettings();
