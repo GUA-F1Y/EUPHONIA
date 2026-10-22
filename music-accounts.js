@@ -1264,10 +1264,20 @@
       renderPlaylistGrid();
     });
     $("#accountImportSelected")?.addEventListener("click", () => void importSelectedPlaylists());
-    $("#accountRefreshAll")?.addEventListener("click", () => {
-      if (youtubeAccessToken && Date.now() < youtubeTokenExpiresAt) void loadYouTubePlaylists(youtubeAccessToken).catch(error => setStatus(error.message, "error"));
-      else if (appleMusic && appleAuthorized) void loadApplePlaylists().catch(error => setStatus(error.message, "error"));
-      else setStatus("Belum ada sesi akun aktif. Pilih Connect account pada YouTube Music atau Apple Music untuk sinkronisasi.", "info");
+    $("#accountRefreshAll")?.addEventListener("click", async () => {
+      const jobs = [];
+      if (youtubeAccessToken && Date.now() < youtubeTokenExpiresAt) jobs.push(() => loadYouTubePlaylists(youtubeAccessToken));
+      if (appleMusic && appleAuthorized) jobs.push(() => loadApplePlaylists());
+      if (!jobs.length) {
+        setStatus("Belum ada sesi akun aktif. Hubungkan YouTube Music atau Apple Music untuk sinkronisasi.", "info");
+        return;
+      }
+      let completed = 0;
+      for (const job of jobs) {
+        try { await job(); completed += 1; }
+        catch (error) { setStatus("Sinkronisasi salah satu layanan gagal: " + (error.message || "request gagal."), "error"); }
+      }
+      if (completed) setStatus("Sinkronisasi selesai untuk " + completed + " layanan yang terhubung.", "success");
     });
     $("#accountPlaylistGrid")?.addEventListener("click", event => {
       const button = event.target.closest("[data-view-playlist]");
@@ -1283,16 +1293,6 @@
     });
     $("#accountPlayerPrevious")?.addEventListener("click", () => advanceAccountQueue(-1, false));
     $("#accountPlayerNext")?.addEventListener("click", () => advanceAccountQueue(1, false));
-    $("#accountPlayerShuffle")?.addEventListener("click", () => {
-      accountShuffleEnabled = !accountShuffleEnabled;
-      emitAccountQueueChange();
-      setStatus(accountShuffleEnabled ? "Shuffle diaktifkan untuk antrean akun." : "Shuffle dimatikan.", "info");
-    });
-    $("#accountPlayerRepeat")?.addEventListener("click", () => {
-      accountRepeatMode = accountRepeatMode === "off" ? "all" : accountRepeatMode === "all" ? "one" : "off";
-      emitAccountQueueChange();
-      setStatus("Mode repeat: " + accountRepeatMode + ".", "info");
-    });
     $("#accountPlayerToggle")?.addEventListener("click", () => {
       if (accountPlaybackProvider === "youtube" && youtubePlayer) {
         try {
