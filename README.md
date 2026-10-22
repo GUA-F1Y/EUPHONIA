@@ -1,6 +1,6 @@
-# EUPHONIA Studio v0.3.3
+# EUPHONIA — Music Hub & Studio
 
-EUPHONIA is a **local-first music workspace**: service discovery, local audio library/player, multitrack arrangement, MIDI-style piano roll, drum sequencer, mixer/effects, project export and PWA install support. The project is static HTML/CSS/JavaScript; there is no build step, backend, account system, or cloud synchronization.
+EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-discovery homepage, provider links/embeds, an audio-preview player, local audio library, and browser-based DAW (multitrack arrangement, MIDI-style piano roll, drum sequencer, mixer/effects and project export). The project is static HTML/CSS/JavaScript; there is no build step, backend, account system, or cloud synchronization.
 
 > Release status: production-oriented beta. Static validation is included, but this package has not been certified through end-to-end testing on every target browser/phone. Complete the release checklist in `QA-CHECKLIST.md` before using it for important work or distributing it broadly.
 
@@ -30,10 +30,11 @@ EUPHONIA is a **local-first music workspace**: service discovery, local audio li
 ## Included tools
 
 ### Music Hub
-- Platform cards open account-specific playlist/library/collection URLs for YouTube Music, Spotify, Apple Music, SoundCloud, Deezer and Bandcamp. Links open separately so EUPHONIA stays available.
-- On devices where the operating system and service support Universal Links/App Links, the link may open the installed music app and use its existing signed-in session. Otherwise it opens the provider website in a new tab; the browser cannot directly inspect installed apps or access account credentials.
-- Music Hub search can route queries to the selected platform. The default catalog provides Apple/iTunes preview clips; optional YouTube Data API search and official embedded links are still supported.
-- Local library playback with seek, volume, next/previous and favorites.
+- Home uses a Netflix-inspired browsing layout: a featured hero, horizontal catalog shelves, mood shortcuts, local tracks, and a browser-local My List.
+- The default catalog uses the public Apple/iTunes Search API and plays provider-supplied audio previews when available. These are previews, not unrestricted full-track streams.
+- Spotify opens its official service in a separate tab. EUPHONIA does not mix Spotify content into its other provider catalogs or route Spotify audio through its custom player/DAW. See [docs/spotify-connection.md](docs/spotify-connection.md) and the [Spotify Developer Policy](https://developer.spotify.com/policy).
+- YouTube Data API search is optional; official embed/share links are supported for services and content that permit them.
+- Local library playback includes seek, volume, next/previous and favorites. Imported local audio stays in the browser profile's IndexedDB workspace.
 - EUPHONIA does not bypass DRM, licensing, paywalls, or provider iframe restrictions. Not every service will play within an embedded panel.
 
 ### Arrangement / multitrack DAW
@@ -75,10 +76,10 @@ Then complete `QA-CHECKLIST.md` on the actual devices and browsers you plan to s
 - Browser codec, memory, microphone and offline behavior vary. Test large projects on target phones; export and project JSON can consume substantially more memory than the source audio size.
 
 
-## Music Hub (v0.3.2)
+## Music Hub details
 
 - The default in-app search uses the public Apple/iTunes Search API and shows provider-supplied preview clips where available.
 - Clicking a platform card opens that service's playlist/library or collection route. On a phone or computer where the platform registers that HTTPS link as an App/Universal Link, the operating system may open the native app; otherwise the link opens the service website in a new tab. The user must already be signed in to the desired account in that app/site. EUPHONIA does not read passwords or account tokens.
-- Search in the selected Spotify, SoundCloud, Deezer, or Bandcamp provider opens that platform's search route. YouTube search uses the optional YouTube Data API key when configured; without a key, it opens YouTube Music search. Configure the key in Music Hub → YouTube API and restrict it to the expected HTTP referrers and API.
-- Embedded playback remains optional and depends on each provider. Spotify, SoundCloud, Deezer and Bandcamp do not expose a single anonymous search-to-embed flow reliable for all content. Use a share/embed link when you want to play inside EUPHONIA instead of switching to the platform app/site.
+- Catalog search returns Apple/iTunes preview results. YouTube search uses the optional YouTube Data API key when configured; without a key, paste a supported YouTube share link. Configure the key in Music Hub → YouTube API and restrict it to the expected HTTP referrers and API.
+- Embedded playback remains optional and depends on each provider. Use a share/embed link to play supported content inside EUPHONIA. Spotify is intentionally handled as a separate official-service link rather than mixed into the in-app catalog.
 - Platform app routing is controlled by the OS and each provider; EUPHONIA cannot guarantee that every browser/device opens the native app. Some tracks/videos can disable embedding, require sign-in, restrict playback by territory/account, or not provide previews. EUPHONIA does not bypass those restrictions.
