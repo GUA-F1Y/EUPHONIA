@@ -31,6 +31,8 @@
   let youtubePlayer = null;
   let youtubeApiPromise = null;
   let applePlaybackBusy = false;
+  let applePlaybackEventInstance = null;
+  let lastAppleEndedAt = 0;
   let accountShuffleEnabled = false;
   let accountRepeatMode = "off";
 
@@ -519,6 +521,31 @@
     }
   }
 
+  function attachApplePlaybackEvents(MusicKit) {
+    if (!appleMusic || typeof appleMusic.addEventListener !== "function" || applePlaybackEventInstance === appleMusic) return;
+    const eventName = MusicKit?.Events?.playbackStateDidChange || "playbackStateDidChange";
+    appleMusic.addEventListener(eventName, () => {
+      if (accountPlaybackProvider !== "apple") return;
+      const state = appleMusic?.player?.playbackState ?? appleMusic?.playbackState;
+      const states = MusicKit?.PlaybackStates || {};
+      const isPlaying = state === states.playing || state === 2 || state === "playing";
+      const isEnded = state === states.ended || state === states.completed || state === 5 || state === 10 || state === "ended" || state === "completed";
+      if (isPlaying) {
+        window.dispatchEvent(new CustomEvent("euphonia:account-playback-started", { detail: { track: currentAccountTrack() } }));
+        const button = $("#accountPlayerToggle");
+        if (button) button.textContent = "Ⅱ Pause";
+      }
+      if (isEnded && Date.now() - lastAppleEndedAt > 1500) {
+        lastAppleEndedAt = Date.now();
+        advanceAccountQueue(1, true);
+      } else if (state === states.paused || state === 3 || state === "paused") {
+        const button = $("#accountPlayerToggle");
+        if (button) button.textContent = "▶ Play";
+      }
+    });
+    applePlaybackEventInstance = appleMusic;
+  }
+
   async function connectAppleMusic() {
     const developerToken = savedAppleDeveloperToken() || ($("#accountAppleDeveloperToken")?.value || "").trim();
     if (!developerToken) {
@@ -542,6 +569,7 @@
       }
       await appleMusic.authorize();
       appleAuthorized = true;
+      attachApplePlaybackEvents(MusicKit);
       renderProviderStates();
       await loadApplePlaylists();
     } catch (error) {
