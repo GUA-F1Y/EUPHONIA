@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0346/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0347/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
@@ -59,7 +59,10 @@ if (!sw.includes("'./music-accounts.js'")) errors.push('Service worker does not 
 if (!sw.includes("'./musicfy-features.js'")) errors.push('Service worker does not cache the Musicfy-style player enhancement module.');
 if (!html.includes('musicfy-features.js')) errors.push('Musicfy-style player enhancement module is not included in index.html.');
 const musicfy = exists('musicfy-features.js') ? read('musicfy-features.js') : '';
-for (const marker of ['euphonia:account-track-change', 'euphonia:account-playback-started', 'LRCLIB', 'listeningHistory.v1', 'favorites.v1', 'accountQueueItems']) if (!musicfy.includes(marker)) errors.push('Musicfy-style player feature marker is missing: ' + marker);
+for (const marker of ['euphonia:account-track-change', 'euphonia:account-playback-started', 'LRCLIB', 'listeningHistory.v1', 'favorites.v1', 'accountQueueItems', 'AbortController', 'Retry-After', 'setActionHandler', 'setPositionState']) if (!musicfy.includes(marker)) errors.push('Musicfy-style player feature marker is missing: ' + marker);
+if (!accounts.includes('onAutoplayBlocked')) errors.push('YouTube autoplay-blocked handling is missing.');
+if (!accounts.includes('153:')) errors.push('YouTube player client identity/referrer error handling is missing.');
+if (!exists('docs/engineering-resources.md')) warnings.push('Engineering resource map is missing.');
 for (const id of ['accountPlayerFavorite', 'accountPlayerShuffle', 'accountPlayerRepeat', 'accountPlayerQueueToggle', 'accountPlayerLyricsToggle', 'accountPlayerSeek', 'accountPlayerVolume', 'accountPlayerCurrentTime', 'accountPlayerDuration', 'accountQueuePanel', 'accountQueueItems', 'accountLyricsPanel', 'accountLyricsLines', 'accountSavedSection', 'accountSavedTracks', 'accountSavedPlayAll']) if (!idSet.has(id)) errors.push('Musicfy-style player UI missing from HTML: #' + id);
 const accounts = exists('music-accounts.js') ? read('music-accounts.js') : '';
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
