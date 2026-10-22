@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0343/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0344/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!sw.includes("'./music-accounts.js'")) errors.push('Service worker does not cache the account playlist integration module.');
