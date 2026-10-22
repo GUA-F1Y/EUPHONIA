@@ -1169,9 +1169,8 @@
 
   function navigateSearch(query) {
     showPage('discover');
-    $('#hubSearch').value = query;
-    syncPlatformLinks();
-    window.setTimeout(() => $('#hubSearch').focus(), 30);
+    window.dispatchEvent(new CustomEvent('euphonia:filter-playlists', { detail: { query: String(query || '') } }));
+    window.setTimeout(() => $('#accountPlaylistSearch')?.focus(), 30);
   }
 
   async function ensureTrackExists(trackName) {
@@ -2049,7 +2048,7 @@
     const playFeatured = event.target.closest('#homeFeaturedPlay');
     if (playFeatured) {
       if (homeFeaturedItem) playApplePreview(homeFeaturedItem, homeCatalogQueues.get(homeTrackKey(homeFeaturedItem)) || [homeFeaturedItem]);
-      else { showPage('discover'); setHubProvider('catalog'); $('#hubSearch').value = 'alternative r&b'; void doHubSearch(); }
+      else { showPage('discover'); window.dispatchEvent(new CustomEvent('euphonia:filter-playlists', { detail: { query: 'alternative r&b' } })); }
       return;
     }
     const saveFeatured = event.target.closest('#homeFeaturedSave');
@@ -2072,9 +2071,7 @@
       const query = searchButton.dataset.homeSearch || '';
       if (!query) return;
       showPage('discover');
-      setHubProvider('catalog');
-      $('#hubSearch').value = query;
-      void doHubSearch();
+      window.dispatchEvent(new CustomEvent('euphonia:filter-playlists', { detail: { query: query } }));
     }
   });
 
