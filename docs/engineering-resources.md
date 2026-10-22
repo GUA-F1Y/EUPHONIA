@@ -10,6 +10,7 @@ This document records official documentation and practical engineering reference
 - [YouTube Data API: playlists.list](https://developers.google.com/youtube/v3/docs/playlists/list) — official playlist metadata endpoint and pagination parameters.
 - [YouTube Data API: playlistItems.list](https://developers.google.com/youtube/v3/docs/playlistItems/list) — playlist track/video metadata, pagination, and partial resources.
 - [YouTube Data API quota costs](https://developers.google.com/youtube/data/determine_quota_cost) — quota budgeting and API usage monitoring.
+- [YouTube Data API: search.list](https://developers.google.com/youtube/v3/docs/search/list) — official public video search and filters, including embeddable results.
 - [YouTube API authentication](https://developers.google.com/youtube/v3/guides/authentication) — user authorization requirements for private/account-owned playlists.
 
 Implementation guardrails:
@@ -53,6 +54,7 @@ Implementation guardrails:
 ## 3. Security, local data, and PWA reliability
 
 - [OWASP HTML5 Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html) — risks of localStorage, sessionStorage, IndexedDB, and untrusted stored data.
+- [Google Cloud API key best practices](https://cloud.google.com/docs/authentication/api-keys) — application/referrer restrictions and API restrictions for browser-visible public keys.
 - [MDN Content Security Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Content_Security_Policy) — how to deploy a CSP safely; report-only is useful before enforcing a policy.
 - [web.dev: Service worker caching and HTTP caching](https://web.dev/articles/service-worker-caching-and-http-caching) — how browser HTTP cache and Service Worker cache interact.
 - [Chrome for Developers: caching strategies](https://developer.chrome.com/docs/workbox/caching-strategies-overview) — network-first, cache-first, and stale-while-revalidate tradeoffs.
