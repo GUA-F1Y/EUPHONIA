@@ -531,14 +531,19 @@
       if (accountPlaybackProvider !== "apple") return;
       const state = appleMusic?.player?.playbackState ?? appleMusic?.playbackState;
       const states = MusicKit?.PlaybackStates || {};
-      const isPlaying = state === states.playing || state === 5 || state === "playing";
-      const isEnded = state === states.ended || state === states.completed || state === 1 || state === 0 || state === "ended" || state === "completed";
+      const isPlaying = state === states.playing || state === 2 || state === "playing";
+      const isEnded = state === states.ended || state === states.completed || state === 5 || state === 9 || state === "ended" || state === "completed";
       if (isPlaying) {
+        window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: "playing", track: currentAccountTrack() } }));
         window.dispatchEvent(new CustomEvent("euphonia:account-playback-started", { detail: { track: currentAccountTrack() } }));
         const button = $("#accountPlayerToggle");
         if (button) button.textContent = "Ⅱ Pause";
       }
+      if (state === states.paused || state === 3 || state === "paused") {
+        window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: "paused", track: currentAccountTrack() } }));
+      }
       if (isEnded && Date.now() - lastAppleEndedAt > 1500) {
+        window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: "paused", track: currentAccountTrack() } }));
         lastAppleEndedAt = Date.now();
         advanceAccountQueue(1, true);
       } else if (state === states.paused || state === 4 || state === "paused") {
@@ -937,6 +942,10 @@
               event.target.playVideo();
             },
             onStateChange: event => {
+              const stateName = event.data === YT.PlayerState.PLAYING ? "playing"
+                : event.data === YT.PlayerState.PAUSED ? "paused"
+                : event.data === YT.PlayerState.ENDED ? "paused" : "loading";
+              window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: stateName, track: currentAccountTrack() } }));
               if (event.data === YT.PlayerState.ENDED && accountPlaybackProvider === "youtube") {
                 advanceAccountQueue(1, true);
               }
@@ -946,7 +955,24 @@
               const button = $("#accountPlayerToggle");
               if (button) button.textContent = event.data === YT.PlayerState.PLAYING ? "Ⅱ Pause" : "▶ Play";
             },
-            onError: () => setStatus("YouTube tidak dapat memainkan video ini di player tertanam. Gunakan Open source untuk membukanya di layanan resmi.", "error")
+            onAutoplayBlocked: () => {
+              const button = $("#accountPlayerToggle");
+              if (button) button.textContent = "▶ Play";
+              setStatus("Browser memblokir autoplay. Tekan Play secara manual pada EUPHONIA atau pemutar YouTube.", "info");
+              window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: "paused", track: currentAccountTrack() } }));
+            },
+            onError: event => {
+              const messages = {
+                2: "ID video tidak valid.",
+                5: "Pemutar HTML5 YouTube mengalami error.",
+                100: "Video tidak ditemukan atau sudah dihapus.",
+                101: "Pemilik video melarang pemutaran tertanam.",
+                150: "Pemilik video melarang pemutaran tertanam.",
+                153: "YouTube tidak menerima identitas klien/referer yang diperlukan. Gunakan HTTPS atau origin browser yang valid."
+              };
+              setStatus("YouTube player error: " + (messages[event?.data] || ("kode " + (event?.data ?? "tidak diketahui"))) + " Coba Open source di layanan resmi jika tersedia.", "error");
+              window.dispatchEvent(new CustomEvent("euphonia:account-playback-state", { detail: { state: "paused", track: currentAccountTrack() } }));
+            }
           }
         });
       } catch (error) {
@@ -1127,6 +1153,25 @@
   }
 
   window.EUPHONIA_ACCOUNT_MUSIC = Object.freeze({
+    togglePlayback: async () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer) {
+          if (youtubePlayer.getPlayerState() === window.YT?.PlayerState?.PLAYING) youtubePlayer.pauseVideo();
+          else youtubePlayer.playVideo();
+          return true;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic && appleAuthorized) {
+          const player = appleMusic.player;
+          const isPlaying = player && (player.isPlaying || player.playbackState === window.MusicKit?.PlaybackStates?.PLAYING);
+          if (isPlaying) await appleMusic.pause();
+          else await appleMusic.play();
+          return true;
+        }
+      } catch (error) {
+        setStatus("Kontrol pemutaran gagal: " + (error.message || "provider tidak merespons."), "error");
+      }
+      return false;
+    },
     getQueue: () => accountPlaybackQueue.map((track, index) => ({ ...track, queueIndex: index, active: index === accountPlaybackIndex })),
     getCurrentTrack: () => {
       const track = currentAccountTrack();
