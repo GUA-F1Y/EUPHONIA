@@ -3,14 +3,15 @@
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const CONFIG_KEY = "euphonia.musicHub.accountConfig.v1";
   const CACHE_KEY = "euphonia.musicHub.accountPlaylists.v1";
   const IMPORTED_KEY = "euphonia.musicHub.importedPlaylists.v1";
   const APPLE_TOKEN_KEY = "euphonia.musicHub.appleDeveloperToken.session";
   const YOUTUBE_SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
 
-  let config = readJSON(localStorage, CONFIG_KEY, {});
   let cache = readJSON(localStorage, CACHE_KEY, {});
+  // Migrate the old per-user Google Client ID setting away: app maintainers configure this once
+  // in euphonia-config.js; normal users should never need to enter it.
+  try { localStorage.removeItem("euphonia.musicHub.accountConfig.v1"); } catch (_) {}
   let importedPlaylists = readJSON(localStorage, IMPORTED_KEY, {});
   if (!importedPlaylists || typeof importedPlaylists !== "object" || Array.isArray(importedPlaylists)) importedPlaylists = {};
   const selectedPlaylistKeys = new Set();
@@ -66,11 +67,10 @@
 
   function storeConfig() {
     try {
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
       sessionStorage.setItem(APPLE_TOKEN_KEY, $("#accountAppleDeveloperToken").value.trim());
       return true;
     } catch (_) {
-      setStatus("Browser menolak menyimpan pengaturan. Periksa pengaturan privasi atau ruang penyimpanan.", "error");
+      setStatus("Browser menolak menyimpan Apple Music developer token untuk tab ini.", "error");
       return false;
     }
   }
@@ -122,11 +122,11 @@
         stateNode.dataset.connected = "true";
       } else if (count) {
         stateNode.textContent = "Cache lokal · " + count + " playlist · perlu reconnect untuk sinkronisasi";
-        connectButton.textContent = "Reconnect account";
+        connectButton.textContent = provider === "youtube" ? "Reconnect with Google" : "Reconnect Apple Music";
         stateNode.dataset.connected = "false";
       } else {
         stateNode.textContent = "Belum terhubung";
-        connectButton.textContent = "Connect account";
+        connectButton.textContent = provider === "youtube" ? "Continue with Google" : "Connect Apple Music";
         stateNode.dataset.connected = "false";
       }
       if (disconnectButton) disconnectButton.hidden = !active && count === 0;
@@ -391,10 +391,9 @@
   }
 
   function connectYouTube() {
-    const clientId = String(config.googleClientId || "").trim();
-    if (!clientId) {
-      setStatus("Masukkan Google OAuth Web Client ID terlebih dahulu. API key publik saja tidak cukup untuk membaca playlist privat akunmu.", "error");
-      openSetup("#accountGoogleClientId");
+    const clientId = String(window.EUPHONIA_CONFIG?.googleOAuthClientId || "").trim();
+    if (!clientId || clientId.startsWith("YOUR_GOOGLE_") || !clientId.endsWith(".apps.googleusercontent.com")) {
+      setStatus("Google login belum dikonfigurasi oleh pemilik aplikasi. Setelah Client ID disetel satu kali di euphonia-config.js, pengguna cukup klik Continue with Google.", "error");
       return;
     }
     if (youtubeAccessToken && Date.now() < youtubeTokenExpiresAt - 30000) {
@@ -1035,10 +1034,9 @@
   }
 
   function initSettings() {
-    const googleInput = $("#accountGoogleClientId");
     const appleInput = $("#accountAppleDeveloperToken");
-    if (googleInput) googleInput.value = config.googleClientId || "";
     if (appleInput) appleInput.value = savedAppleDeveloperToken();
+
     const toggle = $("#accountSetupToggle");
     if (toggle) toggle.addEventListener("click", () => {
       const panel = $("#accountSetup");
@@ -1046,24 +1044,23 @@
       panel.hidden = !panel.hidden;
       toggle.setAttribute("aria-expanded", String(!panel.hidden));
     });
+
     const save = $("#saveAccountConfig");
     if (save) save.addEventListener("click", () => {
-      config.googleClientId = (googleInput?.value || "").trim();
       if (!storeConfig()) return;
-      setStatus("Pengaturan tersimpan. Google Client ID disimpan di browser ini; Apple developer token hanya disimpan selama sesi tab ini.", "success");
+      const tokenSet = Boolean((appleInput?.value || "").trim());
+      setStatus(tokenSet
+        ? "Apple Music developer token disimpan hanya untuk tab ini. Google sign-in dikonfigurasi oleh pemilik aplikasi dan tidak perlu diatur oleh pengguna."
+        : "Pengaturan tersimpan. Pengguna bisa memakai Continue with Google; Apple Music memerlukan developer token bila ingin dihubungkan.", "success");
       $("#accountSetup").hidden = true;
       if (toggle) toggle.setAttribute("aria-expanded", "false");
     });
+
     const clear = $("#clearAccountConfig");
     if (clear) clear.addEventListener("click", () => {
-      config = {};
-      try {
-        localStorage.removeItem(CONFIG_KEY);
-        sessionStorage.removeItem(APPLE_TOKEN_KEY);
-      } catch (_) {}
-      if (googleInput) googleInput.value = "";
+      try { sessionStorage.removeItem(APPLE_TOKEN_KEY); } catch (_) {}
       if (appleInput) appleInput.value = "";
-      setStatus("Pengaturan koneksi dihapus dari browser ini. Koneksi akun yang sedang aktif tidak otomatis dicabut.", "success");
+      setStatus("Apple Music developer token dihapus dari tab ini. Pengaturan Google aplikasi tidak diubah.", "success");
     });
   }
 
