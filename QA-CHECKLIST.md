@@ -22,6 +22,13 @@ Run these checks with real provider credentials in a browser. Do not mark a test
 - [ ] Confirm Deezer reports pending OAuth integration, Spotify remains a separate official-service link, and Bandcamp does not claim to sync listener playlists.
 - [ ] Test desktop/tablet/mobile layout, keyboard focus, low storage quota, empty playlists, large collections, repeated imports, API 403/429/5xx failures, and private/deleted provider tracks.
 
+- [ ] Favorite a YouTube/Apple track, reload the page, and confirm Favorites persists in the same browser profile; remove it and confirm the list updates.
+- [ ] Start account playback and confirm the track appears in Recently played. Pause/resume the same track and verify the history does not fill with rapid duplicates.
+- [ ] Add several tracks to Queue, play a queued row, move rows up/down, remove current/non-current rows, and clear the queue.
+- [ ] Enable Shuffle and verify Next chooses a different queue item; cycle Repeat off/all/one and test natural end-of-track behavior.
+- [ ] Open Lyrics and verify synchronized LRCLIB lines highlight against supported player position; test plain lyrics, not-found, offline and HTTP 429 behavior.
+- [ ] Add tracks from Favorites/Recently played into Queue, and check that cross-provider items switch between the official provider players without overlapping EUPHONIA local audio or DAW playback.
+
 **Limits:** account sync requires each user's provider setup and consent. YouTube Data API results may not contain all YouTube Music-generated/library collections. Imported playlists store metadata and source identifiers, not copied audio files. YouTube and Apple playback stay with their official player SDKs and provider rules. This static browser implementation is a prototype; production OAuth should use a secure backend for secrets and receive a privacy/security review.
 
 # EUPHONIA v0.3.0 — release checklist
