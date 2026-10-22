@@ -4,7 +4,7 @@ This document records official documentation and practical engineering reference
 
 ## 1. Provider integration — authoritative sources
 
-### YouTube playback and account data
+### YouTube account metadata (audio-only playback policy)
 - [YouTube IFrame Player API](https://developers.google.com/youtube/iframe_api_reference) — player states, playback controls, errors, **onAutoplayBlocked**, and supported embed options.
 - [IFrame API revision history](https://developers.google.com/youtube/iframe_api_revision_history) — changes to embed behavior and new error handling. Keep an eye on error 153 and client identity/referrer requirements.
 - [YouTube Data API: playlists.list](https://developers.google.com/youtube/v3/docs/playlists/list) — official playlist metadata endpoint and pagination parameters.
@@ -16,7 +16,7 @@ This document records official documentation and practical engineering reference
 Implementation guardrails:
 - Use official authorization for account-specific data; API keys alone cannot read private account libraries.
 - Request only needed fields, paginate with documented maximums, honor errors/expired sessions, and avoid repeated unnecessary synchronization.
-- Keep official playback inside the supported YouTube player. Never download/rip provider streams or embed the whole provider website in an iframe.
+- EUPHONIA's Music Hub is audio-only and must not start the YouTube IFrame Player for tracks. Route YouTube playlist selections to an Apple catalog audio-preview search instead. Never download/rip provider streams or embed the whole provider website in an iframe.
 - Treat autoplay as best effort and explain errors to users.
 
 ### Apple Music
