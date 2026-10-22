@@ -84,7 +84,7 @@ Recommended testing layers:
 ### P0 — trust and basic stability
 - Add the real Google OAuth Web Client ID and confirm authorized origins/consent settings.
 - Complete live account login and official playback tests before making availability claims.
-- Use consistent provider state transitions, actionable API errors, request timeouts, cancellation, and rate-limit behavior.
+- Use consistent provider state transitions, actionable API errors, request timeouts, bounded transient retries, in-flight sync coalescing, cancellation, and rate-limit behavior.
 - Verify queue/favorites persistence on reload and confirm no credentials are written to local storage.
 
 ### P1 — repeatable testing and recovery
