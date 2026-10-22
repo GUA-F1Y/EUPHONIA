@@ -439,3 +439,63 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .stream-local-cover i:nth-child(2){height:42%}
 .stream-local-cover i:nth-child(3){height:30%}
 .stream-local-cover b{position:relative;z-index:1;display:grid;place-items:center;width:40px;height:40px;margin:0 3px;border:1px solid #ffffff35;border-radius:50%;background:#111016a8;color:#f6edff;font:500 19px var(--display);box-shadow:0 5px 18px #0006}
+
+/* Spotify account integration */
+.spotify-connect-panel{margin:14px 0 18px;border:1px solid #ffffff16;border-radius:13px;overflow:hidden;background:linear-gradient(135deg,#191720,#111015);box-shadow:0 14px 40px #0002;scroll-margin-top:90px}
+.spotify-connect-panel[hidden],.spotify-client-config-panel[hidden],.spotify-playlist-panel[hidden]{display:none!important}
+.spotify-connect-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 17px;background:linear-gradient(110deg,#1f1b29,#16141c);border-bottom:1px solid #ffffff0c}
+.spotify-connect-identity{display:flex;align-items:center;gap:11px;min-width:0}
+.spotify-connect-mark{width:40px;height:40px;flex:0 0 40px;display:grid;place-items:center;border-radius:11px;background:#244b37;color:#8af0ad;font:700 24px var(--display)}
+.spotify-connect-identity strong,.spotify-playlist-heading strong{display:block;color:#f8f4fc;font-size:12px}
+.spotify-connect-identity small,.spotify-playlist-heading small{display:block;margin-top:4px;color:#928b9d;font-size:10px;line-height:1.5}
+.spotify-connect-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}
+.spotify-connect-actions .primary-button,.spotify-connect-actions .outline-button{min-height:34px;padding:8px 11px;font-size:10px}
+.spotify-connect-actions .primary-button{background:#b4f4ca;color:#0e2015}
+.spotify-connect-actions .primary-button:hover{background:#d2ffe0}
+.spotify-config-panel{padding:17px;border-bottom:1px solid #ffffff0d;background:#121117}
+.spotify-config-copy strong{display:block;color:#eee7f7;font-size:11px}
+.spotify-config-copy p{max-width:780px;margin:6px 0 15px;color:#a29aaa;font-size:10px;line-height:1.7}
+.spotify-config-row>label,.spotify-redirect-row>span{display:block;margin-bottom:7px;color:#847b90;font:8px var(--mono);letter-spacing:1px}
+.spotify-config-row>div{display:flex;gap:8px;align-items:center}
+.spotify-config-row input{flex:1;min-width:0;min-height:38px;border:1px solid #3b3546;border-radius:7px;background:#1b1822;color:#f8f4fc;padding:0 11px;font-size:11px}
+.spotify-config-row input:focus{border-color:#9474bf;outline:0;box-shadow:0 0 0 3px #b49bff16}
+.spotify-config-row .primary-button{min-height:38px;padding:8px 13px;background:#b4f4ca;color:#0e2015;font-size:10px}
+.spotify-redirect-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:13px}
+.spotify-redirect-row>span{margin:0;white-space:nowrap}
+.spotify-redirect-row code{overflow-wrap:anywhere;word-break:break-all;color:#cab8e6;font:9px var(--mono);padding:6px 8px;border:1px solid #393142;border-radius:6px;background:#1b1722}
+.spotify-redirect-row .text-button{margin-left:auto;padding:5px 0;font-size:9px}
+.spotify-playlist-panel{padding:15px 17px 17px}
+.spotify-playlist-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.spotify-playlist-heading .outline-button{padding:7px 10px;font-size:9px}
+.spotify-playlist-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.spotify-playlist-card{min-width:0;padding:9px;border:1px solid #ffffff10;border-radius:9px;background:#191620;display:grid;grid-template-columns:58px minmax(0,1fr);gap:0 10px;align-items:center;transition:background .16s,border-color .16s}
+.spotify-playlist-card:hover{background:#211b2b;border-color:#b49bff40}
+.spotify-playlist-cover{grid-row:span 2;display:grid;place-items:center;overflow:hidden;width:58px;height:58px;border-radius:6px;background:linear-gradient(145deg,#624c86,#231a31);color:#eee1ff;font-size:22px}
+.spotify-playlist-cover img{width:100%;height:100%;object-fit:cover}
+.spotify-playlist-card-body{min-width:0;display:grid;gap:5px;align-self:end}
+.spotify-playlist-card-body strong{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#f3eff7;font-size:10px}
+.spotify-playlist-card-body small{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#90899a;font-size:8px}
+.spotify-playlist-card-actions{grid-column:2;display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:8px}
+.spotify-playlist-card-actions button{min-height:28px;padding:5px 7px;font-size:8px}
+.spotify-playlist-card-actions .primary-button{background:#b4f4ca;color:#0f2116}
+.spotify-playlist-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:16px;border:1px dashed #3b3446;border-radius:8px;color:#a29aaa;font-size:10px}
+.spotify-playlist-empty strong{color:#e8e0f1;font-size:11px}
+.spotify-load-more{display:block;margin:14px auto 0;padding:8px 13px;font-size:10px}
+.spotify-account-notice{display:flex;align-items:flex-start;gap:9px;padding:11px 15px;border-top:1px solid #ffffff0d;background:#121117}
+.spotify-account-notice>span{flex:0 0 17px;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#2a2435;color:#d1b8ff;font-size:10px;font-weight:700}
+.spotify-account-notice p{margin:0;color:#928a9c;font-size:9px;line-height:1.7}
+.spotify-account-notice[data-tone="success"]>span{background:#173d2a;color:#94efb1}
+.spotify-account-notice[data-tone="error"]>span{background:#49262f;color:#ffafbd}
+@media(max-width:1050px){.spotify-playlist-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .spotify-connect-head{align-items:flex-start;flex-direction:column;gap:13px;padding:13px}
+ .spotify-connect-actions{width:100%;display:grid;grid-template-columns:1fr 1fr 1fr}
+ .spotify-connect-actions button{padding:8px 5px!important;font-size:9px!important}
+ .spotify-config-panel,.spotify-playlist-panel{padding:13px}
+ .spotify-config-row>div{align-items:stretch;flex-direction:column}
+ .spotify-config-row .primary-button{width:100%}
+ .spotify-redirect-row{align-items:flex-start;flex-direction:column;gap:6px}
+ .spotify-redirect-row .text-button{margin-left:0}
+ .spotify-playlist-grid{grid-template-columns:1fr}
+ .spotify-playlist-card{grid-template-columns:60px minmax(0,1fr)}
+}
