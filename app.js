@@ -618,7 +618,7 @@
     if (count) count.textContent = state.files.length ? `${state.files.length} LOCAL TRACK${state.files.length === 1 ? '' : 'S'}` : 'YOUR LIBRARY';
     if (!recent.length) {
       host.innerHTML = '<div class="stream-shelf-empty"><strong>No local tracks yet.</strong><span>Import your own audio to build a personal collection.</span><button class="outline-button" id="emptyImport" type="button">＋ Import audio</button></div>';
-      $('#emptyImport').addEventListener('click', () => askImport('library'));
+      $('#emptyImport')?.addEventListener('click', () => askImport('library'));
       return;
     }
     host.innerHTML = recent.map((item, index) => {
