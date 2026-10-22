@@ -1,22 +1,27 @@
-## Account-based Music Hub — current behavior
+## Account Music Hub, import, and playback — current behavior
 
-Run these checks in a real browser after configuring provider credentials. Do not mark a test complete until it has actually been tried.
+Run these checks with real provider credentials in a browser. Do not mark a test complete until it has actually been tried.
 
-- [ ] Open Connection setup and save a Google OAuth Web Client ID; confirm it persists only as client configuration in this browser.
-- [ ] Configure the Google Cloud OAuth consent screen, add the actual local origin as an authorized JavaScript origin, enable YouTube Data API v3, and add the testing account if the consent screen is in Testing mode.
-- [ ] Connect YouTube. Confirm the OAuth consent request asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
-- [ ] Refresh the YouTube list; check playlist title, artwork, item count and privacy metadata. Verify no OAuth access token appears in localStorage.
-- [ ] Open View tracks on a YouTube playlist. Confirm video metadata appears from playlistItems.list and Open source uses an official YouTube Music URL.
-- [ ] Disconnect YouTube. Confirm its local playlist cache clears and the current access token is revoked where the provider endpoint permits it.
-- [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the Apple Music account.
-- [ ] Verify Apple Music library playlists populate; open a playlist and check track metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
-- [ ] Reload the app. Cached playlist metadata remains visible, but provider sync requires a fresh account authorization if no live session is present.
-- [ ] Search/filter the library by playlist title/description and source. Use Home mood shortcuts and global search to filter local playlist metadata instead of opening hidden legacy embed controls.
-- [ ] Confirm SoundCloud clearly reports the secure-backend requirement; no client secret field exists in the browser UI or repository.
-- [ ] Confirm Deezer reports that its adapter needs separate OAuth validation, Spotify stays on its official service link, and Bandcamp does not pretend to sync consumer playlists.
-- [ ] Test desktop, tablet and mobile layouts, keyboard focus, API permission denial, expired/revoked token, offline state, zero-playlist accounts and large playlist collections.
+- [ ] Open Connection setup and save a Google OAuth Web Client ID; confirm only the client configuration persists in this browser.
+- [ ] Configure the Google OAuth consent screen, add the local origin to Authorized JavaScript origins, enable YouTube Data API v3, and allow the testing account when using OAuth Testing mode.
+- [ ] Connect YouTube. Confirm OAuth asks only for YouTube read access and the account-owned playlists populate in Connected playlist library.
+- [ ] Open View tracks on a YouTube playlist and verify title, channel, artwork and Open source URL.
+- [ ] Press Play here on a YouTube track. Confirm the official YouTube iframe player appears inside EUPHONIA, plays the selected video, and does not embed the whole YouTube website.
+- [ ] Test YouTube previous/next, play/pause, end-of-track queue advance, unsupported embed video, popup/auth denial and expired token.
+- [ ] Select several YouTube playlists using the checkboxes / Select visible, then Import selected. Confirm all successful imports appear under Imported to EUPHONIA.
+- [ ] Remove one track from an imported playlist locally, add a new track to the source playlist, re-sync, and verify only the newly discovered source track is appended while the locally removed track stays removed.
+- [ ] Disconnect YouTube. Confirm the remote cache clears while already imported EUPHONIA playlists remain local; re-sync should ask you to reconnect.
+- [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the account.
+- [ ] Verify Apple Music library playlists populate and View tracks gets metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
+- [ ] Press Play here on an Apple Music track. Confirm MusicKit uses official playback and reports useful errors when authorization, subscription, URL, or content access is unavailable.
+- [ ] Test previous/next and play/pause for Apple Music; verify track changes stay within the same provider queue.
+- [ ] Reload EUPHONIA. Playlist metadata remains cached; connecting/syncing again requires an active/renewed provider session as appropriate.
+- [ ] Search/filter by title and description and by provider or Imported to EUPHONIA. Home mood shortcuts should filter the local playlist metadata instead of exposing hidden legacy embed controls.
+- [ ] Confirm SoundCloud clearly reports the secure-backend requirement; no client secret field exists in frontend code or Git history.
+- [ ] Confirm Deezer reports pending OAuth integration, Spotify remains a separate official-service link, and Bandcamp does not claim to sync listener playlists.
+- [ ] Test desktop/tablet/mobile layout, keyboard focus, low storage quota, empty playlists, large collections, repeated imports, API 403/429/5xx failures, and private/deleted provider tracks.
 
-**Limits:** provider account sync requires each user's own provider setup and permission. YouTube's API result is limited to playlists returned by the YouTube Data API and may not reflect all YouTube Music-generated/library collections. This static browser integration is a personal-use prototype; production OAuth should use a secure backend and be reviewed against current provider requirements. Real-browser tests are still required.
+**Limits:** account sync requires each user's provider setup and consent. YouTube Data API results may not contain all YouTube Music-generated/library collections. Imported playlists store metadata and source identifiers, not copied audio files. YouTube and Apple playback stay with their official player SDKs and provider rules. This static browser implementation is a prototype; production OAuth should use a secure backend for secrets and receive a privacy/security review.
 
 # EUPHONIA v0.3.0 — release checklist
 
