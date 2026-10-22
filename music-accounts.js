@@ -31,6 +31,8 @@
   let youtubePlayer = null;
   let youtubeApiPromise = null;
   let applePlaybackBusy = false;
+  let accountShuffleEnabled = false;
+  let accountRepeatMode = "off";
 
   function readJSON(storage, key, fallback) {
     try {
@@ -802,6 +804,51 @@
     if (button) button.textContent = "Ⅱ Pause";
   }
 
+  function emitAccountQueueChange() {
+    const queue = accountPlaybackQueue.map((track, index) => ({ ...track, queueIndex: index, active: index === accountPlaybackIndex }));
+    window.dispatchEvent(new CustomEvent("euphonia:account-queue-change", {
+      detail: { queue, index: accountPlaybackIndex, shuffle: accountShuffleEnabled, repeat: accountRepeatMode }
+    }));
+    const shuffle = $("#accountPlayerShuffle");
+    if (shuffle) {
+      shuffle.textContent = accountShuffleEnabled ? "⤨ Shuffle on" : "⤨ Shuffle";
+      shuffle.classList.toggle("is-active", accountShuffleEnabled);
+      shuffle.setAttribute("aria-pressed", String(accountShuffleEnabled));
+    }
+    const repeat = $("#accountPlayerRepeat");
+    if (repeat) {
+      repeat.textContent = accountRepeatMode === "one" ? "↻ Repeat one" : accountRepeatMode === "all" ? "↻ Repeat all" : "↻ Repeat off";
+      repeat.classList.toggle("is-active", accountRepeatMode !== "off");
+      repeat.setAttribute("aria-pressed", String(accountRepeatMode !== "off"));
+    }
+  }
+
+  function advanceAccountQueue(direction, naturalEnd = false) {
+    if (!accountPlaybackQueue.length) return;
+    if (naturalEnd && accountRepeatMode === "one" && accountPlaybackIndex >= 0) {
+      void playAccountQueueIndex(accountPlaybackIndex);
+      return;
+    }
+    if (direction > 0 && accountShuffleEnabled && accountPlaybackQueue.length > 1) {
+      let next = accountPlaybackIndex;
+      while (next === accountPlaybackIndex) next = Math.floor(Math.random() * accountPlaybackQueue.length);
+      void playAccountQueueIndex(next);
+      return;
+    }
+    let next = accountPlaybackIndex + direction;
+    if (next < 0 || next >= accountPlaybackQueue.length) {
+      if (naturalEnd && accountRepeatMode !== "all") {
+        const toggle = $("#accountPlayerToggle");
+        if (toggle) toggle.textContent = "▶ Play";
+        setStatus("Queue selesai. Tekan Next untuk memulai lagi, atau aktifkan Repeat all.", "info");
+        return;
+      }
+      if (naturalEnd && accountRepeatMode === "all") next = (next + accountPlaybackQueue.length) % accountPlaybackQueue.length;
+      else next = (next + accountPlaybackQueue.length) % accountPlaybackQueue.length;
+    }
+    void playAccountQueueIndex(next);
+  }
+
   async function playAccountQueueIndex(index) {
     const track = accountPlaybackQueue[index];
     if (!track) return;
@@ -814,6 +861,7 @@
     }
     accountPlaybackIndex = index;
     accountPlaybackProvider = nextProvider;
+    emitAccountQueueChange();
     window.dispatchEvent(new Event("euphonia:account-playback-start"));
     const panel = $("#accountNowPlaying");
     const youtubeWrap = $("#accountYouTubePlayerWrap");
@@ -822,6 +870,9 @@
     if (youtubeWrap) youtubeWrap.hidden = accountPlaybackProvider !== "youtube";
     if (appleStatus) appleStatus.hidden = accountPlaybackProvider !== "apple";
     updateAccountPlayerHeader(track);
+    window.dispatchEvent(new CustomEvent("euphonia:account-track-change", {
+      detail: { track: { ...track, provider: accountPlaybackProvider, providerName: track.providerName || providerTitle(accountPlaybackProvider) }, index: accountPlaybackIndex }
+    }));
 
     if (accountPlaybackProvider === "youtube") {
       try {
@@ -845,8 +896,11 @@
               event.target.playVideo();
             },
             onStateChange: event => {
-              if (event.data === YT.PlayerState.ENDED && accountPlaybackProvider === "youtube" && accountPlaybackIndex < accountPlaybackQueue.length - 1) {
-                void playAccountQueueIndex(accountPlaybackIndex + 1);
+              if (event.data === YT.PlayerState.ENDED && accountPlaybackProvider === "youtube") {
+                advanceAccountQueue(1, true);
+              }
+              if (event.data === YT.PlayerState.PLAYING) {
+                window.dispatchEvent(new CustomEvent("euphonia:account-playback-started", { detail: { track: currentAccountTrack() } }));
               }
               const button = $("#accountPlayerToggle");
               if (button) button.textContent = event.data === YT.PlayerState.PLAYING ? "Ⅱ Pause" : "▶ Play";
@@ -876,6 +930,7 @@
         }
         await appleMusic.play();
         applePlaybackBusy = false;
+        window.dispatchEvent(new CustomEvent("euphonia:account-playback-started", { detail: { track: currentAccountTrack() } }));
         setStatus("Memutar lewat MusicKit resmi Apple Music. Ketersediaan bergantung pada langganan dan izin akun.", "success");
         const button = $("#accountPlayerToggle");
         if (button) button.textContent = "Ⅱ Pause";
@@ -892,7 +947,8 @@
       setStatus("Pemutaran di dalam EUPHONIA tersedia untuk YouTube dan Apple Music yang terhubung. Gunakan Open source untuk provider lain.", "info");
       return;
     }
-    accountPlaybackQueue = tracks.map(track => ({ ...track, provider }));
+    accountPlaybackQueue = tracks.map(track => ({ ...track, provider, providerName: track.providerName || providerTitle(provider) }));
+    emitAccountQueueChange();
     void playAccountQueueIndex(index);
   }
 
@@ -948,9 +1004,15 @@
         textBox.append(trackTitle, artist);
         const actions = document.createElement("div");
         actions.className = "account-track-actions";
+        const accountTrack = { ...track, provider: playlist.provider, providerName: playlist.providerName || providerTitle(playlist.provider), playlistTitle: playlist.title || "" };
         if (["youtube", "apple"].includes(playlist.provider)) {
           actions.append(createButton("Play here", "primary-button small-account-button", () => playTrackFromPlaylist(playlist, tracks, index)));
+          actions.append(createButton("＋ Queue", "outline-button small-account-button", () => window.EUPHONIA_ACCOUNT_MUSIC?.enqueueTrack(accountTrack)));
         }
+        const favoriteButton = createButton(window.EUPHONIA_MUSICFY?.isFavorite(accountTrack) ? "♥ Saved" : "♡ Favorite", "outline-button small-account-button", () => window.EUPHONIA_MUSICFY?.toggleFavorite(accountTrack));
+        favoriteButton.dataset.musicfyFavoriteKey = (accountTrack.provider || "") + "::" + String(accountTrack.id || accountTrack.sourceKey || accountTrack.url || "");
+        favoriteButton.setAttribute("aria-pressed", String(Boolean(window.EUPHONIA_MUSICFY?.isFavorite(accountTrack))));
+        actions.append(favoriteButton);
         actions.append(createExternalLink("Open source ↗", track.url, "outline-button small-account-button"));
         if (playlist.importedLocal) actions.append(createButton("Remove local", "text-button small-account-button", () => removeImportedTrack(playlist, track)));
         row.append(number, art, textBox, actions);
@@ -1022,6 +1084,101 @@
     renderPlaylistGrid();
     setStatus(providerTitle(provider) + " disconnected from this EUPHONIA session. Cached playlist metadata was cleared.", "success");
   }
+
+  window.EUPHONIA_ACCOUNT_MUSIC = Object.freeze({
+    getQueue: () => accountPlaybackQueue.map((track, index) => ({ ...track, queueIndex: index, active: index === accountPlaybackIndex })),
+    getCurrentTrack: () => {
+      const track = currentAccountTrack();
+      return track ? { ...track, provider: track.provider || accountPlaybackProvider, providerName: track.providerName || providerTitle(track.provider || accountPlaybackProvider || "") } : null;
+    },
+    getPlaybackTime: () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer && typeof youtubePlayer.getCurrentTime === "function") {
+          const value = Number(youtubePlayer.getCurrentTime());
+          return Number.isFinite(value) ? value : null;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic?.player) {
+          const value = Number(appleMusic.player.currentPlaybackTime);
+          return Number.isFinite(value) ? value : null;
+        }
+      } catch (_) {}
+      return null;
+    },
+    getModes: () => ({ shuffle: accountShuffleEnabled, repeat: accountRepeatMode }),
+    isProviderReady: provider => provider === "youtube"
+      ? Boolean(youtubeAccessToken && Date.now() < youtubeTokenExpiresAt)
+      : provider === "apple" ? Boolean(appleMusic && appleAuthorized) : false,
+    playQueue: (tracks, index = 0) => {
+      const nextQueue = (Array.isArray(tracks) ? tracks : []).map(track => ({ ...track, provider: track.provider || "youtube", providerName: track.providerName || providerTitle(track.provider || "youtube") }))
+        .filter(track => ["youtube", "apple"].includes(track.provider) && (track.id || track.url));
+      if (!nextQueue.length) {
+        setStatus("Tidak ada track yang bisa diputar di queue.", "info");
+        return;
+      }
+      accountPlaybackQueue = nextQueue;
+      accountPlaybackIndex = -1;
+      emitAccountQueueChange();
+      const safeIndex = Math.max(0, Math.min(nextQueue.length - 1, Number(index) || 0));
+      void playAccountQueueIndex(safeIndex);
+    },
+    enqueueTrack: track => {
+      if (!track || !["youtube", "apple"].includes(track.provider)) {
+        setStatus("Queue hanya menerima track dari YouTube Music atau Apple Music.", "info");
+        return;
+      }
+      const normalized = { ...track, providerName: track.providerName || providerTitle(track.provider) };
+      accountPlaybackQueue.push(normalized);
+      const index = accountPlaybackQueue.length - 1;
+      emitAccountQueueChange();
+      setStatus("Ditambahkan ke queue: " + (normalized.title || "Untitled track") + ".", "success");
+      if (accountPlaybackIndex < 0) void playAccountQueueIndex(index);
+    },
+    advanceQueue: direction => advanceAccountQueue(direction < 0 ? -1 : 1, false),
+    toggleShuffle: () => {
+      accountShuffleEnabled = !accountShuffleEnabled;
+      emitAccountQueueChange();
+      return accountShuffleEnabled;
+    },
+    cycleRepeat: () => {
+      accountRepeatMode = accountRepeatMode === "off" ? "all" : accountRepeatMode === "all" ? "one" : "off";
+      emitAccountQueueChange();
+      return accountRepeatMode;
+    },
+    removeQueueItem: index => {
+      if (!Number.isInteger(index) || index < 0 || index >= accountPlaybackQueue.length) return;
+      const removedCurrent = index === accountPlaybackIndex;
+      accountPlaybackQueue.splice(index, 1);
+      if (!accountPlaybackQueue.length) {
+        accountPlaybackIndex = -1;
+        closeAccountPlayback();
+        emitAccountQueueChange();
+        return;
+      }
+      if (index < accountPlaybackIndex) accountPlaybackIndex -= 1;
+      else if (removedCurrent) {
+        const next = Math.min(index, accountPlaybackQueue.length - 1);
+        accountPlaybackIndex = -1;
+        void playAccountQueueIndex(next);
+      } else emitAccountQueueChange();
+    },
+    moveQueueItem: (from, to) => {
+      if (!Number.isInteger(from) || !Number.isInteger(to) || from < 0 || to < 0 || from >= accountPlaybackQueue.length || to >= accountPlaybackQueue.length || from === to) return;
+      const [item] = accountPlaybackQueue.splice(from, 1);
+      accountPlaybackQueue.splice(to, 0, item);
+      if (accountPlaybackIndex === from) accountPlaybackIndex = to;
+      else if (from < accountPlaybackIndex && to >= accountPlaybackIndex) accountPlaybackIndex -= 1;
+      else if (from > accountPlaybackIndex && to <= accountPlaybackIndex) accountPlaybackIndex += 1;
+      emitAccountQueueChange();
+    },
+    clearQueue: () => {
+      closeAccountPlayback();
+      accountPlaybackQueue = [];
+      accountPlaybackIndex = -1;
+      accountPlaybackProvider = null;
+      emitAccountQueueChange();
+      setStatus("Queue dikosongkan.", "success");
+    }
+  });
 
   function helpOtherProvider(provider) {
     const messages = {
@@ -1124,15 +1281,17 @@
       activePlaylistDetailKey = null;
       $("#accountPlaylistGrid")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
-    $("#accountPlayerPrevious")?.addEventListener("click", () => {
-      if (!accountPlaybackQueue.length) return;
-      const next = (accountPlaybackIndex - 1 + accountPlaybackQueue.length) % accountPlaybackQueue.length;
-      void playAccountQueueIndex(next);
+    $("#accountPlayerPrevious")?.addEventListener("click", () => advanceAccountQueue(-1, false));
+    $("#accountPlayerNext")?.addEventListener("click", () => advanceAccountQueue(1, false));
+    $("#accountPlayerShuffle")?.addEventListener("click", () => {
+      accountShuffleEnabled = !accountShuffleEnabled;
+      emitAccountQueueChange();
+      setStatus(accountShuffleEnabled ? "Shuffle diaktifkan untuk antrean akun." : "Shuffle dimatikan.", "info");
     });
-    $("#accountPlayerNext")?.addEventListener("click", () => {
-      if (!accountPlaybackQueue.length) return;
-      const next = (accountPlaybackIndex + 1) % accountPlaybackQueue.length;
-      void playAccountQueueIndex(next);
+    $("#accountPlayerRepeat")?.addEventListener("click", () => {
+      accountRepeatMode = accountRepeatMode === "off" ? "all" : accountRepeatMode === "all" ? "one" : "off";
+      emitAccountQueueChange();
+      setStatus("Mode repeat: " + accountRepeatMode + ".", "info");
     });
     $("#accountPlayerToggle")?.addEventListener("click", () => {
       if (accountPlaybackProvider === "youtube" && youtubePlayer) {
@@ -1175,6 +1334,7 @@
     initListeners();
     renderProviderStates();
     renderPlaylistGrid();
+    emitAccountQueueChange();
     loadMusicKit().catch(() => {});
     window.dispatchEvent(new CustomEvent("euphonia:accounts-ready"));
   }
