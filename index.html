@@ -211,6 +211,12 @@
             </div>
             <div class="account-youtube-player-wrap" id="accountYouTubePlayerWrap" hidden><div id="accountYouTubePlayer"></div><p>Official YouTube player · playback and ads are controlled by YouTube.</p></div>
             <div class="account-apple-player-status" id="accountApplePlayerStatus" hidden>Playback is handled by Apple Music through MusicKit. An active subscription may be required.</div>
+            <div class="account-progress-row" aria-label="Account playback progress">
+              <span id="accountPlayerCurrentTime">0:00</span>
+              <input id="accountPlayerSeek" type="range" min="0" max="1000" value="0" aria-label="Seek account track">
+              <span id="accountPlayerDuration">0:00</span>
+            </div>
+            <div class="account-volume-row"><label for="accountPlayerVolume">Account volume</label><input id="accountPlayerVolume" type="range" min="0" max="100" value="80" aria-label="Account playback volume"><output id="accountPlayerVolumeValue">80%</output></div>
             <div class="account-player-tools" role="group" aria-label="Account playback tools">
               <button class="outline-button" id="accountPlayerFavorite" type="button" disabled aria-pressed="false">♡ Favorite</button>
               <button class="outline-button" id="accountPlayerShuffle" type="button" aria-pressed="false">⤨ Shuffle</button>
