@@ -351,6 +351,45 @@
       event.preventDefault();
       void runSearch();
     });
+
+    const apiKeyInput = $("#musicDiscoveryApiKey");
+    const apiSetupStatus = $("#musicDiscoveryApiSetupStatus");
+    const setApiSetupStatus = (message, tone = "info") => {
+      if (!apiSetupStatus) return;
+      apiSetupStatus.textContent = message;
+      apiSetupStatus.dataset.tone = tone;
+    };
+    $("#musicDiscoverySaveApiKey")?.addEventListener("click", () => {
+      const key = String(apiKeyInput?.value || "").trim();
+      if (!key) {
+        setApiSetupStatus("Tempel API key baru terlebih dahulu.", "error");
+        apiKeyInput?.focus();
+        return;
+      }
+      if (key.startsWith("YOUR_YOUTUBE_")) {
+        setApiSetupStatus("Itu masih teks placeholder. Masukkan API key asli dari Google Cloud.", "error");
+        return;
+      }
+      try {
+        localStorage.setItem("euphonia.youtubeDataApiKey", key);
+        if (apiKeyInput) apiKeyInput.value = "";
+        setApiSetupStatus("API key tersimpan di browser ini. Sekarang cari artis atau lagu lagi di atas.", "success");
+        setStatus("API key lokal tersimpan. Ulangi pencarian YouTube.", "success");
+      } catch (_) {
+        setApiSetupStatus("Browser menolak penyimpanan lokal. Periksa pengaturan privasi browser.", "error");
+      }
+    });
+    $("#musicDiscoveryClearApiKey")?.addEventListener("click", () => {
+      try {
+        localStorage.removeItem("euphonia.youtubeDataApiKey");
+        if (apiKeyInput) apiKeyInput.value = "";
+        setApiSetupStatus("Key lokal dihapus dari browser ini.", "success");
+        setStatus("Key lokal dihapus. Pencarian YouTube memerlukan key yang dikonfigurasi oleh pemilik aplikasi.", "info");
+      } catch (_) {
+        setApiSetupStatus("Browser menolak menghapus key lokal.", "error");
+      }
+    });
+
     $("#musicDiscoverySource")?.addEventListener("change", () => {
       const source = $("#musicDiscoverySource")?.value;
       const button = $("#musicDiscoverySearchButton");
