@@ -640,18 +640,18 @@
   }
 
   async function importPlaylist(playlist, options = {}) {
-    if (!playlist) return;
+    if (!playlist) return false;
     const key = normalizedPlaylistKey(playlist);
     const provider = playlist.provider;
     if (provider === "youtube" && (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt)) {
       setStatus("Hubungkan ulang akun YouTube, lalu tekan Import to EUPHONIA sekali lagi.", "info");
       connectYouTube();
-      return;
+      return false;
     }
     if (provider === "apple" && (!appleMusic || !appleAuthorized)) {
       setStatus("Hubungkan ulang akun Apple Music, lalu tekan Import to EUPHONIA sekali lagi.", "info");
       void connectAppleMusic();
-      return;
+      return false;
     }
     try {
       setStatus((options.resync ? "Sinkronisasi ulang " : "Mengimpor ") + "playlist “" + (playlist.title || "Untitled playlist") + "”…");
@@ -692,7 +692,7 @@
         lastSyncedAt: new Date().toISOString()
       };
       importedPlaylists[key] = imported;
-      if (!persistImportedPlaylists()) return;
+      if (!persistImportedPlaylists()) return false;
       selectedPlaylistKeys.delete(key);
       const checkbox = $("[data-account-select=\"" + CSS.escape(key) + "\"]");
       if (checkbox) checkbox.checked = false;
@@ -701,8 +701,10 @@
         ? " · " + addedCount + " track baru ditambahkan; track yang kamu hapus lokal tetap dihapus."
         : " · " + localTracks.length + " track disimpan ke koleksi lokal.";
       setStatus("Playlist “" + imported.title + "” berhasil " + (existing && options.resync ? "disinkronkan ulang" : "diimpor") + suffix, "success");
+      return true;
     } catch (error) {
       setStatus("Impor playlist gagal: " + (error.message || "request gagal."), "error");
+      return false;
     }
   }
 
@@ -728,8 +730,9 @@
           errors.push(item.title + ": connect akun " + providerTitle(item.provider) + " terlebih dahulu");
           continue;
         }
-        await importPlaylist(item, { resync: Boolean(importedPlaylists[item.key]) });
-        completed++;
+        const ok = await importPlaylist(item, { resync: Boolean(importedPlaylists[item.key]) });
+        if (ok) completed++;
+        else errors.push(item.title + ": import tidak selesai; periksa pesan status di atas");
       } catch (error) {
         errors.push(item.title + ": " + (error.message || "gagal"));
       }
