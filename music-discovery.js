@@ -16,17 +16,6 @@
     node.textContent = message;
   }
 
-  function configuredYouTubeKey() {
-    const configured = String(window.EUPHONIA_CONFIG?.youtubeDataApiKey || "").trim();
-    if (configured && !configured.startsWith("YOUR_YOUTUBE_")) return configured;
-    try {
-      const local = String(localStorage.getItem("euphonia.youtubeDataApiKey") || "").trim();
-      return local && !local.startsWith("YOUR_YOUTUBE_") ? local : "";
-    } catch (_) {
-      return "";
-    }
-  }
-
   function create(tag, className, text) {
     const node = document.createElement(tag);
     if (className) node.className = className;
@@ -53,21 +42,6 @@
     $("#musicDiscoveryResults")?.replaceChildren();
     $("#musicDiscoveryResultsPanel")?.setAttribute("hidden", "");
     currentResults = [];
-  }
-
-  function itemFromYouTube(entry) {
-    const snippet = entry.snippet || {};
-    const videoId = entry.id?.videoId;
-    return {
-      id: String(videoId || ""),
-      sourceKey: "youtube::" + String(videoId || ""),
-      provider: "youtube",
-      providerName: "YouTube Music",
-      title: String(snippet.title || "Untitled video"),
-      artist: String(snippet.channelTitle || "YouTube"),
-      artwork: String(snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || ""),
-      url: "https://music.youtube.com/watch?v=" + encodeURIComponent(String(videoId || ""))
-    };
   }
 
   function itemFromApple(entry) {
@@ -105,21 +79,6 @@
     $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  function playYouTubeAt(index) {
-    const api = window.EUPHONIA_ACCOUNT_MUSIC;
-    const queue = currentResults.filter(track => track.provider === "youtube");
-    if (!api || !queue.length) {
-      setStatus("Pemutar YouTube belum siap. Muat ulang halaman atau gunakan preview Apple Music.", "error");
-      return;
-    }
-    const item = queue[index];
-    if (!item || !item.id) return;
-    showSearchPlaybackSurface("YouTube Music", item);
-    api.playQueue(queue, index);
-    setStatus("Membuka “" + item.title + "” di pemutar YouTube resmi dalam EUPHONIA. Video tertentu mungkin melarang pemutaran tertanam.", "success");
-    window.setTimeout(() => $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
-  }
-
   function addToQueue(item) {
     const api = window.EUPHONIA_ACCOUNT_MUSIC;
     if (!api) return setStatus("Queue akun belum siap. Coba muat ulang EUPHONIA.", "error");
@@ -142,10 +101,10 @@
       setStatus("Player EUPHONIA belum siap. Muat ulang halaman dan coba lagi.", "error");
       return;
     }
-    setStatus("Memulai preview “" + item.title + "” di player EUPHONIA…", "info");
+    setStatus("Memulai preview audio “" + item.title + "” di player EUPHONIA…", "info");
     Promise.resolve(callback(item, list)).then(played => {
       if (played === false) setStatus("Preview siap, tetapi browser memblokir autoplay. Tekan Play pada player bawah.", "info");
-      else setStatus("Memutar preview “" + item.title + "” di player bawah EUPHONIA.", "success");
+      else setStatus("Memutar audio preview “" + item.title + "” di player bawah EUPHONIA.", "success");
     }).catch(error => setStatus("Tidak dapat memutar preview: " + (error.message || "coba lagi."), "error"));
   }
 
@@ -210,9 +169,9 @@
     currentSource = source;
     currentResults = results;
     grid.replaceChildren();
-    const mapped = source === "youtube" ? results.map(itemFromYouTube) : results.map(itemFromApple);
+    const mapped = results.map(itemFromApple);
     currentResults = mapped;
-    createResultsHeading(query, mapped.length, source === "youtube" ? "YouTube Music" : "Apple Music");
+    createResultsHeading(query, mapped.length, "Apple Music · Audio Only");
     if (!mapped.length) {
       const empty = create("div", "account-empty-state compact");
       const title = create("strong", "", "No tracks found");
@@ -225,88 +184,13 @@
     panel.hidden = false;
   }
 
-  async function searchYouTube(query, sequence) {
-    const key = configuredYouTubeKey();
-    if (!key) {
-      clearResults();
-      setStatus("Pencarian YouTube belum diaktifkan oleh pemilik aplikasi. Tambahkan YouTube Data API key yang dibatasi untuk domain EUPHONIA di euphonia-config.js. Sementara itu, kamu bisa memilih Apple Music Previews.", "info");
-      return;
-    }
-
-    const cacheKey = "youtube::" + query.toLocaleLowerCase();
-    const cached = cache.get(cacheKey);
-    if (cached && Date.now() - cached.at < CACHE_TTL) {
-      if (sequence === requestSequence) {
-        renderResults(query, "youtube", cached.items);
-        setStatus("Hasil YouTube diambil dari cache lokal sementara.", "success");
-      }
-      return;
-    }
-
-    const controller = new AbortController();
-    currentRequest = controller;
-    const timeout = window.setTimeout(() => controller.abort(), 12000);
-    try {
-      const url = new URL("https://www.googleapis.com/youtube/v3/search");
-      url.search = new URLSearchParams({
-        part: "snippet",
-        type: "video",
-        videoCategoryId: "10",
-        videoEmbeddable: "true",
-        safeSearch: "moderate",
-        regionCode: "ID",
-        maxResults: "12",
-        q: query,
-        key
-      }).toString();
-      const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
-      let data = {};
-      try { data = await response.json(); } catch (_) {}
-      if (sequence !== requestSequence) return;
-      if (!response.ok || data.error) {
-        const reason = data.error?.errors?.[0]?.reason || "";
-        if (response.status === 403 && /quotaExceeded|dailyLimitExceeded|rateLimitExceeded/i.test(reason)) {
-          throw new Error("Kuota pencarian YouTube sedang habis (" + reason + "). Coba lagi setelah kuota reset atau gunakan Apple Music Previews.");
-        }
-        if (/keyInvalid|invalidKey|API_KEY_INVALID/i.test(reason)) {
-          throw new Error("API key ditolak (" + reason + "). Buat key pengganti di Google Cloud, aktifkan YouTube Data API v3, lalu simpan key baru di pengaturan pencarian EUPHONIA.");
-        }
-        if (/accessNotConfigured|SERVICE_DISABLED|accessNotConfigured/i.test(reason)) {
-          throw new Error("YouTube Data API v3 belum aktif untuk project Google Cloud pemilik key (" + reason + "). Aktifkan API pada project yang sama dengan key.");
-        }
-        if (/ipRefererBlocked|refererNotAllowed|referrerNotAllowed|API_KEY_HTTP_REFERRER_BLOCKED/i.test(reason)) {
-          throw new Error("Alamat website EUPHONIA tidak cocok dengan Website restrictions (" + reason + "). Tambahkan origin browser yang tepat, termasuk host dan port, di Google Cloud.");
-        }
-        if (response.status === 403) {
-          throw new Error("Google menolak YouTube API (403; reason: " + (reason || "tidak disediakan") + "). Periksa Website restrictions, API restrictions, status API, dan kuota di Google Cloud.");
-        }
-        throw new Error(data.error?.message || "YouTube API HTTP " + response.status + (reason ? " (" + reason + ")" : ""));
-      }
-      const items = (Array.isArray(data.items) ? data.items : []).filter(item => item?.id?.videoId && item.snippet);
-      cache.set(cacheKey, { items, at: Date.now() });
-      renderResults(query, "youtube", items);
-      setStatus(items.length
-        ? "Ditemukan " + items.length + " hasil. Pilih Play here untuk memakai pemutar YouTube resmi di halaman ini."
-        : "Tidak ada hasil video musik yang bisa ditampilkan untuk query ini.", items.length ? "success" : "info");
-    } catch (error) {
-      if (sequence !== requestSequence) return;
-      clearResults();
-      setStatus(error.name === "AbortError"
-        ? "Pencarian YouTube timeout setelah 12 detik. Coba lagi."
-        : "Pencarian YouTube gagal: " + (error.message || "periksa koneksi internet."), "error");
-    } finally {
-      window.clearTimeout(timeout);
-      if (currentRequest === controller) currentRequest = null;
-    }
-  }
-
   async function searchApple(query, sequence) {
     const cacheKey = "apple::" + query.toLocaleLowerCase();
     const cached = cache.get(cacheKey);
     if (cached && Date.now() - cached.at < CACHE_TTL) {
       if (sequence === requestSequence) {
         renderResults(query, "apple", cached.items);
-        setStatus("Hasil Apple Music dimuat dari cache sementara.", "success");
+        setStatus("Hasil katalog audio dimuat dari cache sementara.", "success");
       }
       return;
     }
@@ -325,7 +209,7 @@
       renderResults(query, "apple", items);
       const previews = items.filter(item => item.previewUrl).length;
       setStatus(items.length
-        ? "Ditemukan " + items.length + " lagu; " + previews + " punya preview yang dapat dicoba langsung di EUPHONIA. Preview memiliki durasi yang ditentukan penyedia."
+        ? "Ditemukan " + items.length + " lagu; " + previews + " punya audio preview untuk diputar di EUPHONIA. Tidak ada video yang diputar di fitur ini."
         : "Tidak ada lagu yang cocok. Coba nama artis atau judul lagu lain.", items.length ? "success" : "info");
     } catch (error) {
       if (sequence !== requestSequence) return;
@@ -350,10 +234,8 @@
     requestSequence += 1;
     const sequence = requestSequence;
     if (currentRequest) currentRequest.abort();
-    const source = $("#musicDiscoverySource")?.value || "youtube";
-    setStatus("Mencari “" + query + "”…");
-    if (source === "apple") await searchApple(query, sequence);
-    else await searchYouTube(query, sequence);
+    setStatus("Mencari lagu audio-only “" + query + "”…");
+    await searchApple(query, sequence);
   }
 
   function init() {
@@ -363,53 +245,13 @@
       void runSearch();
     });
 
-    const apiKeyInput = $("#musicDiscoveryApiKey");
-    const apiSetupStatus = $("#musicDiscoveryApiSetupStatus");
-    const setApiSetupStatus = (message, tone = "info") => {
-      if (!apiSetupStatus) return;
-      apiSetupStatus.textContent = message;
-      apiSetupStatus.dataset.tone = tone;
-    };
-    $("#musicDiscoverySaveApiKey")?.addEventListener("click", () => {
-      const key = String(apiKeyInput?.value || "").trim();
-      if (!key) {
-        setApiSetupStatus("Tempel API key baru terlebih dahulu.", "error");
-        apiKeyInput?.focus();
-        return;
-      }
-      if (key.startsWith("YOUR_YOUTUBE_")) {
-        setApiSetupStatus("Itu masih teks placeholder. Masukkan API key asli dari Google Cloud.", "error");
-        return;
-      }
-      try {
-        localStorage.setItem("euphonia.youtubeDataApiKey", key);
-        if (apiKeyInput) apiKeyInput.value = "";
-        setApiSetupStatus("API key tersimpan di browser ini. Sekarang cari artis atau lagu lagi di atas.", "success");
-        setStatus("API key lokal tersimpan. Ulangi pencarian YouTube.", "success");
-      } catch (_) {
-        setApiSetupStatus("Browser menolak penyimpanan lokal. Periksa pengaturan privasi browser.", "error");
-      }
-    });
-    $("#musicDiscoveryClearApiKey")?.addEventListener("click", () => {
-      try {
-        localStorage.removeItem("euphonia.youtubeDataApiKey");
-        if (apiKeyInput) apiKeyInput.value = "";
-        setApiSetupStatus("Key lokal dihapus dari browser ini.", "success");
-        setStatus("Key lokal dihapus. Pencarian YouTube memerlukan key yang dikonfigurasi oleh pemilik aplikasi.", "info");
-      } catch (_) {
-        setApiSetupStatus("Browser menolak menghapus key lokal.", "error");
-      }
-    });
-
-    $("#musicDiscoverySource")?.addEventListener("change", () => {
-      const source = $("#musicDiscoverySource")?.value;
-      const button = $("#musicDiscoverySearchButton");
-      if (button) button.textContent = source === "apple" ? "Search previews" : "Search YouTube";
-      const hint = $("#musicDiscoveryHint");
-      if (hint) hint.textContent = source === "apple"
-        ? "Cari katalog tanpa login; Play mengalirkan preview resmi jika tersedia."
-        : "Cari video musik dan putar lewat pemutar YouTube resmi. API key dikonfigurasi pemilik aplikasi.";
-      clearResults();
+    window.addEventListener("euphonia:find-audio-preview", event => {
+      const input = $("#musicDiscoveryQuery");
+      const query = String(event.detail?.query || "").trim();
+      if (!input || !query) return;
+      input.value = query;
+      void runSearch();
+      $("#musicDiscoverySection")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
     $("#musicDiscoveryClear")?.addEventListener("click", () => {
       if (currentRequest) currentRequest.abort();
