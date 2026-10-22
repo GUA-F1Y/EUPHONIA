@@ -117,7 +117,7 @@
     showSearchPlaybackSurface("YouTube Music", item);
     api.playQueue(queue, index);
     setStatus("Membuka “" + item.title + "” di pemutar YouTube resmi dalam EUPHONIA. Video tertentu mungkin melarang pemutaran tertanam.", "success");
-    $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    window.setTimeout(() => $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
   }
 
   function addToQueue(item) {
@@ -142,7 +142,11 @@
       setStatus("Player EUPHONIA belum siap. Muat ulang halaman dan coba lagi.", "error");
       return;
     }
-    callback(item, list);
+    setStatus("Memulai preview “" + item.title + "” di player EUPHONIA…", "info");
+    Promise.resolve(callback(item, list)).then(played => {
+      if (played === false) setStatus("Preview siap, tetapi browser memblokir autoplay. Tekan Play pada player bawah.", "info");
+      else setStatus("Memutar preview “" + item.title + "” di player bawah EUPHONIA.", "success");
+    }).catch(error => setStatus("Tidak dapat memutar preview: " + (error.message || "coba lagi."), "error"));
   }
 
   function renderCard(item, index, list) {
@@ -183,6 +187,7 @@
           showSearchPlaybackSurface("Apple Music", item);
           api.playQueue([{ ...item, provider: "apple", id: String(item.id), url: item.url }], 0);
           setStatus("Meminta pemutaran Apple Music penuh lewat MusicKit. Pastikan langganan dan track tersedia.", "info");
+          window.setTimeout(() => $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
         }));
       }
       if (item.url) {
