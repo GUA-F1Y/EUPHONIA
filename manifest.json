@@ -2,7 +2,7 @@
   "id": "./index.html",
   "name": "EUPHONIA Music Hub & Studio",
   "short_name": "EUPHONIA",
-  "description": "Netflix-inspired music discovery, audio previews, local audio library, and browser-based DAW.",
+  "description": "Account-based music playlist hub, local audio library, music discovery, and browser-based DAW.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
