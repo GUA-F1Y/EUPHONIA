@@ -210,6 +210,9 @@
   }
 
   function init() {
+    // The discovery panel is audio-only now; remove an obsolete local YouTube search key if present.
+    try { localStorage.removeItem("euphonia.youtubeDataApiKey"); } catch (_) {}
+
     const form = $("#musicDiscoveryForm");
     form?.addEventListener("submit", event => {
       event.preventDefault();
