@@ -7,7 +7,6 @@
   let currentRequest = null;
   let requestSequence = 0;
   let currentResults = [];
-  let currentSource = "youtube";
 
   function setStatus(message, tone = "info") {
     const node = $("#musicDiscoveryStatus");
@@ -79,22 +78,6 @@
     $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  function addToQueue(item) {
-    const api = window.EUPHONIA_ACCOUNT_MUSIC;
-    if (!api) return setStatus("Queue akun belum siap. Coba muat ulang EUPHONIA.", "error");
-    if (item.provider === "youtube") {
-      api.enqueueTrack(item);
-      setStatus("Ditambahkan ke queue: " + item.title, "success");
-      return;
-    }
-    if (item.provider === "apple" && api.isProviderReady?.("apple") && item.url) {
-      api.enqueueTrack({ ...item, provider: "apple", id: String(item.id), url: item.url });
-      setStatus("Ditambahkan ke queue Apple Music. Pemutaran penuh bergantung pada MusicKit, akun dan ketersediaan track.", "success");
-      return;
-    }
-    setStatus("Queue akun saat ini mendukung track YouTube dan Apple Music yang sudah punya URL katalog yang bisa diputar.", "info");
-  }
-
   function playApplePreview(item, list) {
     const callback = window.EUPHONIA?.playApplePreview;
     if (typeof callback !== "function") {
@@ -128,34 +111,22 @@
     if (item.collectionName) body.append(create("small", "music-discovery-album", item.collectionName));
 
     const actions = create("div", "music-discovery-actions");
-    if (item.provider === "youtube") {
-      actions.append(makeButton("▶ Play here", "primary-button", () => playYouTubeAt(index)));
-      actions.append(makeButton("＋ Queue", "outline-button", () => addToQueue(item)));
-      if (item.url) {
-        const link = create("a", "music-discovery-source", "Open source ↗");
-        link.href = item.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        actions.append(link);
-      }
-    } else {
-      actions.append(makeButton("▶ Preview", "primary-button", () => playApplePreview(item, list), !item.previewUrl));
-      const api = window.EUPHONIA_ACCOUNT_MUSIC;
-      if (api?.isProviderReady?.("apple") && item.url) {
-        actions.append(makeButton("Full track", "outline-button", () => {
-          showSearchPlaybackSurface("Apple Music", item);
-          api.playQueue([{ ...item, provider: "apple", id: String(item.id), url: item.url }], 0);
-          setStatus("Meminta pemutaran Apple Music penuh lewat MusicKit. Pastikan langganan dan track tersedia.", "info");
-          window.setTimeout(() => $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
-        }));
-      }
-      if (item.url) {
-        const link = create("a", "music-discovery-source", "Apple Music ↗");
-        link.href = item.url;
-        link.target = "_blank";
-        link.rel = "noopener noreferrer";
-        actions.append(link);
-      }
+    actions.append(makeButton("▶ Play audio preview", "primary-button", () => playApplePreview(item, list), !item.previewUrl));
+    const api = window.EUPHONIA_ACCOUNT_MUSIC;
+    if (api?.isProviderReady?.("apple") && item.url) {
+      actions.append(makeButton("Full track", "outline-button", () => {
+        showSearchPlaybackSurface("Apple Music", item);
+        api.playQueue([{ ...item, provider: "apple", id: String(item.id), url: item.url }], 0);
+        setStatus("Meminta pemutaran audio Apple Music penuh lewat MusicKit. Ketersediaan tergantung langganan dan hak akses akun.", "info");
+        window.setTimeout(() => $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+      }));
+    }
+    if (item.url) {
+      const link = create("a", "music-discovery-source", "Apple Music ↗");
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      actions.append(link);
     }
     body.append(actions);
     card.append(art, body);
