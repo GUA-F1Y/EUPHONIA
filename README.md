@@ -31,7 +31,7 @@ EUPHONIA is a **local-first music workspace** with a Netflix-inspired music-disc
 
 ### Music Hub
 - Home uses a Netflix-inspired browsing layout: a featured hero, horizontal discovery shelves, mood shortcuts, local tracks, and browser-local My List.
-- Music Hub can read YouTube account playlists using Google OAuth read access and YouTube Data API v3, then fetch playlist items on demand. YouTube API visibility rules apply; not every automatically generated YouTube Music library or playlist is necessarily returned.
+- Music Hub can read YouTube account playlists using Google Identity Services and YouTube Data API v3. The app maintainer configures one Google OAuth Web Client ID in `euphonia-config.js`; end users only click **Continue with Google** and grant YouTube read access when prompted. YouTube API visibility rules apply; not every automatically generated YouTube Music library or playlist is necessarily returned.
 - Music Hub can read Apple Music library playlists through MusicKit on the Web after the user authorizes access. The user must supply their own Apple Music developer token; the token is held in session storage for the current tab.
 - Choose one or multiple remote playlists and import their metadata into EUPHONIA's local playlist collection. Track rows can be viewed, opened at the source, or played through the official YouTube Player API / Apple Music MusicKit where the account and content permit playback.
 - Re-sync checks a previously imported playlist for new source tracks and appends only newly seen tracks. Tracks removed from the local EUPHONIA copy remain removed. This does not delete or edit tracks in the original provider account.
