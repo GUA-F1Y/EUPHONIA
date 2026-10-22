@@ -90,6 +90,21 @@
     };
   }
 
+  function showSearchPlaybackSurface(source, item) {
+    const detail = $("#accountPlaylistDetail");
+    const title = $("#accountPlaylistDetailTitle");
+    const subtitle = $("#accountPlaylistDetailSubtitle");
+    const tracks = $("#accountPlaylistTracks");
+    if (detail) detail.hidden = false;
+    if (title) title.textContent = "Search playback";
+    if (subtitle) subtitle.textContent = source + " · " + (item?.title || "Selected track");
+    if (tracks) {
+      tracks.replaceChildren();
+      tracks.hidden = true;
+    }
+    $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
   function playYouTubeAt(index) {
     const api = window.EUPHONIA_ACCOUNT_MUSIC;
     const queue = currentResults.filter(track => track.provider === "youtube");
@@ -99,6 +114,7 @@
     }
     const item = queue[index];
     if (!item || !item.id) return;
+    showSearchPlaybackSurface("YouTube Music", item);
     api.playQueue(queue, index);
     setStatus("Membuka “" + item.title + "” di pemutar YouTube resmi dalam EUPHONIA. Video tertentu mungkin melarang pemutaran tertanam.", "success");
     $("#accountNowPlaying")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -164,6 +180,7 @@
       const api = window.EUPHONIA_ACCOUNT_MUSIC;
       if (api?.isProviderReady?.("apple") && item.url) {
         actions.append(makeButton("Full track", "outline-button", () => {
+          showSearchPlaybackSurface("Apple Music", item);
           api.playQueue([{ ...item, provider: "apple", id: String(item.id), url: item.url }], 0);
           setStatus("Meminta pemutaran Apple Music penuh lewat MusicKit. Pastikan langganan dan track tersedia.", "info");
         }));
