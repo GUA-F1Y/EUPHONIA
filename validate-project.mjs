@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0347/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0348/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
@@ -94,6 +94,8 @@ if (/window\.open\(/.test(app)) errors.push('Music Hub must not use window.open;
 if (!app.includes('function selectPlatformInHub(')) errors.push('Platform click handler for saved in-app playlist is missing.');
 if (!app.includes('function savePlaylistLink(')) errors.push('Local saved playlist link behavior is missing.');
 if (!/addEventListener\(['"]activate['"]/.test(sw)) errors.push('Service worker activation handler is missing.');
+if (!/await cache\.addAll\(CORE_ASSETS\)/.test(sw)) errors.push('Service worker must precache the required app shell atomically.');
+if (!sw.includes('await caches.delete(CACHE_NAME)')) errors.push('Failed PWA precache does not clean up its incomplete version.');
 if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.');
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
