@@ -12,6 +12,8 @@
   const state = {
     files: [],
     currentFileId: null,
+    externalTrack: null,
+    externalQueue: [],
     favorites: new Set(),
     libraryFilter: 'all',
     inputPurpose: 'library',
@@ -485,22 +487,196 @@
     $('#trackCountLabel').textContent = `${state.files.length} track${state.files.length === 1 ? '' : 's'}`;
   }
 
+  const homeShelfConfig = [
+    { id: 'homeFreshRail', query: 'top hits pop', title: 'Fresh finds' },
+    { id: 'homeRnbRail', query: 'alternative r&b', title: 'Alternative R&B essentials' },
+    { id: 'homeRapRail', query: 'melodic rap', title: 'Melodic rap & emo' },
+    { id: 'homeIndieRail', query: 'indie pop', title: 'Indie, for the ride' }
+  ];
+  let homeFeaturedItem = null;
+  const homeCatalogItems = new Map();
+  const homeCatalogQueues = new Map();
+
+  function homeTrackKey(item) {
+    return String(item && (item.trackId || item.collectionId) || '');
+  }
+
+  function homeArtwork(item, size = 600) {
+    const raw = String(item && (item.artworkUrl100 || item.artworkUrl60) || '');
+    if (!raw) return '';
+    return raw.replace(/\d+x\d+bb/, `${size}x${size}bb`);
+  }
+
+  function getHomeSavedTracks() {
+    try {
+      const value = JSON.parse(localStorage.getItem('euphonia.homeSavedTracks.v1') || '[]');
+      return Array.isArray(value) ? value.filter(item => item && item.trackId && item.previewUrl) : [];
+    } catch (_) { return []; }
+  }
+
+  function updateHomeSavedButtons() {
+    const savedIds = new Set(getHomeSavedTracks().map(item => String(item.trackId)));
+    $('.stream-save-track[data-stream-save]').forEach(button => {
+      const saved = savedIds.has(button.dataset.streamSave);
+      button.classList.toggle('is-saved', saved);
+      button.textContent = saved ? '✓' : '＋';
+      button.setAttribute('aria-label', saved ? 'Remove from My List' : 'Add to My List');
+      button.title = saved ? 'Remove from My List' : 'Add to My List';
+    });
+    const featureButton = $('#homeFeaturedSave');
+    if (featureButton && homeFeaturedItem) {
+      const saved = savedIds.has(homeTrackKey(homeFeaturedItem));
+      featureButton.classList.toggle('is-saved', saved);
+      featureButton.innerHTML = saved ? '<span>✓</span> In My List' : '<span>＋</span> My List';
+    }
+  }
+
+  function renderHomeTrackCards(hostId, items, queue = items) {
+    const host = document.getElementById(hostId);
+    if (!host) return;
+    const playable = (items || []).filter(item => item && item.previewUrl && homeTrackKey(item));
+    if (!playable.length) {
+      host.innerHTML = '<div class="stream-shelf-empty"><strong>Nothing to play here yet.</strong><span>Search the catalog to find a track with a preview.</span><button type="button" class="stream-text-link" data-home-search="alternative r&b">Find music →</button></div>';
+      return;
+    }
+    const queueItems = (queue || playable).filter(item => item && item.previewUrl);
+    playable.forEach(item => {
+      const key = homeTrackKey(item);
+      homeCatalogItems.set(key, item);
+      homeCatalogQueues.set(key, queueItems.length ? queueItems : [item]);
+    });
+    host.innerHTML = playable.slice(0, 14).map((item, index) => {
+      const key = homeTrackKey(item);
+      const art = homeArtwork(item, 600);
+      const title = item.trackName || item.collectionName || 'Untitled track';
+      const artist = item.artistName || 'Unknown artist';
+      const saved = getHomeSavedTracks().some(entry => String(entry.trackId) === key);
+      const color = trackColors[index % trackColors.length];
+      return `<article class="stream-track-card">
+        <div class="stream-track-art-wrap" style="--track-accent:${color}">
+          <button type="button" class="stream-art-button" data-stream-play="${escapeHTML(key)}" aria-label="Play preview: ${escapeHTML(title)}">
+            <img src="${escapeHTML(art)}" alt="" loading="lazy" decoding="async" />
+            <span class="stream-art-play" aria-hidden="true">▶</span>
+          </button>
+          <button type="button" class="stream-save-track ${saved ? 'is-saved' : ''}" data-stream-save="${escapeHTML(key)}" title="${saved ? 'Remove from My List' : 'Add to My List'}" aria-label="${saved ? 'Remove from My List' : 'Add to My List'}">${saved ? '✓' : '＋'}</button>
+        </div>
+        <div class="stream-track-meta"><strong title="${escapeHTML(title)}">${escapeHTML(title)}</strong><small title="${escapeHTML(artist)}">${escapeHTML(artist)}</small></div>
+      </article>`;
+    }).join('');
+    updateHomeSavedButtons();
+  }
+
+  function renderHomeSavedRail() {
+    const saved = getHomeSavedTracks();
+    if (!saved.length) {
+      const host = $('#homeSavedRail');
+      if (host) host.innerHTML = '<div class="stream-shelf-empty"><strong>Your list starts here.</strong><span>Tap + on any track to keep it close.</span></div>';
+      updateHomeSavedButtons();
+      return;
+    }
+    renderHomeTrackCards('homeSavedRail', saved, saved);
+    updateHomeSavedButtons();
+  }
+
+  function toggleHomeSaved(item) {
+    if (!item || !item.trackId || !item.previewUrl) {
+      toast('Track ini belum menyediakan preview yang bisa disimpan.', 'error');
+      return;
+    }
+    const id = String(item.trackId);
+    const saved = getHomeSavedTracks();
+    const exists = saved.some(entry => String(entry.trackId) === id);
+    const next = exists ? saved.filter(entry => String(entry.trackId) !== id) : [{
+      trackId: item.trackId,
+      trackName: item.trackName || item.collectionName || 'Untitled track',
+      artistName: item.artistName || 'Unknown artist',
+      collectionName: item.collectionName || '',
+      artworkUrl100: item.artworkUrl100 || '',
+      previewUrl: item.previewUrl,
+      trackViewUrl: item.trackViewUrl || ''
+    }, ...saved].slice(0, 100);
+    try { localStorage.setItem('euphonia.homeSavedTracks.v1', JSON.stringify(next)); }
+    catch (_) { toast('Browser tidak bisa menyimpan My List. Periksa ruang penyimpanan atau pengaturan privasi.', 'error'); return; }
+    const favoriteId = `apple:${id}`;
+    if (exists) state.favorites.delete(favoriteId); else state.favorites.add(favoriteId);
+    queueWorkspaceSave();
+    renderHomeSavedRail();
+    updateHomeSavedButtons();
+    if (state.externalTrack && String(state.externalTrack.trackId) === id) {
+      $('#playerFav').classList.toggle('is-fav', !exists);
+      $('#playerFav').textContent = exists ? '♡' : '♥';
+    }
+    toast(exists ? 'Track dihapus dari My List.' : 'Track disimpan ke My List.');
+  }
+
   function renderHomeRecent() {
     const host = $('#homeRecent');
-    const recent = state.files.slice(0, 4);
+    if (!host) return;
+    const recent = state.files.slice(0, 8);
+    const count = $('#homeLocalCount');
+    if (count) count.textContent = state.files.length ? `${state.files.length} LOCAL TRACK${state.files.length === 1 ? '' : 'S'}` : 'YOUR LIBRARY';
     if (!recent.length) {
-      host.innerHTML = `<div class="empty-state small-empty"><span class="empty-note">♫</span><div><strong>Your music starts here</strong><p>Import file audio untuk mulai mengisi library.</p></div><button class="outline-button" id="emptyImport">Import audio</button></div>`;
+      host.innerHTML = '<div class="stream-shelf-empty"><strong>No local tracks yet.</strong><span>Import your own audio to build a personal collection.</span><button class="outline-button" id="emptyImport" type="button">＋ Import audio</button></div>';
       $('#emptyImport').addEventListener('click', () => askImport('library'));
       return;
     }
-    host.innerHTML = recent.map((item, index) => `
-      <button class="recent-row" data-play-file="${item.id}">
-        <span class="recent-index">${String(index + 1).padStart(2, '0')}</span>
-        <span class="recent-art" style="--art-color:${trackColors[index % trackColors.length]}">♫</span>
-        <span class="recent-name"><strong>${escapeHTML(item.name)}</strong><small>Local audio · ${escapeHTML(item.type)}</small></span>
-        <span class="recent-length">${item.duration ? fmtTime(item.duration) : '—'}</span>
-        <span class="recent-play">▶</span>
-      </button>`).join('');
+    host.innerHTML = recent.map((item, index) => {
+      const color = trackColors[index % trackColors.length];
+      const isPlaying = state.currentFileId === item.id && !audioPlayer.paused;
+      return `<article class="stream-track-card">
+        <div class="stream-track-art-wrap" style="background:linear-gradient(140deg,${color}66,#18151f)">
+          <button type="button" class="stream-art-button stream-local-art" data-play-file="${escapeHTML(item.id)}" aria-label="Play local track: ${escapeHTML(item.name)}">
+            <span class="stream-local-cover" style="--track-accent:${color}"><i></i><i></i><i></i><b>♫</b></span>
+            <span class="stream-art-play" aria-hidden="true">${isPlaying ? 'Ⅱ' : '▶'}</span>
+          </button>
+        </div>
+        <div class="stream-track-meta"><strong title="${escapeHTML(item.name)}">${escapeHTML(item.name)}</strong><small>Local audio · ${escapeHTML(item.type)} · ${item.duration ? fmtTime(item.duration) : '—'}</small></div>
+      </article>`;
+    }).join('');
+  }
+
+  function setHomeFeatured(item, queue = [item]) {
+    if (!item) return;
+    homeFeaturedItem = item;
+    const key = homeTrackKey(item);
+    homeCatalogItems.set(key, item);
+    homeCatalogQueues.set(key, queue);
+    $('#homeFeaturedTitle').textContent = item.trackName || item.collectionName || 'Fresh finds';
+    $('#homeFeaturedMeta').textContent = [item.artistName, item.collectionName].filter(Boolean).join(' · ') || 'Featured music preview';
+    $('#homeFeaturedDesc').textContent = `A first listen to ${item.trackName || item.collectionName || 'something new'} — preview playback is available here when the provider supplies it.`;
+    const art = homeArtwork(item, 1200);
+    if (art) $('#streamHeroArt').style.backgroundImage = `linear-gradient(90deg,rgba(9,9,13,.96) 0%,rgba(9,9,13,.82) 28%,rgba(9,9,13,.42) 58%,rgba(9,9,13,.22) 100%),linear-gradient(0deg,rgba(9,9,13,.98) 0%,transparent 52%),url("${art}")`;
+    updateHomeSavedButtons();
+  }
+
+  async function requestHomeCatalog(query) {
+    const url = new URL('https://itunes.apple.com/search');
+    url.search = new URLSearchParams({ term: query, entity: 'song', limit: '18', country: 'ID', media: 'music' }).toString();
+    const response = await fetch(url.href, { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`Catalog HTTP ${response.status}`);
+    const data = await response.json();
+    return (Array.isArray(data.results) ? data.results : []).filter(item => item.trackId && item.trackName && item.previewUrl && item.artworkUrl100);
+  }
+
+  async function loadHomeCatalog() {
+    const results = await Promise.all(homeShelfConfig.map(async shelf => {
+      try { return { shelf, items: await requestHomeCatalog(shelf.query) }; }
+      catch (error) { console.warn(`EUPHONIA home shelf unavailable: ${shelf.query}`, error); return { shelf, items: [] }; }
+    }));
+    let featureSet = null;
+    results.forEach(({ shelf, items }) => {
+      renderHomeTrackCards(shelf.id, items);
+      if (shelf.id === 'homeFreshRail' && items.length) featureSet = { items, queue: items };
+    });
+    if (featureSet) setHomeFeatured(featureSet.items[0], featureSet.queue);
+    else {
+      const art = $('#streamHeroArt');
+      if (art) art.style.backgroundImage = 'radial-gradient(ellipse at 76% 22%,#6a467e 0%,#2a203b 32%,#100f17 75%)';
+      $('#homeFeaturedPlay').textContent = 'Search music';
+      $('#homeFeaturedPlay').insertAdjacentHTML('afterbegin', '<span>⌕</span>');
+      $('#homeFeaturedDesc').textContent = 'Catalog preview is temporarily unavailable. You can still search for tracks in Music Hub or play your local collection.';
+    }
+    renderHomeSavedRail();
   }
 
   function renderLibrary() {
@@ -524,6 +700,10 @@
 
   function playItem(item) {
     if (!item) return;
+    state.externalTrack = null;
+    state.externalQueue = [];
+    $('#playerArtwork').style.backgroundImage = 'none';
+    $('#playerArtwork').innerHTML = '<span>♫</span>';
     state.currentFileId = item.id;
     queueWorkspaceSave();
     audioPlayer.src = item.url;
@@ -556,6 +736,14 @@
   }
 
   function nextPlayerTrack(direction) {
+    if (state.externalTrack) {
+      const queue = (state.externalQueue || []).filter(item => item && item.previewUrl);
+      if (!queue.length) return;
+      const currentIndex = queue.findIndex(item => String(item.trackId) === String(state.externalTrack.trackId));
+      const nextIndex = currentIndex < 0 ? 0 : (currentIndex + direction + queue.length) % queue.length;
+      playApplePreview(queue[nextIndex], queue);
+      return;
+    }
     if (!state.files.length) return;
     const currentIndex = state.files.findIndex(item => item.id === state.currentFileId);
     const nextIndex = currentIndex < 0 ? 0 : (currentIndex + direction + state.files.length) % state.files.length;
@@ -735,7 +923,7 @@
       const name = document.createElement('strong'); name.textContent = item.trackName || item.collectionName || 'Untitled audio';
       const artist = document.createElement('small'); artist.textContent = `${item.artistName || 'Unknown artist'}${item.collectionName ? ` · ${item.collectionName}` : ''}`;
       const actions = document.createElement('div'); actions.className = 'hub-result-actions';
-      actions.append(makeHubButton(item.previewUrl ? '▶ Preview' : 'No preview', () => playApplePreview(item), true, !item.previewUrl));
+      actions.append(makeHubButton(item.previewUrl ? '▶ Preview' : 'No preview', () => playApplePreview(item, results), true, !item.previewUrl));
       actions.append(makeHubButton('Apple player', () => {
         const embed = appleEmbedUrl(item.trackViewUrl);
         if (embed) loadOfficialEmbed('apple', embed, item.trackName || item.collectionName || 'Apple Music');
@@ -770,15 +958,47 @@
     }
   }
 
-  function playApplePreview(item) {
-    const panel = $('#hubPreviewPanel');
-    const audio = $('#hubPreviewAudio');
-    $('#hubPreviewTitle').textContent = item.trackName || item.collectionName || 'Track preview';
-    $('#hubPreviewSubtitle').textContent = `${item.artistName || 'Unknown artist'} · Apple Music preview`;
-    panel.hidden = false;
-    audio.pause(); audio.src = item.previewUrl; audio.currentTime = 0;
-    audio.play().then(() => setHubStatus('Memutar preview di dalam EUPHONIA.', 'success')).catch(() => setHubStatus('Preview siap. Tekan Play pada kontrol audio jika browser belum memulainya.', 'info'));
-    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  function playApplePreview(item, queue = null) {
+    if (!item || !item.previewUrl) {
+      setHubStatus('Preview tidak tersedia untuk track ini.', 'error');
+      return;
+    }
+    const embeddedPreview = $('#hubPreviewAudio');
+    if (embeddedPreview) { embeddedPreview.pause(); embeddedPreview.removeAttribute('src'); embeddedPreview.load(); }
+    const playableQueue = Array.isArray(queue) ? queue.filter(track => track && track.previewUrl) : [item];
+    state.externalQueue = playableQueue.some(track => String(track.trackId) === String(item.trackId)) ? playableQueue : [item, ...playableQueue];
+    state.externalTrack = {
+      id: `apple:${item.trackId || item.collectionId || 'preview'}`,
+      trackId: item.trackId || item.collectionId,
+      trackName: item.trackName || item.collectionName || 'Track preview',
+      artistName: item.artistName || 'Unknown artist',
+      collectionName: item.collectionName || '',
+      artworkUrl100: item.artworkUrl100 || '',
+      previewUrl: item.previewUrl,
+      trackViewUrl: item.trackViewUrl || ''
+    };
+    state.currentFileId = null;
+    audioPlayer.pause();
+    audioPlayer.src = item.previewUrl;
+    audioPlayer.load();
+    $('#playerTitle').textContent = state.externalTrack.trackName;
+    $('#playerArtist').textContent = `${state.externalTrack.artistName} · Apple Music preview`;
+    const art = homeArtwork(item, 300);
+    $('#playerArtwork').style.backgroundImage = art ? `url("${art}")` : 'none';
+    $('#playerArtwork').style.backgroundSize = 'cover';
+    $('#playerArtwork').style.backgroundPosition = 'center';
+    $('#playerArtwork').innerHTML = art ? '' : '<span>♫</span>';
+    const saved = getHomeSavedTracks().some(entry => String(entry.trackId) === String(state.externalTrack.trackId));
+    $('#playerFav').classList.toggle('is-fav', saved || state.favorites.has(state.externalTrack.id));
+    $('#playerFav').textContent = saved || state.favorites.has(state.externalTrack.id) ? '♥' : '♡';
+    $('#playerToggle').textContent = 'Ⅱ';
+    renderLibrary();
+    audioPlayer.play().then(() => {
+      setHubStatus(`Memutar preview ${state.externalTrack.trackName} di player EUPHONIA.`, 'success');
+    }).catch(() => {
+      $('#playerToggle').textContent = '▶';
+      setHubStatus('Preview siap. Tekan Play pada player bawah jika browser belum memulainya.', 'info');
+    });
   }
 
   async function searchYoutube(query) {
@@ -1830,6 +2050,40 @@
   });
   setHubProvider('catalog');
 
+  // Streaming home interactions: preview playback, My List, and mood-based catalog search.
+  $('#page-home').addEventListener('click', event => {
+    const playFeatured = event.target.closest('#homeFeaturedPlay');
+    if (playFeatured) {
+      if (homeFeaturedItem) playApplePreview(homeFeaturedItem, homeCatalogQueues.get(homeTrackKey(homeFeaturedItem)) || [homeFeaturedItem]);
+      else { showPage('discover'); setHubProvider('catalog'); $('#hubSearch').value = 'alternative r&b'; void doHubSearch(); }
+      return;
+    }
+    const saveFeatured = event.target.closest('#homeFeaturedSave');
+    if (saveFeatured) { if (homeFeaturedItem) toggleHomeSaved(homeFeaturedItem); else toast('Featured track belum tersedia.', 'error'); return; }
+    const playButton = event.target.closest('[data-stream-play]');
+    if (playButton) {
+      const key = playButton.dataset.streamPlay;
+      const item = homeCatalogItems.get(key);
+      if (item) playApplePreview(item, homeCatalogQueues.get(key) || [item]);
+      return;
+    }
+    const saveButton = event.target.closest('[data-stream-save]');
+    if (saveButton) {
+      const item = homeCatalogItems.get(saveButton.dataset.streamSave);
+      if (item) toggleHomeSaved(item);
+      return;
+    }
+    const searchButton = event.target.closest('[data-home-search]');
+    if (searchButton) {
+      const query = searchButton.dataset.homeSearch || '';
+      if (!query) return;
+      showPage('discover');
+      setHubProvider('catalog');
+      $('#hubSearch').value = query;
+      void doHubSearch();
+    }
+  });
+
   // Library filters and delegated file rows.
   $$('.library-tab').forEach(button => button.addEventListener('click', () => {
     state.libraryFilter = button.dataset.libraryFilter;
@@ -1886,6 +2140,7 @@
   audioPlayer.addEventListener('pause', () => { $('#playerToggle').textContent = '▶'; renderLibrary(); });
   audioPlayer.addEventListener('ended', () => nextPlayerTrack(1));
   $('#playerFav').addEventListener('click', () => {
+    if (state.externalTrack) { toggleHomeSaved(state.externalTrack); return; }
     if (!state.currentFileId) { toast('Pilih track dulu untuk menandai favorite.'); return; }
     if (state.favorites.has(state.currentFileId)) state.favorites.delete(state.currentFileId); else state.favorites.add(state.currentFileId);
     $('#playerFav').classList.toggle('is-fav', state.favorites.has(state.currentFileId));
@@ -1894,6 +2149,7 @@
   });
   $('#sendToDaw').addEventListener('click', async () => {
     const item = currentItem();
+    if (!item && state.externalTrack) { toast('Preview dari katalog tidak dapat dimasukkan ke DAW. Import file audio yang kamu miliki atau berhak gunakan.', 'error'); return; }
     if (!item) { toast('Putar track lokal dulu, atau import audio ke Library.'); askImport('daw'); return; }
     try { await addItemToDaw(item); showPage('studio'); }
     catch (error) { toast(error.message, 'error'); }
@@ -2141,6 +2397,8 @@
   // Initialize the app shell; IndexedDB recovery runs after both scripts are ready.
   syncPlatformLinks();
   renderHomeRecent();
+  renderHomeSavedRail();
+  void loadHomeCatalog();
   renderLibrary();
   renderDaw();
   updatePlayerProgress();
