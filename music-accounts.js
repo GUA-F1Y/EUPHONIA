@@ -1132,6 +1132,61 @@
       } catch (_) {}
       return null;
     },
+    getPlaybackDuration: () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer && typeof youtubePlayer.getDuration === "function") {
+          const value = Number(youtubePlayer.getDuration());
+          return Number.isFinite(value) && value > 0 ? value : null;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic?.player) {
+          const value = Number(appleMusic.player.currentPlaybackDuration);
+          return Number.isFinite(value) && value > 0 ? value : null;
+        }
+      } catch (_) {}
+      return null;
+    },
+    seekTo: seconds => {
+      const value = Math.max(0, Number(seconds) || 0);
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer && typeof youtubePlayer.seekTo === "function") {
+          youtubePlayer.seekTo(value, true);
+          return Promise.resolve();
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic && typeof appleMusic.seekToTime === "function") {
+          return appleMusic.seekToTime(value);
+        }
+      } catch (error) {
+        return Promise.reject(error);
+      }
+      return Promise.reject(new Error("Seek belum tersedia sampai pemutar account siap."));
+    },
+    getPlaybackVolume: () => {
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer && typeof youtubePlayer.getVolume === "function") {
+          const value = Number(youtubePlayer.getVolume());
+          return Number.isFinite(value) ? value / 100 : null;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic?.player) {
+          const value = Number(appleMusic.player.volume);
+          return Number.isFinite(value) ? value : null;
+        }
+      } catch (_) {}
+      return null;
+    },
+    setPlaybackVolume: level => {
+      const value = Math.max(0, Math.min(1, Number(level) || 0));
+      try {
+        if (accountPlaybackProvider === "youtube" && youtubePlayer && typeof youtubePlayer.setVolume === "function") {
+          youtubePlayer.setVolume(Math.round(value * 100));
+          return true;
+        }
+        if (accountPlaybackProvider === "apple" && appleMusic?.player) {
+          appleMusic.player.volume = value;
+          return true;
+        }
+      } catch (_) {}
+      return false;
+    },
     getModes: () => ({ shuffle: accountShuffleEnabled, repeat: accountRepeatMode }),
     isProviderReady: provider => provider === "youtube"
       ? Boolean(youtubeAccessToken && Date.now() < youtubeTokenExpiresAt)
