@@ -453,6 +453,36 @@
     }
   }
 
+  let accountSeeking = false;
+
+  function formatTime(seconds) {
+    if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+    const value = Math.floor(seconds);
+    return Math.floor(value / 60) + ":" + String(value % 60).padStart(2, "0");
+  }
+
+  function updateAccountProgress() {
+    const api = window.EUPHONIA_ACCOUNT_MUSIC;
+    if (!api) return;
+    const current = api.getPlaybackTime?.();
+    const duration = api.getPlaybackDuration?.();
+    const currentNode = $("#accountPlayerCurrentTime");
+    const durationNode = $("#accountPlayerDuration");
+    const seek = $("#accountPlayerSeek");
+    if (currentNode && Number.isFinite(current)) currentNode.textContent = formatTime(current);
+    if (durationNode && Number.isFinite(duration)) durationNode.textContent = formatTime(duration);
+    if (seek && !accountSeeking && Number.isFinite(current) && Number.isFinite(duration) && duration > 0) {
+      seek.value = String(Math.max(0, Math.min(1000, Math.round(current / duration * 1000))));
+    }
+    const volume = api.getPlaybackVolume?.();
+    const volumeInput = $("#accountPlayerVolume");
+    const volumeOutput = $("#accountPlayerVolumeValue");
+    if (volumeInput && Number.isFinite(volume) && document.activeElement !== volumeInput) {
+      volumeInput.value = String(Math.round(volume * 100));
+    }
+    if (volumeOutput && volumeInput) volumeOutput.value = volumeInput.value + "%";
+  }
+
   function updatePlaybackModeLabels() {
     const modes = window.EUPHONIA_ACCOUNT_MUSIC?.getModes?.() || { shuffle: false, repeat: "off" };
     const shuffle = $("#accountPlayerShuffle");
@@ -471,6 +501,33 @@
   }
 
   function init() {
+    const seek = $("#accountPlayerSeek");
+    seek?.addEventListener("input", () => {
+      accountSeeking = true;
+      const duration = window.EUPHONIA_ACCOUNT_MUSIC?.getPlaybackDuration?.();
+      const currentLabel = $("#accountPlayerCurrentTime");
+      if (currentLabel && Number.isFinite(duration) && duration > 0) currentLabel.textContent = formatTime(duration * Number(seek.value) / 1000);
+    });
+    seek?.addEventListener("change", () => {
+      const api = window.EUPHONIA_ACCOUNT_MUSIC;
+      const duration = api?.getPlaybackDuration?.();
+      if (!Number.isFinite(duration) || duration <= 0) {
+        accountSeeking = false;
+        setStatus("Progress bar baru tersedia setelah pemutar melaporkan durasi track.", "info");
+        return;
+      }
+      Promise.resolve(api.seekTo(duration * Number(seek.value) / 1000))
+        .catch(error => setStatus("Seek gagal: " + (error.message || "provider menolak perubahan posisi."), "error"))
+        .finally(() => { accountSeeking = false; updateAccountProgress(); });
+    });
+    $("#accountPlayerVolume")?.addEventListener("input", event => {
+      const level = Number(event.target.value) / 100;
+      const output = $("#accountPlayerVolumeValue");
+      if (output) output.value = event.target.value + "%";
+      const ok = window.EUPHONIA_ACCOUNT_MUSIC?.setPlaybackVolume?.(level);
+      if (!ok) setStatus("Volume akun tersedia setelah track mulai diputar; kontrol volume player resmi juga tetap dapat digunakan.", "info");
+    });
+
     $("#accountPlayerFavorite")?.addEventListener("click", () => {
       const current = window.EUPHONIA_ACCOUNT_MUSIC?.getCurrentTrack?.();
       if (current) toggleFavorite(current);
@@ -543,6 +600,8 @@
     renderQueue();
     refreshFavoriteButtons();
     updatePlaybackModeLabels();
+    updateAccountProgress();
+    window.setInterval(updateAccountProgress, 500);
   }
 
   window.EUPHONIA_MUSICFY = Object.freeze({
