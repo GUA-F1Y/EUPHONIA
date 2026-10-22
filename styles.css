@@ -614,3 +614,40 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-volume-row{display:grid;grid-template-columns:auto minmax(90px,220px) 38px;align-items:center;justify-content:end;gap:10px;margin:0 0 12px;color:#8e9888;font-size:10px}
 .account-volume-row output{text-align:right;font:10px var(--mono);font-variant-numeric:tabular-nums}
 @media(max-width:700px){.account-progress-row{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.account-volume-row{grid-template-columns:auto minmax(70px,1fr) 38px}}
+
+
+/* Artist/song discovery: new tools follow the existing EUPHONIA dark + lime design. */
+.music-discovery-section{margin:26px 0 32px;padding:20px;border:1px solid #30353a;border-radius:14px;background:radial-gradient(ellipse at 92% 0%,#a4ce4e0b,transparent 46%),#17191c}
+.account-discovery-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:17px}
+.account-discovery-heading h2{margin:5px 0 7px;color:#f0f2ee;font-size:22px;letter-spacing:-.5px}
+.account-discovery-heading p{max-width:660px;margin:0;color:#9199a0;font-size:11px;line-height:1.65}
+.account-discovery-heading>.count-label{white-space:nowrap}
+.music-discovery-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(185px,240px) auto auto;gap:9px}
+.music-discovery-query{display:flex;min-width:0;align-items:center;gap:10px;padding:0 13px;border:1px solid #353b40;border-radius:8px;background:#111315;color:var(--lime)}
+.music-discovery-query>span{font-size:22px}
+.music-discovery-query input{width:100%;min-width:0;padding:12px 0;border:0;outline:none;background:transparent;color:#eef0e9;font:inherit;font-size:12px}
+.music-discovery-query input:focus-visible{outline:none}
+.music-discovery-form select{min-width:0;font-size:11px}
+.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{justify-content:center;padding:10px 13px;font-size:10px;white-space:nowrap}
+.music-discovery-hint{margin:10px 0 12px;color:#7f8982;font-size:10px;line-height:1.6}
+.music-discovery-status{margin-bottom:16px;border:1px solid #2c3135;border-radius:8px;font-size:10px;line-height:1.65}
+.music-discovery-status[data-tone="success"]{border-color:#3d4c2e}
+.music-discovery-status[data-tone="error"]{border-color:#673c3e}
+.music-discovery-results-panel[hidden]{display:none!important}
+.music-discovery-results-panel .hub-results-heading{margin:14px 0}
+.music-discovery-results-panel .hub-results-heading h2{margin:5px 0;color:#edf0e9;font-size:18px}
+.music-discovery-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+.music-discovery-card{display:flex;min-width:0;overflow:hidden;flex-direction:column;border:1px solid #2c3136;border-radius:10px;background:#121416;transition:border-color .18s,transform .18s}
+.music-discovery-card:hover{border-color:#576943;transform:translateY(-1px)}
+.music-discovery-art{aspect-ratio:16/9;display:grid;place-items:center;overflow:hidden;background:linear-gradient(135deg,#343d2b,#20232a);color:#c7ec75;font-size:30px}
+.music-discovery-art img{display:block;width:100%;height:100%;object-fit:cover}
+.music-discovery-card-body{display:flex;min-width:0;flex:1;flex-direction:column;gap:7px;padding:12px}
+.music-discovery-track-title{display:-webkit-box;overflow:hidden;color:#ebeee8;font-size:12px;line-height:1.5;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.music-discovery-track-artist,.music-discovery-album{overflow:hidden;color:#88918a;font-size:10px;text-overflow:ellipsis;white-space:nowrap}
+.music-discovery-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:auto;padding-top:5px}
+.music-discovery-actions button{justify-content:center;min-height:32px;padding:8px 9px;font-size:9px}
+.music-discovery-source{color:#b8db7a;font-size:9px;text-decoration:none}
+.music-discovery-source:hover{text-decoration:underline}
+.music-discovery-actions button:disabled{opacity:.45;cursor:not-allowed}
+@media(max-width:1100px){.music-discovery-form{grid-template-columns:minmax(0,1fr) minmax(170px,220px)}.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%;box-sizing:border-box}.music-discovery-form>.primary-button{grid-column:auto}.music-discovery-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.music-discovery-section{padding:13px;margin-top:20px}.account-discovery-heading{align-items:flex-start;flex-direction:column;gap:9px}.account-discovery-heading h2{font-size:20px}.account-discovery-heading>.count-label{align-self:flex-start}.music-discovery-form{grid-template-columns:minmax(0,1fr);gap:8px}.music-discovery-form select,.music-discovery-form>.primary-button,.music-discovery-form>.outline-button{width:100%}.music-discovery-results{grid-template-columns:minmax(0,1fr)}.music-discovery-card{display:grid;grid-template-columns:112px minmax(0,1fr)}.music-discovery-art{height:100%;min-height:120px;aspect-ratio:auto}.music-discovery-card-body{padding:10px}.music-discovery-actions button{flex:1}.music-discovery-actions{gap:5px}}
