@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0342/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0343/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!sw.includes("'./music-accounts.js'")) errors.push('Service worker does not cache the account playlist integration module.');
@@ -55,9 +55,13 @@ const accounts = exists('music-accounts.js') ? read('music-accounts.js') : '';
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlistItems')) errors.push('YouTube playlist item endpoint is missing.');
 if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music library playlist endpoint is missing.');
+if (!accounts.includes('async function importPlaylist(') || !accounts.includes('async function importSelectedPlaylists(')) errors.push('Playlist import workflow is missing.');
+if (!accounts.includes('lastRemoteTrackKeys')) errors.push('Playlist resync no longer tracks prior remote keys to preserve local removals.');
+if (!accounts.includes('ensureYouTubeIframeAPI') || !accounts.includes('appleMusic.setQueue')) errors.push('Official account playback adapters are missing.');
+for (const id of ['accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle']) if (!idSet.has(id)) errors.push(`Account playback/import control missing from HTML: #${id}`);
 if (accounts.includes('localStorage.setItem(APPLE_TOKEN_KEY')) errors.push('Apple developer token should not be saved to localStorage.');
 if (!html.includes('manifest.json')) errors.push('PWA manifest is not linked in index.html.');
-for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist', 'accountHubStatus', 'accountSetup', 'accountGoogleClientId', 'accountAppleDeveloperToken', 'accountPlaylistGrid', 'accountPlaylistSearch', 'accountPlaylistFilter']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
+for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist', 'accountHubStatus', 'accountSetup', 'accountGoogleClientId', 'accountAppleDeveloperToken', 'accountPlaylistGrid', 'accountPlaylistSearch', 'accountPlaylistFilter', 'accountImportSelected', 'accountSelectVisible', 'accountNowPlaying', 'accountYouTubePlayer', 'accountApplePlayerStatus', 'accountPlayerPrevious', 'accountPlayerNext', 'accountPlayerToggle', 'accountPlayerClose']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
 if (/frame\.src\s*=\s*destination/.test(app)) errors.push('Unsafe legacy behavior still attempts to frame whole platform search URLs.');
 if (!app.includes('https://www.googleapis.com/youtube/v3/search')) errors.push('YouTube Data API search integration is missing.');
 if (!app.includes('https://itunes.apple.com/search')) errors.push('No-key catalog search integration is missing.');
@@ -78,7 +82,7 @@ if (!/addEventListener\(['"]activate['"]/.test(sw)) errors.push('Service worker 
 if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.');
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
-console.log(`EUPHONIA music-discovery static validation`);
+console.log(`EUPHONIA account playlist + playback static validation`);
 console.log(`HTML ids: ${idSet.size}; core scripts checked: 5; manifest and local references checked.`);
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 if (errors.length) {
