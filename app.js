@@ -775,6 +775,357 @@
   let appleSearchSequence = 0;
   let youtubeSearchSequence = 0;
 
+  const spotifyKeys = {
+    clientId: 'euphonia.spotify.clientId',
+    session: 'euphonia.spotify.session',
+    verifier: 'euphonia.spotify.pkce.verifier',
+    oauthState: 'euphonia.spotify.pkce.state',
+    redirectUri: 'euphonia.spotify.pkce.redirectUri'
+  };
+  let spotifyPlaylistItems = [];
+  let spotifyNextPlaylistsUrl = null;
+  let spotifyProfile = null;
+
+  function getSpotifyClientId() {
+    try { return (localStorage.getItem(spotifyKeys.clientId) || '').trim(); } catch (_) { return ''; }
+  }
+  function getSpotifySession() {
+    try {
+      const session = JSON.parse(sessionStorage.getItem(spotifyKeys.session) || 'null');
+      return session && typeof session === 'object' ? session : null;
+    } catch (_) { return null; }
+  }
+  function setSpotifySession(session) {
+    try {
+      if (session) sessionStorage.setItem(spotifyKeys.session, JSON.stringify(session));
+      else sessionStorage.removeItem(spotifyKeys.session);
+    } catch (_) { throw new Error('Browser tidak mengizinkan penyimpanan sesi sementara.'); }
+  }
+  function spotifyRedirectUri() { return `${location.origin}${location.pathname}`; }
+  function setSpotifyNotice(message, tone = 'info') {
+    const host = $('#spotifyAccountNotice');
+    if (!host) return;
+    host.dataset.tone = tone;
+    const paragraph = host.querySelector('p');
+    if (paragraph) paragraph.textContent = message;
+  }
+  function updateSpotifyConnectionUI() {
+    const session = getSpotifySession();
+    const connected = Boolean(session && (session.access_token || session.refresh_token));
+    $('#spotifyAccountTitle').textContent = connected
+      ? (spotifyProfile?.display_name ? `Spotify · ${spotifyProfile.display_name}` : 'Spotify connected')
+      : 'Connect Spotify';
+    $('#spotifyAccountStatus').textContent = connected
+      ? 'Account authorization is active in this browser tab.'
+      : 'Browse your own Spotify playlists inside EUPHONIA.';
+    $('#spotifyConnectButton').textContent = connected ? 'Load my playlists' : 'Connect account';
+    $('#spotifyDisconnectButton').hidden = !connected;
+    $('#spotifyConnectSettings').textContent = getSpotifyClientId() ? 'Edit setup' : 'Setup';
+    $('#spotifyClientIdInput').value = getSpotifyClientId();
+    $('#spotifyRedirectUri').textContent = spotifyRedirectUri();
+  }
+  function showSpotifyConnectPanel({ openSettings = false } = {}) {
+    const panel = $('#spotifyConnectPanel');
+    if (!panel) return;
+    panel.hidden = false;
+    if (openSettings) $('#spotifyClientConfigPanel').hidden = false;
+    updateSpotifyConnectionUI();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function randomBase64Url(byteLength = 48) {
+    const bytes = new Uint8Array(byteLength);
+    crypto.getRandomValues(bytes);
+    let binary = '';
+    bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+  async function createSpotifyCodeChallenge(verifier) {
+    if (!crypto.subtle) throw new Error('Spotify login membutuhkan HTTPS atau localhost agar PKCE dapat dibuat dengan aman.');
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+    let binary = '';
+    new Uint8Array(digest).forEach(byte => { binary += String.fromCharCode(byte); });
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+  function clearSpotifyOAuthState() {
+    [spotifyKeys.verifier, spotifyKeys.oauthState, spotifyKeys.redirectUri].forEach(key => {
+      try { sessionStorage.removeItem(key); } catch (_) {}
+    });
+  }
+  async function startSpotifyAuthorization() {
+    const clientId = getSpotifyClientId();
+    if (!clientId) {
+      showSpotifyConnectPanel({ openSettings: true });
+      setSpotifyNotice('Tambahkan Client ID terlebih dahulu. Client Secret tidak diperlukan untuk OAuth PKCE di browser.', 'error');
+      $('#spotifyClientIdInput').focus();
+      return;
+    }
+    const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname);
+    if (location.protocol !== 'https:' && !isLocal) {
+      setSpotifyNotice('Spotify OAuth perlu HTTPS (atau localhost saat development). Buka EUPHONIA dari URL HTTPS yang didaftarkan.', 'error');
+      return;
+    }
+    try {
+      const verifier = randomBase64Url(64);
+      const challenge = await createSpotifyCodeChallenge(verifier);
+      const stateToken = randomBase64Url(24);
+      const redirectUri = spotifyRedirectUri();
+      sessionStorage.setItem(spotifyKeys.verifier, verifier);
+      sessionStorage.setItem(spotifyKeys.oauthState, stateToken);
+      sessionStorage.setItem(spotifyKeys.redirectUri, redirectUri);
+      const authorize = new URL('https://accounts.spotify.com/authorize');
+      authorize.search = new URLSearchParams({
+        client_id: clientId,
+        response_type: 'code',
+        redirect_uri: redirectUri,
+        scope: 'playlist-read-private playlist-read-collaborative user-read-private',
+        code_challenge_method: 'S256',
+        code_challenge: challenge,
+        state: stateToken
+      }).toString();
+      setSpotifyNotice('Mengalihkan ke login resmi Spotify. EUPHONIA tidak pernah meminta password Spotify.', 'info');
+      location.assign(authorize.href);
+    } catch (error) {
+      setSpotifyNotice(`Tidak bisa memulai login Spotify: ${error.message || 'PKCE gagal dibuat'}`, 'error');
+    }
+  }
+  async function requestSpotifyToken(body) {
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams(body)
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.error_description || data.error || `Spotify token endpoint HTTP ${response.status}`);
+    return data;
+  }
+  async function getSpotifyAccessToken(forceRefresh = false) {
+    const session = getSpotifySession();
+    if (!session) throw new Error('Hubungkan akun Spotify terlebih dahulu.');
+    if (!forceRefresh && session.access_token && Number(session.expires_at) > Date.now() + 60000) return session.access_token;
+    if (!session.refresh_token) {
+      setSpotifySession(null);
+      throw new Error('Sesi Spotify kedaluwarsa. Hubungkan akun lagi.');
+    }
+    const refreshed = await requestSpotifyToken({
+      grant_type: 'refresh_token',
+      refresh_token: session.refresh_token,
+      client_id: getSpotifyClientId()
+    });
+    const next = {
+      ...session,
+      access_token: refreshed.access_token,
+      expires_at: Date.now() + Math.max(60, Number(refreshed.expires_in) || 3600) * 1000,
+      refresh_token: refreshed.refresh_token || session.refresh_token
+    };
+    setSpotifySession(next);
+    return next.access_token;
+  }
+  async function spotifyApi(url, retryAfter401 = true) {
+    const accessToken = await getSpotifyAccessToken();
+    const target = new URL(url, 'https://api.spotify.com');
+    if (target.origin !== 'https://api.spotify.com') throw new Error('Permintaan Spotify ditolak karena host tidak valid.');
+    const response = await fetch(target.href, {
+      headers: { Authorization: `Bearer ${accessToken}`, Accept: 'application/json' }
+    });
+    if (response.status === 401 && retryAfter401) {
+      await getSpotifyAccessToken(true);
+      return spotifyApi(target.href, false);
+    }
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (response.status === 403) throw new Error('Spotify menolak akses. Periksa syarat akun developer, daftar pengguna yang diizinkan, serta scope playlist.');
+      if (response.status === 429) throw new Error('Spotify membatasi permintaan sementara. Tunggu sebentar lalu coba lagi.');
+      throw new Error(data.error?.message || `Spotify API HTTP ${response.status}`);
+    }
+    return data;
+  }
+  function renderSpotifyPlaylists(items, append = false) {
+    const grid = $('#spotifyPlaylistGrid');
+    if (!append) grid.replaceChildren();
+    if (!append && !items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'spotify-playlist-empty';
+      const title = document.createElement('strong'); title.textContent = 'No playlists returned';
+      const note = document.createElement('span'); note.textContent = 'Refresh, or check your Spotify account permissions.';
+      empty.append(title, note); grid.append(empty);
+    }
+    items.forEach(playlist => {
+      const card = document.createElement('article'); card.className = 'spotify-playlist-card';
+      const cover = document.createElement('div'); cover.className = 'spotify-playlist-cover';
+      const rawImage = playlist.images?.[0]?.url;
+      if (rawImage) {
+        try {
+          const source = new URL(rawImage);
+          if (source.protocol === 'https:' && source.hostname === 'i.scdn.co') {
+            const image = document.createElement('img'); image.loading = 'lazy'; image.alt = ''; image.src = source.href;
+            image.addEventListener('error', () => image.remove(), { once: true }); cover.append(image);
+          }
+        } catch (_) {}
+      }
+      if (!cover.childElementCount) cover.textContent = '♫';
+      const body = document.createElement('div'); body.className = 'spotify-playlist-card-body';
+      const title = document.createElement('strong'); title.textContent = playlist.name || 'Untitled playlist'; title.title = title.textContent;
+      const owner = playlist.owner?.display_name || playlist.owner?.id || 'Spotify playlist';
+      const count = playlist.items?.total ?? playlist.tracks?.total;
+      const meta = document.createElement('small');
+      meta.textContent = `${owner} · ${Number.isFinite(Number(count)) ? `${count} tracks` : 'Playlist'} · ${playlist.public === false ? 'Private' : 'Available playlist'}`;
+      body.append(title, meta);
+      const actions = document.createElement('div'); actions.className = 'spotify-playlist-card-actions';
+      const play = document.createElement('button'); play.type = 'button'; play.className = 'primary-button'; play.textContent = '▶ Play inside';
+      play.addEventListener('click', () => playSpotifyPlaylist(playlist));
+      const save = document.createElement('button'); save.type = 'button'; save.className = 'outline-button'; save.textContent = 'Save link';
+      save.addEventListener('click', () => {
+        const url = playlist.external_urls?.spotify || `https://open.spotify.com/playlist/${encodeURIComponent(playlist.id)}`;
+        savePlaylistLink('spotify', url);
+        $('#embedLinkInput').value = url;
+        setHubStatus(`Link playlist “${playlist.name || 'Spotify'}” tersimpan di browser ini.`, 'success');
+      });
+      actions.append(play, save); card.append(cover, body, actions); grid.append(card);
+    });
+    $('#spotifyLoadMore').hidden = !spotifyNextPlaylistsUrl;
+    $('#spotifyLoadMore').disabled = !spotifyNextPlaylistsUrl;
+  }
+  function playSpotifyPlaylist(playlist) {
+    if (!playlist || !playlist.id) return;
+    const shareUrl = playlist.external_urls?.spotify || `https://open.spotify.com/playlist/${encodeURIComponent(playlist.id)}`;
+    const embedUrl = `https://open.spotify.com/embed/playlist/${encodeURIComponent(playlist.id)}?utm_source=generator`;
+    setHubProvider('spotify');
+    savePlaylistLink('spotify', shareUrl);
+    $('#embedLinkInput').value = shareUrl;
+    loadOfficialEmbed('spotify', embedUrl, playlist.name || 'Spotify playlist');
+    setHubStatus(`“${playlist.name || 'Spotify playlist'}” dibuka melalui Spotify Embed resmi. Pemutaran playlist privat mengikuti aturan Spotify dan pengaturan browser.`, 'success');
+  }
+  async function loadSpotifyPlaylists({ append = false, searchQuery = '' } = {}) {
+    $('#spotifyPlaylistPanel').hidden = false;
+    const grid = $('#spotifyPlaylistGrid');
+    const nextUrl = append ? spotifyNextPlaylistsUrl : null;
+    if (!append) {
+      grid.innerHTML = '<div class="spotify-playlist-empty"><span class="stream-loading-dot"></span><strong>Loading your playlists…</strong></div>';
+      spotifyPlaylistItems = [];
+      spotifyNextPlaylistsUrl = null;
+    }
+    $('#spotifyRefreshPlaylists').disabled = true;
+    $('#spotifyLoadMore').disabled = true;
+    try {
+      const url = nextUrl || 'https://api.spotify.com/v1/me/playlists?limit=50';
+      if (append && !nextUrl) return;
+      const data = await spotifyApi(url);
+      const incoming = Array.isArray(data.items) ? data.items : [];
+      spotifyPlaylistItems = append ? spotifyPlaylistItems.concat(incoming) : incoming;
+      spotifyNextPlaylistsUrl = data.next || null;
+      if (searchQuery) {
+        const needle = searchQuery.toLocaleLowerCase();
+        const matches = spotifyPlaylistItems.filter(item => `${item.name || ''} ${item.description || ''} ${item.owner?.display_name || ''}`.toLocaleLowerCase().includes(needle));
+        renderSpotifyPlaylists(matches);
+        setSpotifyNotice(matches.length ? `Found ${matches.length} matching playlist(s).` : 'No playlist matched that search. Try another name.', 'success');
+      } else {
+        renderSpotifyPlaylists(append ? incoming : spotifyPlaylistItems, append);
+        setSpotifyNotice(`Loaded ${spotifyPlaylistItems.length} playlist(s). Choose Play inside to open Spotify’s official embed player.`, 'success');
+      }
+      updateSpotifyConnectionUI();
+    } catch (error) {
+      renderSpotifyPlaylists([]);
+      setSpotifyNotice(`Could not load Spotify playlists: ${error.message || 'request failed'}`, 'error');
+    } finally {
+      $('#spotifyRefreshPlaylists').disabled = false;
+      $('#spotifyLoadMore').disabled = !spotifyNextPlaylistsUrl;
+    }
+  }
+  async function handleSpotifyOAuthCallback() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const returnedError = params.get('error');
+    if (!code && !returnedError) return;
+    const returnedState = params.get('state') || '';
+    const expectedState = sessionStorage.getItem(spotifyKeys.oauthState) || '';
+    const verifier = sessionStorage.getItem(spotifyKeys.verifier) || '';
+    const redirectUri = sessionStorage.getItem(spotifyKeys.redirectUri) || spotifyRedirectUri();
+    history.replaceState({}, document.title, `${location.pathname}${location.hash}`);
+    showPage('discover');
+    setHubProvider('spotify');
+    showSpotifyConnectPanel();
+    if (returnedError) {
+      clearSpotifyOAuthState();
+      setSpotifyNotice(returnedError === 'access_denied' ? 'Login dibatalkan. EUPHONIA belum diberi izin membaca playlist.' : `Spotify login error: ${returnedError}`, 'error');
+      return;
+    }
+    if (!code || !expectedState || returnedState !== expectedState || !verifier) {
+      clearSpotifyOAuthState();
+      setSpotifyNotice('Spotify callback tidak lolos pemeriksaan state. Mulai koneksi lagi untuk keamanan.', 'error');
+      return;
+    }
+    try {
+      if (redirectUri !== spotifyRedirectUri()) throw new Error('Redirect URI berubah selama login. Pastikan URL terdaftar sama persis.');
+      const token = await requestSpotifyToken({
+        grant_type: 'authorization_code', code, redirect_uri: redirectUri,
+        client_id: getSpotifyClientId(), code_verifier: verifier
+      });
+      setSpotifySession({
+        access_token: token.access_token, refresh_token: token.refresh_token || '',
+        expires_at: Date.now() + Math.max(60, Number(token.expires_in) || 3600) * 1000,
+        token_type: token.token_type || 'Bearer'
+      });
+      clearSpotifyOAuthState();
+      spotifyProfile = await spotifyApi('https://api.spotify.com/v1/me');
+      updateSpotifyConnectionUI();
+      $('#spotifyProfileSummary').textContent = `Signed in as ${spotifyProfile.display_name || spotifyProfile.id}. EUPHONIA reads playlists with the permissions you approved.`;
+      await loadSpotifyPlaylists();
+    } catch (error) {
+      clearSpotifyOAuthState();
+      setSpotifyNotice(`Spotify connection failed: ${error.message || 'request failed'}`, 'error');
+      updateSpotifyConnectionUI();
+    }
+  }
+  function initializeSpotifyConnectUI() {
+    updateSpotifyConnectionUI();
+    $('#spotifyConnectSettings').addEventListener('click', () => {
+      const panel = $('#spotifyClientConfigPanel');
+      panel.hidden = !panel.hidden;
+      if (!panel.hidden) $('#spotifyClientIdInput').focus();
+    });
+    $('#spotifySaveClientId').addEventListener('click', () => {
+      const value = $('#spotifyClientIdInput').value.trim();
+      try {
+        if (value) localStorage.setItem(spotifyKeys.clientId, value);
+        else localStorage.removeItem(spotifyKeys.clientId);
+      } catch (_) { setSpotifyNotice('Browser tidak bisa menyimpan Client ID.', 'error'); return; }
+      setSpotifySession(null);
+      clearSpotifyOAuthState();
+      spotifyProfile = null;
+      spotifyPlaylistItems = [];
+      spotifyNextPlaylistsUrl = null;
+      $('#spotifyPlaylistPanel').hidden = true;
+      $('#spotifyPlaylistGrid').replaceChildren();
+      $('#spotifyClientConfigPanel').hidden = true;
+      updateSpotifyConnectionUI();
+      setSpotifyNotice(value ? 'Client ID disimpan di browser ini. Sekarang hubungkan akun Spotify.' : 'Client ID dihapus dari browser ini.', 'success');
+    });
+    $('#spotifyConnectButton').addEventListener('click', () => {
+      if (getSpotifySession()) void loadSpotifyPlaylists();
+      else void startSpotifyAuthorization();
+    });
+    $('#spotifyDisconnectButton').addEventListener('click', () => {
+      setSpotifySession(null);
+      clearSpotifyOAuthState();
+      spotifyProfile = null;
+      spotifyPlaylistItems = [];
+      spotifyNextPlaylistsUrl = null;
+      $('#spotifyPlaylistPanel').hidden = true;
+      $('#spotifyPlaylistGrid').replaceChildren();
+      updateSpotifyConnectionUI();
+      setSpotifyNotice('Sesi Spotify EUPHONIA di tab ini dihapus. Untuk mencabut izin aplikasi sepenuhnya, kelola akses aplikasi di pengaturan akun Spotify.', 'info');
+    });
+    $('#spotifyRefreshPlaylists').addEventListener('click', () => { void loadSpotifyPlaylists(); });
+    $('#spotifyLoadMore').addEventListener('click', () => { void loadSpotifyPlaylists({ append: true }); });
+    $('#spotifyCopyRedirect').addEventListener('click', async () => {
+      const value = spotifyRedirectUri();
+      try {
+        await navigator.clipboard.writeText(value);
+        setSpotifyNotice('Redirect URI copied. Paste it into Spotify app settings.', 'success');
+      } catch (_) { setSpotifyNotice(`Copy failed. Use this Redirect URI manually: ${value}`, 'error'); }
+    });
+  }
+
   function setHubStatus(message, tone = 'info') {
     const status = $('#hubStatus');
     if (!status) return;
@@ -838,6 +1189,8 @@
       searchButton.innerHTML = embeddedSearch ? 'Search in EUPHONIA <span>⌕</span>' : 'Use playlist link <span>↓</span>';
     }
     updateSavedPlaylistNote();
+    const spotifyPanel = $('#spotifyConnectPanel');
+    if (spotifyPanel) spotifyPanel.hidden = activeHubProvider !== 'spotify';
   }
 
   function syncPlatformLinks() {
@@ -865,9 +1218,22 @@
       setHubStatus(`Memutar link tersimpan dari ${platformNames[platform]} di dalam EUPHONIA. Jika playlist privat atau penyedia meminta login top-level, embed mungkin tidak dapat memainkannya.`, 'success');
       return;
     }
+    if (platform === 'spotify') {
+      showSpotifyConnectPanel({ openSettings: !getSpotifyClientId() });
+      if (getSpotifySession()) {
+        setSpotifyNotice('Akun Spotify sudah terhubung dalam tab ini. Memuat daftar playlist…', 'success');
+        void loadSpotifyPlaylists();
+      } else {
+        setSpotifyNotice(getSpotifyClientId()
+          ? 'Hubungkan akun Spotify untuk memuat daftar playlist milikmu. Kamu juga bisa menempel link Share di bawah.'
+          : 'Tambahkan Client ID aplikasi Spotify milikmu untuk menelusuri playlist akun. Link Share tetap bisa digunakan sebagai alternatif.',
+          'info');
+      }
+      $('#embedLinkInput').placeholder = `Tempel link Share ${platformNames[platform]}…`;
+      return;
+    }
     setHubStatus(`Untuk memutar ${platformLibraryLabels[platform]} tanpa meninggalkan EUPHONIA, salin link Share playlist dari aplikasi/platform asal, lalu tempel link itu di kolom atas. EUPHONIA tidak membuka tab baru otomatis.`, 'info');
     $('#embedLinkInput').placeholder = `Tempel link Share ${platformNames[platform]}…`;
-    $('#embedLinkInput').focus({ preventScroll: true });
     $('#embedLinkForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -1159,6 +1525,7 @@
       $('#embedLinkInput').focus({ preventScroll: true });
       return;
     }
+    if (activeHubProvider === 'spotify' && getSpotifySession()) return loadSpotifyPlaylists({ searchQuery: query });
     if (['spotify', 'soundcloud', 'deezer', 'bandcamp'].includes(activeHubProvider)) {
       return requestInAppSearch(activeHubProvider, query);
     }
@@ -1946,13 +2313,13 @@
   }
 
   // Navigation and global search.
-  $$('.nav-item, [data-page].primary-button, .project-link, .quick-card, .text-button[data-page]').forEach(button => {
+  $$('[data-page]').forEach(button => {
     button.addEventListener('click', () => showPage(button.dataset.page));
   });
   $('#mobileMenu').addEventListener('click', () => { const open = !$('#sidebar').classList.contains('open'); $('#sidebar').classList.toggle('open', open); $('#mobileScrim').hidden = !open; $('#mobileMenu').setAttribute('aria-expanded', String(open)); });
   $('#mobileScrim').addEventListener('click', () => { $('#sidebar').classList.remove('open'); $('#mobileScrim').hidden = true; $('#mobileMenu').setAttribute('aria-expanded', 'false'); });
   $('#quickImport').addEventListener('click', () => askImport('library'));
-  $('#emptyImport').addEventListener('click', () => askImport('library'));
+  $('#emptyImport')?.addEventListener('click', () => askImport('library'));
   $('#hubImport').addEventListener('click', () => askImport('library'));
   $('#libraryImport').addEventListener('click', () => askImport('library'));
   $('#libraryEmptyImport')?.addEventListener('click', () => askImport('library'));
@@ -2050,6 +2417,7 @@
     }
   });
   setHubProvider('catalog');
+  initializeSpotifyConnectUI();
 
   // Streaming home interactions: preview playback, My List, and mood-based catalog search.
   $('#page-home').addEventListener('click', event => {
@@ -2405,6 +2773,7 @@
   updatePlayerProgress();
   window.addEventListener('load', async () => {
     if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('./sw.js').catch(error => console.warn('Service worker registration failed:', error));
+    await handleSpotifyOAuthCallback();
     await restoreLocalWorkspace();
     // restoreLocalWorkspace already sets the most accurate final status (restored, ready, or warning).
   });
