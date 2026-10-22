@@ -47,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0348/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
+if (!/euphonia-studio-v0349/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('music-accounts.js')) errors.push('Account playlist integration module is not included in index.html.');
 if (!html.includes('euphonia-config.js')) errors.push('Public app configuration is not included in index.html.');
@@ -65,6 +65,9 @@ for (const id of ['accountPlayerFavorite', 'accountPlayerShuffle', 'accountPlaye
 const accounts = exists('music-accounts.js') ? read('music-accounts.js') : '';
 if (!accounts.includes('onAutoplayBlocked')) errors.push('YouTube autoplay-blocked handling is missing.');
 if (!accounts.includes('153:')) errors.push('YouTube player client identity/referrer error handling is missing.');
+if (!accounts.includes('youtubeSyncPromise') || !accounts.includes('appleSyncPromise')) errors.push('Provider sync requests are not coalesced.');
+if (!accounts.includes('Request YouTube API timeout')) errors.push('YouTube request timeout handling is missing.');
+if (!accounts.includes('quota/rate limit')) errors.push('YouTube quota/rate-limit messaging is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlistItems')) errors.push('YouTube playlist item endpoint is missing.');
 if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music library playlist endpoint is missing.');
