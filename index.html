@@ -197,6 +197,16 @@
             <button class="outline-button" id="musicDiscoveryClear" type="button">Clear</button>
           </form>
           <p class="music-discovery-hint" id="musicDiscoveryHint">Cari video musik dan putar lewat pemutar YouTube resmi. API key dikonfigurasi pemilik aplikasi.</p>
+          <details class="music-discovery-api-setup" id="musicDiscoveryApiDetails">
+            <summary>Set up YouTube search on this browser</summary>
+            <p class="music-discovery-api-copy">Masukkan API key YouTube Data API v3 yang sudah dibatasi untuk Websites dan YouTube Data API v3. Key disimpan di localStorage browser ini, bukan di repository EUPHONIA. Jangan gunakan key yang sudah terlanjur dibagikan.</p>
+            <div class="music-discovery-api-controls">
+              <input id="musicDiscoveryApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="Paste API key baru" aria-label="YouTube Data API key" />
+              <button class="primary-button" id="musicDiscoverySaveApiKey" type="button">Save on this browser</button>
+              <button class="outline-button" id="musicDiscoveryClearApiKey" type="button">Remove saved key</button>
+            </div>
+            <p class="music-discovery-api-status" id="musicDiscoveryApiSetupStatus" role="status" aria-live="polite">Simpan key di browser ini untuk mengaktifkan pencarian YouTube. Jangan masukkan key yang pernah terekspos.</p>
+          </details>
           <div class="hub-status music-discovery-status" id="musicDiscoveryStatus" role="status" aria-live="polite">Cari nama artis atau lagu. Apple Music previews bisa dicari tanpa login; YouTube search memerlukan API key milik aplikasi yang dibatasi dengan benar.</div>
           <section class="music-discovery-results-panel" id="musicDiscoveryResultsPanel" hidden aria-live="polite">
             <div class="hub-results-heading">
