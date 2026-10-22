@@ -937,6 +937,9 @@
         textBox.append(trackTitle, artist);
         const actions = document.createElement("div");
         actions.className = "account-track-actions";
+        if (["youtube", "apple"].includes(playlist.provider)) {
+          actions.append(createButton("Play here", "primary-button small-account-button", () => playTrackFromPlaylist(playlist, tracks, index)));
+        }
         actions.append(createExternalLink("Open source ↗", track.url, "outline-button small-account-button"));
         if (playlist.importedLocal) actions.append(createButton("Remove local", "text-button small-account-button", () => removeImportedTrack(playlist, track)));
         row.append(number, art, textBox, actions);
@@ -1111,6 +1114,30 @@
       activePlaylistDetailKey = null;
       $("#accountPlaylistGrid")?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
+    $("#accountPlayerPrevious")?.addEventListener("click", () => {
+      if (!accountPlaybackQueue.length) return;
+      const next = (accountPlaybackIndex - 1 + accountPlaybackQueue.length) % accountPlaybackQueue.length;
+      void playAccountQueueIndex(next);
+    });
+    $("#accountPlayerNext")?.addEventListener("click", () => {
+      if (!accountPlaybackQueue.length) return;
+      const next = (accountPlaybackIndex + 1) % accountPlaybackQueue.length;
+      void playAccountQueueIndex(next);
+    });
+    $("#accountPlayerToggle")?.addEventListener("click", () => {
+      if (accountPlaybackProvider === "youtube" && youtubePlayer) {
+        try {
+          if (youtubePlayer.getPlayerState() === 1) youtubePlayer.pauseVideo();
+          else youtubePlayer.playVideo();
+        } catch (_) {}
+      } else if (accountPlaybackProvider === "apple" && appleMusic && appleAuthorized && !applePlaybackBusy) {
+        const player = appleMusic.player;
+        const isPlaying = player && (player.isPlaying || player.playbackState === window.MusicKit?.PlaybackStates?.PLAYING);
+        if (isPlaying) void appleMusic.pause().then(() => { $("#accountPlayerToggle").textContent = "▶ Play"; }).catch(error => setStatus(error.message || "Tidak dapat menjeda Apple Music.", "error"));
+        else void appleMusic.play().then(() => { $("#accountPlayerToggle").textContent = "Ⅱ Pause"; }).catch(error => setStatus(error.message || "Tidak dapat memutar Apple Music.", "error"));
+      }
+    });
+    $("#accountPlayerClose")?.addEventListener("click", closeAccountPlayback);
     window.addEventListener("euphonia:filter-playlists", event => {
       const query = event.detail && event.detail.query ? String(event.detail.query) : "";
       const input = $("#accountPlaylistSearch");
