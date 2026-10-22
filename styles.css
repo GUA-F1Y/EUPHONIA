@@ -608,3 +608,9 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
   .account-saved-tracks .account-track-art{width:42px;height:42px}
   .account-saved-tracks .account-track-actions{grid-column:2/-1;justify-content:flex-start}
 }
+
+.account-progress-row{display:grid;grid-template-columns:40px minmax(0,1fr) 40px;align-items:center;gap:10px;margin:16px 0 8px;color:#8e9888;font:10px var(--mono);font-variant-numeric:tabular-nums}
+.account-progress-row input,.account-volume-row input{width:100%;min-width:0;accent-color:var(--lime);cursor:pointer}
+.account-volume-row{display:grid;grid-template-columns:auto minmax(90px,220px) 38px;align-items:center;justify-content:end;gap:10px;margin:0 0 12px;color:#8e9888;font-size:10px}
+.account-volume-row output{text-align:right;font:10px var(--mono);font-variant-numeric:tabular-nums}
+@media(max-width:700px){.account-progress-row{grid-template-columns:36px minmax(0,1fr) 36px;gap:7px}.account-volume-row{grid-template-columns:auto minmax(70px,1fr) 38px}}
