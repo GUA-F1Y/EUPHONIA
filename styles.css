@@ -553,3 +553,58 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .account-youtube-player-wrap p{margin:8px 0 0;color:#7f897d;font-size:9px;text-align:center}
 .account-apple-player-status{padding:22px 15px;border:1px solid #303831;border-radius:9px;background:#111513;color:#a5b29d;font-size:11px;line-height:1.7;text-align:center}
 @media(max-width:700px){.account-now-playing{padding:11px}.account-now-playing-header{align-items:flex-start;flex-direction:column}.account-player-transport{width:100%}.account-player-transport button{flex:1}.account-player-transport .text-button{flex:0 0 auto}.account-track-actions{gap:5px}.account-track-actions>*{flex:1}}
+
+
+/* Musicfy-inspired player tools, built in the existing EUPHONIA visual system. */
+.account-player-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:13px 0}
+.account-player-tools .outline-button{justify-content:center;padding:9px 11px;font-size:10px}
+.account-player-tools .outline-button.is-active,.account-saved-tabs .outline-button.active{border-color:#647c3a;background:#252e1b;color:#d8f5a4}
+.account-queue-panel,.account-lyrics-panel{margin-top:12px;padding:14px;border:1px solid #30362b;border-radius:11px;background:#121512}
+.account-queue-panel[hidden],.account-lyrics-panel[hidden]{display:none!important}
+.account-subpanel-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px}
+.account-subpanel-heading>div{display:grid;gap:3px}
+.account-subpanel-heading strong{font-size:13px;color:#edf1e7}
+.account-subpanel-heading .text-button{font-size:10px;white-space:nowrap}
+.account-queue-items{display:grid;gap:6px}
+.account-queue-row{display:grid;grid-template-columns:25px 42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px;border:1px solid #292f29;border-radius:8px;background:#161916}
+.account-queue-row.is-current{border-color:#657b3b;background:#20271b}
+.account-queue-art{display:grid;place-items:center;width:42px;height:42px;overflow:hidden;border-radius:6px;background:#2a3024;color:#c9f36a}
+.account-queue-art img{width:100%;height:100%;object-fit:cover}
+.account-queue-actions{display:flex;align-items:center;gap:5px}
+.account-queue-actions button{min-width:28px;padding:6px 8px;font-size:9px}
+.account-lyrics-status{margin:0 0 10px;color:#9ca598;font-size:10px;line-height:1.6}
+.account-lyrics-lines{display:flex;max-height:340px;flex-direction:column;gap:8px;overflow:auto;padding:12px 7px;overscroll-behavior:contain}
+.account-lyric-line{margin:0;padding:7px 10px;border-left:2px solid transparent;border-radius:0 6px 6px 0;color:#818a80;font-size:15px;line-height:1.7;transition:color .18s,background .18s}
+.account-lyric-line.is-active{border-left-color:var(--lime);background:#c9f36a12;color:#f2f7e9;font-weight:700}
+.account-plain-lyrics{margin:0;color:#d9dfd4;font:13px/1.9 var(--font);white-space:pre-wrap;overflow-wrap:anywhere}
+.account-saved-section{margin:30px 0 25px}
+.account-saved-heading{align-items:flex-end;gap:14px;flex-wrap:wrap}
+.account-saved-heading>div:first-child p{margin-top:6px}
+.account-saved-tabs{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.account-saved-tabs .outline-button{padding:9px 11px;font-size:10px}
+.account-saved-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:13px 0;color:#7f887e;font-size:10px}
+.account-saved-toolbar>div{display:flex;align-items:center;gap:9px}
+.account-saved-toolbar .primary-button{padding:9px 11px;font-size:10px}
+.account-saved-toolbar .text-button{font-size:10px}
+.account-saved-toolbar [hidden]{display:none!important}
+.account-saved-tracks{display:grid;gap:7px}
+.account-saved-tracks .account-track-row{grid-template-columns:28px 48px minmax(0,1fr) auto}
+.account-saved-tracks .account-track-actions{justify-content:flex-end}
+@media(max-width:700px){
+  .account-player-tools{gap:6px}
+  .account-player-tools .outline-button{flex:1;min-width:calc(50% - 6px)}
+  .account-subpanel-heading{align-items:flex-start}
+  .account-queue-row{grid-template-columns:22px 38px minmax(0,1fr);gap:7px}
+  .account-queue-art{width:38px;height:38px}
+  .account-queue-actions{grid-column:2/-1;justify-content:flex-start}
+  .account-queue-actions button{flex:1}
+  .account-saved-heading{align-items:flex-start;flex-direction:column}
+  .account-saved-tabs{width:100%}
+  .account-saved-tabs button{flex:1}
+  .account-saved-toolbar{align-items:flex-start;flex-direction:column}
+  .account-saved-toolbar>div{width:100%;flex-wrap:wrap}
+  .account-saved-toolbar .primary-button{flex:1}
+  .account-saved-tracks .account-track-row{grid-template-columns:22px 42px minmax(0,1fr);gap:8px}
+  .account-saved-tracks .account-track-art{width:42px;height:42px}
+  .account-saved-tracks .account-track-actions{grid-column:2/-1;justify-content:flex-start}
+}
