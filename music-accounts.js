@@ -421,7 +421,7 @@
         },
         error_callback: error => setStatus("Login Google tidak selesai: " + ((error && error.message) || (error && error.type) || "popup ditutup atau diblokir."), "error")
       });
-      tokenClient.requestAccessToken({ prompt: "consent" });
+      tokenClient.requestAccessToken();
     } catch (error) {
       setStatus("Google OAuth gagal dimulai: " + (error.message || "periksa Client ID dan authorized origins."), "error");
     }
@@ -868,8 +868,13 @@
       }
       try {
         applePlaybackBusy = true;
-        const descriptor = track.url ? { url: track.url } : { song: track.id };
-        await appleMusic.setQueue(descriptor);
+        try {
+          if (track.url) await appleMusic.setQueue({ url: track.url });
+          else await appleMusic.setQueue({ song: track.id });
+        } catch (queueError) {
+          if (!track.id || !track.url) throw queueError;
+          await appleMusic.setQueue({ song: track.id });
+        }
         await appleMusic.play();
         applePlaybackBusy = false;
         setStatus("Memutar lewat MusicKit resmi Apple Music. Ketersediaan bergantung pada langganan dan izin akun.", "success");
@@ -1008,6 +1013,7 @@
       appleAuthorized = false;
     }
     delete cache[provider];
+    for (const key of selectedPlaylistKeys) if (key.startsWith(provider + "::")) selectedPlaylistKeys.delete(key);
     writePlaylistCache();
     if (activePlaylistDetailKey && activePlaylistDetailKey.startsWith(provider + "::")) {
       $("#accountPlaylistDetail").hidden = true;
