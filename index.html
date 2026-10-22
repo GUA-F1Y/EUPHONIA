@@ -204,7 +204,15 @@
         </section>
         <section class="account-playlist-detail" id="accountPlaylistDetail" hidden>
           <div class="account-detail-heading"><div><div class="eyebrow">PLAYLIST CONTENTS</div><h2 id="accountPlaylistDetailTitle">Playlist</h2><p id="accountPlaylistDetailSubtitle" class="muted-copy"></p></div><button class="outline-button" id="accountPlaylistDetailBack" type="button">← Back to playlists</button></div>
-          <p class="account-detail-note">Daftar lagu diambil dari API layanan. Klik Open source untuk mendengarkan di layanan resmi; EUPHONIA tidak mengambil file audio stream dari platform tersebut.</p>
+          <p class="account-detail-note">Daftar lagu diambil dari API layanan. Gunakan Play here untuk pemutaran resmi yang didukung, atau Open source untuk membuka layanan asal. EUPHONIA tidak mengambil atau mengunduh file audio dari platform tersebut.</p>
+          <section class="account-now-playing" id="accountNowPlaying" hidden aria-label="Account playlist playback">
+            <div class="account-now-playing-header">
+              <div class="account-now-playing-title"><span class="account-playlist-provider">NOW PLAYING · OFFICIAL PLAYER</span><strong id="accountNowPlayingTitle">No track selected</strong><small id="accountNowPlayingSubtitle">Select a track from your playlist.</small></div>
+              <div class="account-player-transport"><button class="outline-button" id="accountPlayerPrevious" type="button" aria-label="Previous track">⏮</button><button class="primary-button" id="accountPlayerToggle" type="button">▶ Play</button><button class="outline-button" id="accountPlayerNext" type="button" aria-label="Next track">⏭</button><button class="text-button" id="accountPlayerClose" type="button">Close</button></div>
+            </div>
+            <div class="account-youtube-player-wrap" id="accountYouTubePlayerWrap" hidden><div id="accountYouTubePlayer"></div><p>Official YouTube player · playback and ads are controlled by YouTube.</p></div>
+            <div class="account-apple-player-status" id="accountApplePlayerStatus" hidden>Playback is handled by Apple Music through MusicKit. An active subscription may be required.</div>
+          </section>
           <div class="account-playlist-tracks" id="accountPlaylistTracks"></div>
         </section>
         <div class="legacy-music-hub" hidden aria-hidden="true">
