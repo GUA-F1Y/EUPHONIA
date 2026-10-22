@@ -60,11 +60,11 @@ if (!sw.includes("'./musicfy-features.js'")) errors.push('Service worker does no
 if (!html.includes('musicfy-features.js')) errors.push('Musicfy-style player enhancement module is not included in index.html.');
 const musicfy = exists('musicfy-features.js') ? read('musicfy-features.js') : '';
 for (const marker of ['euphonia:account-track-change', 'euphonia:account-playback-started', 'LRCLIB', 'listeningHistory.v1', 'favorites.v1', 'accountQueueItems', 'AbortController', 'Retry-After', 'setActionHandler', 'setPositionState']) if (!musicfy.includes(marker)) errors.push('Musicfy-style player feature marker is missing: ' + marker);
-if (!accounts.includes('onAutoplayBlocked')) errors.push('YouTube autoplay-blocked handling is missing.');
-if (!accounts.includes('153:')) errors.push('YouTube player client identity/referrer error handling is missing.');
 if (!exists('docs/engineering-resources.md')) warnings.push('Engineering resource map is missing.');
 for (const id of ['accountPlayerFavorite', 'accountPlayerShuffle', 'accountPlayerRepeat', 'accountPlayerQueueToggle', 'accountPlayerLyricsToggle', 'accountPlayerSeek', 'accountPlayerVolume', 'accountPlayerCurrentTime', 'accountPlayerDuration', 'accountQueuePanel', 'accountQueueItems', 'accountLyricsPanel', 'accountLyricsLines', 'accountSavedSection', 'accountSavedTracks', 'accountSavedPlayAll']) if (!idSet.has(id)) errors.push('Musicfy-style player UI missing from HTML: #' + id);
 const accounts = exists('music-accounts.js') ? read('music-accounts.js') : '';
+if (!accounts.includes('onAutoplayBlocked')) errors.push('YouTube autoplay-blocked handling is missing.');
+if (!accounts.includes('153:')) errors.push('YouTube player client identity/referrer error handling is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlists')) errors.push('YouTube account playlist endpoint is missing.');
 if (!accounts.includes('https://www.googleapis.com/youtube/v3/playlistItems')) errors.push('YouTube playlist item endpoint is missing.');
 if (!accounts.includes('/v1/me/library/playlists')) errors.push('Apple Music library playlist endpoint is missing.');
