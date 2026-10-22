@@ -791,8 +791,11 @@
         const artist = document.createElement("small");
         artist.textContent = track.artist || playlist.providerName || providerTitle(playlist.provider);
         textBox.append(trackTitle, artist);
-        const link = createExternalLink("Open source ↗", track.url, "outline-button small-account-button");
-        row.append(number, art, textBox, link);
+        const actions = document.createElement("div");
+        actions.className = "account-track-actions";
+        actions.append(createExternalLink("Open source ↗", track.url, "outline-button small-account-button"));
+        if (playlist.importedLocal) actions.append(createButton("Remove local", "text-button small-account-button", () => removeImportedTrack(playlist, track)));
+        row.append(number, art, textBox, actions);
         host.append(row);
       });
     }
@@ -802,6 +805,11 @@
 
   async function viewPlaylist(playlist) {
     if (!playlist) return;
+    if (playlist.importedLocal) {
+      renderPlaylistTracks(playlist, playlist.tracks || []);
+      setStatus("Membuka koleksi playlist yang disimpan lokal di EUPHONIA. Klik Open source untuk pemutaran resmi.", "success");
+      return;
+    }
     if (playlist.provider === "youtube") {
       if (!youtubeAccessToken || Date.now() >= youtubeTokenExpiresAt) {
         pendingYoutubePlaylistId = playlist.id;
@@ -914,7 +922,34 @@
       button.addEventListener("click", () => helpOtherProvider(button.dataset.accountHelp));
     });
     $("#accountPlaylistSearch")?.addEventListener("input", renderPlaylistGrid);
-    $("#accountPlaylistFilter")?.addEventListener("change", renderPlaylistGrid);
+    $("#accountPlaylistFilter")?.addEventListener("change", () => {
+      if ($("#accountPlaylistFilter")?.value === "imported") selectedPlaylistKeys.clear();
+      renderPlaylistGrid();
+    });
+    $("#accountPlaylistGrid")?.addEventListener("change", event => {
+      const checkbox = event.target.closest("[data-account-select]");
+      if (!checkbox) return;
+      if (checkbox.checked) selectedPlaylistKeys.add(checkbox.dataset.accountSelect);
+      else selectedPlaylistKeys.delete(checkbox.dataset.accountSelect);
+      renderSelectionControls(allCachedPlaylists().filter(item => {
+        const query = ($("#accountPlaylistSearch")?.value || "").trim().toLocaleLowerCase();
+        const filter = $("#accountPlaylistFilter")?.value || "all";
+        return filter !== "imported" && (filter === "all" || item.provider === filter) &&
+          [item.title, item.description, item.providerName, item.visibility].filter(Boolean).join(" ").toLocaleLowerCase().includes(query);
+      }));
+      const importButton = $("#accountImportSelected");
+      if (importButton) importButton.textContent = "Import selected (" + selectedPlaylistKeys.size + ")";
+    });
+    $("#accountSelectVisible")?.addEventListener("click", () => {
+      const query = ($("#accountPlaylistSearch")?.value || "").trim().toLocaleLowerCase();
+      const filter = $("#accountPlaylistFilter")?.value || "all";
+      const visible = allCachedPlaylists().filter(item => filter !== "imported" && (filter === "all" || item.provider === filter) &&
+        [item.title, item.description, item.providerName, item.visibility].filter(Boolean).join(" ").toLocaleLowerCase().includes(query));
+      const allSelected = visible.length > 0 && visible.every(item => selectedPlaylistKeys.has(item.key));
+      visible.forEach(item => allSelected ? selectedPlaylistKeys.delete(item.key) : selectedPlaylistKeys.add(item.key));
+      renderPlaylistGrid();
+    });
+    $("#accountImportSelected")?.addEventListener("click", () => void importSelectedPlaylists());
     $("#accountRefreshAll")?.addEventListener("click", () => {
       if (youtubeAccessToken && Date.now() < youtubeTokenExpiresAt) void loadYouTubePlaylists(youtubeAccessToken).catch(error => setStatus(error.message, "error"));
       else if (appleMusic && appleAuthorized) void loadApplePlaylists().catch(error => setStatus(error.message, "error"));
