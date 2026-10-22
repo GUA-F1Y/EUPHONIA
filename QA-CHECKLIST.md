@@ -12,6 +12,8 @@ Run these checks with real provider credentials in a browser. Do not mark a test
 - [ ] Select several YouTube playlists using the checkboxes / Select visible, then Import selected. Confirm all successful imports appear under Imported to EUPHONIA.
 - [ ] Remove one track from an imported playlist locally, add a new track to the source playlist, re-sync, and verify only the newly discovered source track is appended while the locally removed track stays removed.
 - [ ] Disconnect YouTube. Confirm the remote cache clears while already imported EUPHONIA playlists remain local; re-sync should ask you to reconnect.
+- [ ] Trigger two sync clicks rapidly for a connected provider; confirm duplicate playlist requests are coalesced and only one successful refresh is reported.
+- [ ] Simulate a YouTube API 401, quota-exceeded 403, 429, 5xx, and slow network; confirm sessions/errors are actionable and retries are bounded.
 - [ ] Configure a valid Apple Music developer token in the current session, connect through MusicKit, and authorize the account.
 - [ ] Verify Apple Music library playlists populate and View tracks gets metadata. Confirm the developer token is held in sessionStorage, not localStorage, and the private .p8 signing key is never requested.
 - [ ] Press Play here on an Apple Music track. Confirm MusicKit uses official playback and reports useful errors when authorization, subscription, URL, or content access is unavailable.
