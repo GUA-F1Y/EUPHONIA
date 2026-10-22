@@ -1,7 +1,7 @@
 /* EUPHONIA app-shell cache. User audio and project files are stored in IndexedDB, not Cache Storage. */
-const CACHE_NAME = 'euphonia-studio-v0345';
+const CACHE_NAME = 'euphonia-studio-v0346';
 const CORE_ASSETS = [
-  './', './index.html', './styles.css', './euphonia-storage.js', './app.js', './euphonia-config.js', './music-accounts.js',
+  './', './index.html', './styles.css', './euphonia-storage.js', './app.js', './euphonia-config.js', './music-accounts.js', './musicfy-features.js',
   './euphonia-daw.js', './manifest.json', './icon-192.png', './icon-512.png'
 ];
 
