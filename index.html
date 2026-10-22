@@ -211,8 +211,35 @@
             </div>
             <div class="account-youtube-player-wrap" id="accountYouTubePlayerWrap" hidden><div id="accountYouTubePlayer"></div><p>Official YouTube player · playback and ads are controlled by YouTube.</p></div>
             <div class="account-apple-player-status" id="accountApplePlayerStatus" hidden>Playback is handled by Apple Music through MusicKit. An active subscription may be required.</div>
+            <div class="account-player-tools" role="group" aria-label="Account playback tools">
+              <button class="outline-button" id="accountPlayerFavorite" type="button" disabled aria-pressed="false">♡ Favorite</button>
+              <button class="outline-button" id="accountPlayerShuffle" type="button" aria-pressed="false">⤨ Shuffle</button>
+              <button class="outline-button" id="accountPlayerRepeat" type="button" aria-pressed="false">↻ Repeat off</button>
+              <button class="outline-button" id="accountPlayerQueueToggle" type="button" aria-expanded="false">☷ Queue (0)</button>
+              <button class="outline-button" id="accountPlayerLyricsToggle" type="button" aria-expanded="false">♫ Lyrics</button>
+            </div>
+            <section class="account-queue-panel" id="accountQueuePanel" hidden aria-label="Playback queue">
+              <div class="account-subpanel-heading"><div><span class="eyebrow">UP NEXT</span><strong>Playback queue</strong></div><button class="text-button" id="accountQueueClear" type="button">Clear queue</button></div>
+              <div class="account-queue-items" id="accountQueueItems"></div>
+            </section>
+            <section class="account-lyrics-panel" id="accountLyricsPanel" hidden aria-label="Track lyrics">
+              <div class="account-subpanel-heading"><div><span class="eyebrow">LYRICS · LRCLIB</span><strong id="accountLyricsTrackLabel">Current track</strong></div><button class="text-button" id="accountLyricsRetry" type="button">↻ Reload lyrics</button></div>
+              <p id="accountLyricsStatus" class="account-lyrics-status" role="status" aria-live="polite">Putar track lalu buka Lyrics untuk mencari lirik.</p>
+              <div class="account-lyrics-lines" id="accountLyricsLines"></div>
+            </section>
           </section>
           <div class="account-playlist-tracks" id="accountPlaylistTracks"></div>
+        </section>
+        <section class="account-saved-section" id="accountSavedSection" aria-label="Saved tracks and listening history">
+          <div class="section-heading compact-heading account-saved-heading">
+            <div><div class="eyebrow">YOUR MUSIC</div><h2>Favorites &amp; listening history</h2><p class="muted-copy">Tersimpan secara lokal di browser ini. Koleksi sumber tidak diubah.</p></div>
+            <div class="account-saved-tabs" role="group" aria-label="Saved music view">
+              <button class="outline-button active" type="button" data-saved-view="favorites" aria-pressed="true">♥ Favorites <span id="accountFavoriteCount">0</span></button>
+              <button class="outline-button" type="button" data-saved-view="history" aria-pressed="false">◷ Recently played</button>
+            </div>
+          </div>
+          <div class="account-saved-toolbar"><span>Up to 500 favorites and 150 recent plays, stored on this device.</span><div><button class="primary-button" id="accountSavedPlayAll" type="button" disabled>▶ Play favorites</button><button class="text-button" id="accountClearHistory" type="button" hidden>Clear history</button></div></div>
+          <div class="account-saved-tracks" id="accountSavedTracks"></div>
         </section>
         <div class="legacy-music-hub" hidden aria-hidden="true">
           <div class="search-panel"><span class="search-large-icon">⌕</span><input id="hubSearch" placeholder="Coba: Frank Ocean, chill beats, shoegaze..." autocomplete="off" /><button class="primary-button" id="searchAll">Search in EUPHONIA <span>⌕</span></button><div class="search-hint">Pencarian dan pemutar tetap di EUPHONIA. Layanan yang belum mendukung pencarian tertanam akan meminta link share playlist.</div></div>
@@ -358,6 +385,7 @@
   <script src="app.js"></script>
   <script src="euphonia-config.js"></script>
   <script src="music-accounts.js"></script>
+  <script src="musicfy-features.js"></script>
   <script src="euphonia-daw.js"></script>
 </body>
 </html>
