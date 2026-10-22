@@ -27,8 +27,10 @@ for (const id of ids) {
   idSet.add(id);
 }
 const app = exists('app.js') ? read('app.js') : '';
+// Some controls are intentionally injected into a shelf only when it is empty.
+const dynamicIds = new Set(['emptyImport']);
 for (const match of app.matchAll(/\$\(\s*['"]#([A-Za-z][\w:-]*)['"]\s*[,)]/g)) {
-  if (!idSet.has(match[1])) errors.push(`app.js references missing HTML id: #${match[1]}`);
+  if (!idSet.has(match[1]) && !dynamicIds.has(match[1])) errors.push(`app.js references missing HTML id: #${match[1]}`);
 }
 
 for (const match of html.matchAll(/<(?:script|link|img)\b[^>]*?(?:src|href)\s*=\s*(['"])([^'"]+)\1/gi)) {
@@ -45,7 +47,7 @@ try {
 } catch (error) { errors.push(`manifest.json is invalid: ${error.message}`); }
 
 const sw = exists('sw.js') ? read('sw.js') : '';
-if (!/euphonia-studio-v0330/.test(sw)) errors.push('Service worker cache version does not match the v0.3.3 release.')
+if (!/euphonia-studio-v0341/.test(sw)) errors.push('Service worker cache version does not match the current music-discovery shell.')
 if (!html.includes('euphonia-storage.js')) errors.push('IndexedDB storage module is not included in index.html.');
 if (!html.includes('manifest.json')) errors.push('PWA manifest is not linked in index.html.');
 for (const id of ['hubStatus', 'musicResults', 'embedLinkForm', 'platformFrame', 'hubPreviewAudio', 'youtubeApiKeyInput', 'savedPlaylistNote', 'clearSavedPlaylist']) if (!idSet.has(id)) errors.push(`Music Hub control missing: #${id}`);
@@ -54,11 +56,14 @@ if (!app.includes('https://www.googleapis.com/youtube/v3/search')) errors.push('
 if (!app.includes('https://itunes.apple.com/search')) errors.push('No-key catalog search integration is missing.');
 
 const platformLinks = [...html.matchAll(/<a\b[^>]*data-platform=[\"']([^\"']+)[\"'][^>]*href=[\"']([^\"']+)[\"'][^>]*>/gi)];
-if (platformLinks.length !== 6) errors.push(`Expected 6 in-app platform cards, found ${platformLinks.length}.`);
+if (platformLinks.length !== 5) errors.push(`Expected 5 in-app embed provider cards, found ${platformLinks.length}.`);
 for (const [, platform, href] of platformLinks) {
   if (href !== '#platformViewer') errors.push(`Platform ${platform} must use an in-app anchor, found ${href}.`);
 }
-if (html.includes('target="_blank"') && /data-platform/.test(html)) errors.push('Platform cards must not declare new-tab navigation.');
+const embedCardTags = [...html.matchAll(/<a\b[^>]*data-platform=[\"'][^\"']+[\"'][^>]*>/gi)].map(match => match[0]);
+if (embedCardTags.some(tag => /target=[\"']_blank[\"']/i.test(tag))) errors.push('In-app embed provider cards must not declare new-tab navigation.');
+const spotifyExternalCard = html.match(/<a\b[^>]*class=[\"'][^\"']*platform-card spotify[^\"']*[\"'][^>]*>/i)?.[0] || '';
+if (!/href=[\"']https:\/\/open\.spotify\.com\//i.test(spotifyExternalCard) || !/target=[\"']_blank[\"']/i.test(spotifyExternalCard) || !/rel=[\"']noopener noreferrer[\"']/i.test(spotifyExternalCard)) errors.push('Spotify must remain an explicit, safe link to its official service.');
 if (/window\.open\(/.test(app)) errors.push('Music Hub must not use window.open; playback/search must remain in-app.');
 if (!app.includes('function selectPlatformInHub(')) errors.push('Platform click handler for saved in-app playlist is missing.');
 if (!app.includes('function savePlaylistLink(')) errors.push('Local saved playlist link behavior is missing.');
@@ -66,7 +71,7 @@ if (!/addEventListener\(['"]activate['"]/.test(sw)) errors.push('Service worker 
 if (!exists('QA-CHECKLIST.md')) warnings.push('Manual QA checklist is missing.');
 if (!exists('DEPLOYMENT.md')) warnings.push('Deployment guide is missing.');
 
-console.log(`EUPHONIA v0.3.3 static validation`);
+console.log(`EUPHONIA music-discovery static validation`);
 console.log(`HTML ids: ${idSet.size}; core scripts checked: 4; manifest and local references checked.`);
 for (const warning of warnings) console.warn(`WARN: ${warning}`);
 if (errors.length) {
