@@ -24,6 +24,12 @@
   let pendingYoutubePlaylistId = null;
   let pendingApplePlaylistId = null;
   let activePlaylistDetailKey = null;
+  let accountPlaybackQueue = [];
+  let accountPlaybackIndex = -1;
+  let accountPlaybackProvider = null;
+  let youtubePlayer = null;
+  let youtubeApiPromise = null;
+  let applePlaybackBusy = false;
 
   function readJSON(storage, key, fallback) {
     try {
@@ -753,6 +759,141 @@
     renderPlaylistTracks({ ...current, importedLocal: true, key: key }, current.tracks);
     renderPlaylistGrid();
     setStatus("Track dihapus dari playlist lokal EUPHONIA. Track asal di layanan musik tidak diubah.", "success");
+  }
+
+  function ensureYouTubeIframeAPI() {
+    if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+    if (youtubeApiPromise) return youtubeApiPromise;
+    youtubeApiPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector("script[data-euphonia-youtube-player]");
+      const script = existing || document.createElement("script");
+      const timeout = window.setTimeout(() => reject(new Error("YouTube Player API timed out. Check your connection.")), 20000);
+      const previousCallback = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        try { if (typeof previousCallback === "function") previousCallback(); } catch (_) {}
+        window.clearTimeout(timeout);
+        if (window.YT && window.YT.Player) resolve(window.YT);
+        else reject(new Error("YouTube Player API loaded without a player constructor."));
+      };
+      script.src = "https://www.youtube.com/iframe_api";
+      script.async = true;
+      script.dataset.euphoniaYoutubePlayer = "true";
+      script.onerror = () => {
+        window.clearTimeout(timeout);
+        reject(new Error("YouTube Player API could not load."));
+      };
+      if (!existing) document.head.append(script);
+    }).catch(error => {
+      youtubeApiPromise = null;
+      throw error;
+    });
+    return youtubeApiPromise;
+  }
+
+  function currentAccountTrack() {
+    return accountPlaybackQueue[accountPlaybackIndex] || null;
+  }
+
+  function updateAccountPlayerHeader(track) {
+    const title = $("#accountNowPlayingTitle");
+    const subtitle = $("#accountNowPlayingSubtitle");
+    const button = $("#accountPlayerToggle");
+    if (title) title.textContent = track?.title || "No track selected";
+    if (subtitle) subtitle.textContent = (track?.artist || providerTitle(accountPlaybackProvider || "")) + " · Official service playback";
+    if (button) button.textContent = "Ⅱ Pause";
+  }
+
+  async function playAccountQueueIndex(index) {
+    const track = accountPlaybackQueue[index];
+    if (!track) return;
+    accountPlaybackIndex = index;
+    accountPlaybackProvider = track.provider || accountPlaybackProvider;
+    const panel = $("#accountNowPlaying");
+    const youtubeWrap = $("#accountYouTubePlayerWrap");
+    const appleStatus = $("#accountApplePlayerStatus");
+    if (panel) panel.hidden = false;
+    if (youtubeWrap) youtubeWrap.hidden = accountPlaybackProvider !== "youtube";
+    if (appleStatus) appleStatus.hidden = accountPlaybackProvider !== "apple";
+    updateAccountPlayerHeader(track);
+
+    if (accountPlaybackProvider === "youtube") {
+      try {
+        const YT = await ensureYouTubeIframeAPI();
+        if (!track.id) throw new Error("This YouTube playlist item has no video ID.");
+        if (youtubePlayer && typeof youtubePlayer.loadVideoById === "function") {
+          youtubePlayer.loadVideoById({ videoId: track.id });
+          return;
+        }
+        youtubePlayer = new YT.Player("accountYouTubePlayer", {
+          height: "250",
+          width: "100%",
+          videoId: track.id,
+          playerVars: {
+            playsinline: 1,
+            origin: window.location.origin,
+            rel: 0
+          },
+          events: {
+            onReady: event => {
+              event.target.playVideo();
+            },
+            onStateChange: event => {
+              if (event.data === YT.PlayerState.ENDED && accountPlaybackProvider === "youtube" && accountPlaybackIndex < accountPlaybackQueue.length - 1) {
+                void playAccountQueueIndex(accountPlaybackIndex + 1);
+              }
+              const button = $("#accountPlayerToggle");
+              if (button) button.textContent = event.data === YT.PlayerState.PLAYING ? "Ⅱ Pause" : "▶ Play";
+            },
+            onError: () => setStatus("YouTube tidak dapat memainkan video ini di player tertanam. Gunakan Open source untuk membukanya di layanan resmi.", "error")
+          }
+        });
+      } catch (error) {
+        setStatus("Pemutar YouTube gagal disiapkan: " + (error.message || "unknown error"), "error");
+      }
+      return;
+    }
+
+    if (accountPlaybackProvider === "apple") {
+      if (!appleMusic || !appleAuthorized) {
+        setStatus("Hubungkan dan beri izin Apple Music sebelum memulai playback.", "error");
+        return;
+      }
+      try {
+        applePlaybackBusy = true;
+        const descriptor = track.url ? { url: track.url } : { song: track.id };
+        await appleMusic.setQueue(descriptor);
+        await appleMusic.play();
+        applePlaybackBusy = false;
+        setStatus("Memutar lewat MusicKit resmi Apple Music. Ketersediaan bergantung pada langganan dan izin akun.", "success");
+        const button = $("#accountPlayerToggle");
+        if (button) button.textContent = "Ⅱ Pause";
+      } catch (error) {
+        applePlaybackBusy = false;
+        setStatus("Apple Music tidak dapat memutar track ini: " + (error.message || "cek langganan, izin, dan URL track."), "error");
+      }
+    }
+  }
+
+  function playTrackFromPlaylist(playlist, tracks, index) {
+    const provider = playlist.provider;
+    if (!["youtube", "apple"].includes(provider)) {
+      setStatus("Pemutaran di dalam EUPHONIA tersedia untuk YouTube dan Apple Music yang terhubung. Gunakan Open source untuk provider lain.", "info");
+      return;
+    }
+    accountPlaybackProvider = provider;
+    accountPlaybackQueue = tracks.map(track => ({ ...track, provider }));
+    void playAccountQueueIndex(index);
+  }
+
+  function closeAccountPlayback() {
+    if (youtubePlayer && typeof youtubePlayer.stopVideo === "function") {
+      try { youtubePlayer.stopVideo(); } catch (_) {}
+    }
+    if (appleMusic && appleAuthorized) {
+      try { void appleMusic.pause(); } catch (_) {}
+    }
+    const panel = $("#accountNowPlaying");
+    if (panel) panel.hidden = true;
   }
 
   function renderPlaylistTracks(playlist, tracks) {
